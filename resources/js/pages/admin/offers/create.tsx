@@ -5,16 +5,16 @@ import { index } from '@/routes/admin/offers';
 import type { BreadcrumbItem } from '@/types';
 import OfferForm from './offer-form';
 
-type Department = {
+type Doctor = {
     id: number;
     name: string;
+    department: {
+        id: number;
+        name: string;
+    };
 };
 
-export default function CreateOffer({
-    departments,
-}: {
-    departments: Department[];
-}) {
+export default function CreateOffer({ doctors }: { doctors: Doctor[] }) {
     return (
         <>
             <Head title="New offer" />
@@ -22,10 +22,7 @@ export default function CreateOffer({
             <div className="max-w-2xl space-y-6 p-4">
                 <Heading title="New offer" />
 
-                <OfferForm
-                    form={OfferController.store.form()}
-                    departments={departments}
-                />
+                <OfferForm form={OfferController.store.form()} doctors={doctors} />
             </div>
         </>
     );

@@ -37,7 +37,10 @@ export default function CallbackModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-h-[92vh] overflow-y-auto border-none bg-transparent p-0 shadow-none sm:max-w-4xl [&>button:last-child]:hidden">
                 {doctor && (
-                    <div className="callback-modal">
+                    <div
+                        className="dsm callback-modal"
+                        dir={lang === 'ar' ? 'rtl' : 'ltr'}
+                    >
                         <button
                             type="button"
                             className="callback-modal__close"
@@ -47,9 +50,7 @@ export default function CallbackModal({
                         </button>
 
                         <Form
-                            {...CallbackRequestController.store.form(
-                                doctor.id,
-                            )}
+                            {...CallbackRequestController.store.form(doctor.id)}
                             resetOnSuccess
                             className="callback-modal__form"
                         >
@@ -61,9 +62,7 @@ export default function CallbackModal({
                                         <button
                                             type="button"
                                             className="btn btn--ink"
-                                            onClick={() =>
-                                                onOpenChange(false)
-                                            }
+                                            onClick={() => onOpenChange(false)}
                                         >
                                             {t('callback.close')}
                                         </button>
@@ -72,9 +71,7 @@ export default function CallbackModal({
                                     <>
                                         <div className="callback-modal__head">
                                             <h3>{t('callback.formTitle')}</h3>
-                                            <p>
-                                                {t('callback.formSubtitle')}
-                                            </p>
+                                            <p>{t('callback.formSubtitle')}</p>
                                         </div>
 
                                         <div className="callback-modal__row">
@@ -116,9 +113,7 @@ export default function CallbackModal({
                                         {packageOptions.length > 0 && (
                                             <div className="callback-modal__field">
                                                 <label htmlFor="cb-package">
-                                                    {t(
-                                                        'callback.packageLabel',
-                                                    )}
+                                                    {t('callback.packageLabel')}
                                                 </label>
                                                 <select
                                                     id="cb-package"
@@ -265,12 +260,8 @@ export default function CallbackModal({
                                 className="callback-modal__aside-card"
                             >
                                 <span>
-                                    <small>
-                                        {t('callback.whatsappLabel')}
-                                    </small>
-                                    <strong>
-                                        {t('callback.whatsappCta')}
-                                    </strong>
+                                    <small>{t('callback.whatsappLabel')}</small>
+                                    <strong>{t('callback.whatsappCta')}</strong>
                                 </span>
                                 <i className="callback-modal__whatsapp-icon">
                                     <WhatsAppIcon size={16} />

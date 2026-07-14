@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\DoctorFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['department_id', 'nationality_id', 'name', 'name_ar', 'job', 'job_ar', 'image', 'is_active'])]
 class Doctor extends Model
 {
-    /** @use HasFactory<\Database\Factories\DoctorFactory> */
+    /** @use HasFactory<DoctorFactory> */
     use HasFactory;
 
     /**
@@ -78,5 +79,13 @@ class Doctor extends Model
     public function callbackRequests(): HasMany
     {
         return $this->hasMany(CallbackRequest::class);
+    }
+
+    /**
+     * @return HasMany<Offer, $this>
+     */
+    public function offers(): HasMany
+    {
+        return $this->hasMany(Offer::class);
     }
 }

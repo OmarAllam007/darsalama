@@ -2,22 +2,35 @@
 
 namespace App\Models;
 
+use Database\Factories\OfferFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['department_id', 'title', 'description', 'image'])]
+#[Fillable(['doctor_id', 'title', 'description', 'image', 'price', 'original_price', 'is_expired'])]
 class Offer extends Model
 {
-    /** @use HasFactory<\Database\Factories\OfferFactory> */
+    /** @use HasFactory<OfferFactory> */
     use HasFactory;
 
     /**
-     * @return BelongsTo<Department, $this>
+     * @return array<string, string>
      */
-    public function department(): BelongsTo
+    protected function casts(): array
     {
-        return $this->belongsTo(Department::class);
+        return [
+            'price' => 'decimal:2',
+            'original_price' => 'decimal:2',
+            'is_expired' => 'boolean',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<Doctor, $this>
+     */
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class);
     }
 }

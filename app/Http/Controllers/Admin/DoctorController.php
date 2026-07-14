@@ -59,8 +59,15 @@ class DoctorController extends Controller
      */
     public function edit(Doctor $doctor): Response
     {
+        $doctor->load('availabilities', 'qualifications', 'services');
+
+        $doctor->availabilities->each(function ($availability): void {
+            $availability->start_time = substr($availability->start_time, 0, 5);
+            $availability->end_time = substr($availability->end_time, 0, 5);
+        });
+
         return Inertia::render('admin/doctors/edit', [
-            'doctor' => $doctor->load('availabilities', 'qualifications', 'services'),
+            'doctor' => $doctor,
             'departments' => Department::orderBy('name')->get(),
             'nationalities' => Nationality::orderBy('name')->get(),
         ]);
@@ -71,7 +78,6 @@ class DoctorController extends Controller
      */
     public function update(Request $request, Doctor $doctor): RedirectResponse
     {
-    
         $validated = $this->validated($request);
         $image = $this->storeImage($request);
 
@@ -116,7 +122,6 @@ class DoctorController extends Controller
      */
     private function validated(Request $request): array
     {
-    
         return $request->validate([
             'department_id' => ['required', 'exists:departments,id'],
             'nationality_id' => ['nullable', 'exists:nationalities,id'],

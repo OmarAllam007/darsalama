@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('doctors', DoctorController::class)->except('show');
     Route::resource('packages', PackageController::class)->except('show');
     Route::resource('offers', OfferController::class)->except('show');
+    Route::patch('offers/{offer}/restore', [OfferController::class, 'restore'])->name('offers.restore');
     Route::resource('nationalities', NationalityController::class)->except('show');
     Route::get('appointments', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::get('callback-requests', [CallbackRequestController::class, 'index'])->name('callback-requests.index');

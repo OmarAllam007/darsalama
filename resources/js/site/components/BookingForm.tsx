@@ -2,9 +2,6 @@ import { Form } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import BookingController from '@/actions/App/Http/Controllers/BookingController';
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/site/i18n/LanguageContext';
 
 function isoDate(date: Date): string {
@@ -59,13 +56,20 @@ export default function BookingForm({
     );
 
     return (
-        <div className="space-y-8">
+        <div>
             <div>
-                <div className="mb-4 flex items-center justify-between">
-                    <Button
+                <div
+                    style={{
+                        marginBottom: 14,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                    }}
+                >
+                    <button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        className="bk-back"
+                        style={{ marginBottom: 0 }}
                         onClick={() =>
                             setMonth(
                                 new Date(
@@ -77,17 +81,17 @@ export default function BookingForm({
                         }
                     >
                         {lang === 'ar' ? '→' : '←'}
-                    </Button>
-                    <p className="font-medium">
+                    </button>
+                    <p className="bk-section-label" style={{ margin: 0 }}>
                         {month.toLocaleDateString(lang === 'ar' ? 'ar' : 'en', {
                             month: 'long',
                             year: 'numeric',
                         })}
                     </p>
-                    <Button
+                    <button
                         type="button"
-                        variant="outline"
-                        size="sm"
+                        className="bk-back"
+                        style={{ marginBottom: 0 }}
                         onClick={() =>
                             setMonth(
                                 new Date(
@@ -99,18 +103,34 @@ export default function BookingForm({
                         }
                     >
                         {lang === 'ar' ? '←' : '→'}
-                    </Button>
+                    </button>
                 </div>
 
-                <div className="grid grid-cols-7 gap-2 text-center">
+                <div
+                    className="bk-grid"
+                    style={{
+                        gridTemplateColumns: 'repeat(7, 1fr)',
+                        marginBottom: 4,
+                    }}
+                >
                     {t('booking.weekdays').map((label: string) => (
                         <div
                             key={label}
-                            className="text-xs font-medium text-muted-foreground"
+                            style={{
+                                textAlign: 'center',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                color: '#64748b',
+                            }}
                         >
                             {label}
                         </div>
                     ))}
+                </div>
+                <div
+                    className="bk-grid"
+                    style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}
+                >
                     {Array.from({ length: leadingBlanks }).map((_, i) => (
                         <div key={`blank-${i}`} />
                     ))}
@@ -127,13 +147,12 @@ export default function BookingForm({
                                 type="button"
                                 disabled={disabled}
                                 onClick={() => setSelectedDate(iso)}
-                                className={`rounded-md border py-2 text-sm ${
+                                className={
                                     isSelected
-                                        ? 'bg-primary text-primary-foreground'
-                                        : disabled
-                                          ? 'cursor-not-allowed text-muted-foreground/40'
-                                          : 'border-primary/20 bg-primary/5 hover:bg-accent'
-                                }`}
+                                        ? 'bk-chip is-selected'
+                                        : 'bk-chip'
+                                }
+                                style={{ padding: '8px 4px' }}
                             >
                                 {day.getDate()}
                             </button>
@@ -143,10 +162,10 @@ export default function BookingForm({
             </div>
 
             {selectedDate && (
-                <div>
-                    <Label className="mb-3 block">
+                <div style={{ marginTop: 20 }}>
+                    <p className="bk-section-label">
                         {t('booking.availableTimes')}
-                    </Label>
+                    </p>
                     <TimeSlots
                         key={selectedDate}
                         doctorId={doctorId}
@@ -160,14 +179,21 @@ export default function BookingForm({
             {selectedDate && selectedTime && (
                 <Form
                     {...BookingController.store.form(doctorId)}
-                    className="space-y-6 border-t pt-6"
                     resetOnSuccess={false}
+                    style={{
+                        marginTop: 20,
+                        paddingTop: 18,
+                        borderTop: '1px solid #eef0f4',
+                    }}
                 >
                     {({ processing, errors }) => (
                         <>
-                            <h2 className="text-lg font-semibold">
+                            <p
+                                className="bk-section-label"
+                                style={{ marginTop: 0 }}
+                            >
                                 {t('booking.yourInformation')}
-                            </h2>
+                            </p>
 
                             <input
                                 type="hidden"
@@ -183,53 +209,58 @@ export default function BookingForm({
                             />
                             <InputError message={errors.time} />
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="first_name">
-                                        {t('booking.firstName')}
-                                    </Label>
-                                    <Input
-                                        id="first_name"
-                                        name="first_name"
-                                        required
-                                        autoFocus
+                            <div className="bk-field">
+                                <label htmlFor="first_name">
+                                    {t('booking.firstName')}
+                                </label>
+                                <input
+                                    id="first_name"
+                                    name="first_name"
+                                    required
+                                    autoFocus
+                                />
+                                <InputError message={errors.first_name} />
+                            </div>
+                            <div className="bk-field">
+                                <label htmlFor="last_name">
+                                    {t('booking.lastName')}
+                                </label>
+                                <input
+                                    id="last_name"
+                                    name="last_name"
+                                    required
+                                />
+                                <InputError message={errors.last_name} />
+                            </div>
+                            <div className="bk-field">
+                                <label htmlFor="email">
+                                    {t('booking.email')}
+                                </label>
+                                <input id="email" name="email" type="email" />
+                                <InputError message={errors.email} />
+                            </div>
+                            <div className="bk-field">
+                                <label htmlFor="phone">
+                                    {t('booking.phone')}
+                                </label>
+                                <div className="bk-phone-wrap">
+                                    <span className="bk-cc">+966</span>
+                                    <input
+                                        id="phone"
+                                        name="phone"
+                                        placeholder="5XXXXXXXX"
                                     />
-                                    <InputError message={errors.first_name} />
                                 </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="last_name">
-                                        {t('booking.lastName')}
-                                    </Label>
-                                    <Input
-                                        id="last_name"
-                                        name="last_name"
-                                        required
-                                    />
-                                    <InputError message={errors.last_name} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="email">
-                                        {t('booking.email')}
-                                    </Label>
-                                    <Input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                    />
-                                    <InputError message={errors.email} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="phone">
-                                        {t('booking.phone')}
-                                    </Label>
-                                    <Input id="phone" name="phone" />
-                                    <InputError message={errors.phone} />
-                                </div>
+                                <InputError message={errors.phone} />
                             </div>
 
-                            <Button disabled={processing} className="w-full">
+                            <button
+                                type="submit"
+                                className="bk-confirm"
+                                disabled={processing}
+                            >
                                 {t('booking.confirm')}
-                            </Button>
+                            </button>
                         </>
                     )}
                 </Form>
@@ -271,33 +302,25 @@ function TimeSlots({
     }, [doctorId, date]);
 
     if (slots === null) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {t('booking.loading')}
-            </p>
-        );
+        return <p className="bk-hint">{t('booking.loading')}</p>;
     }
 
     if (slots.length === 0) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                {t('booking.noTimes')}
-            </p>
-        );
+        return <p className="bk-hint">{t('booking.noTimes')}</p>;
     }
 
     return (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <div className="bk-grid">
             {slots.map((time) => (
                 <button
                     key={time}
                     type="button"
                     onClick={() => onSelect(time)}
-                    className={`rounded-md border py-2 text-sm ${
+                    className={
                         selectedTime === time
-                            ? 'bg-primary text-primary-foreground'
-                            : 'hover:bg-accent'
-                    }`}
+                            ? 'bk-chip is-selected'
+                            : 'bk-chip'
+                    }
                 >
                     {time}
                 </button>

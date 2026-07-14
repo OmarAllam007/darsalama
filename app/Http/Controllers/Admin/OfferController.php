@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Department;
+use App\Models\Doctor;
 use App\Models\Offer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +19,7 @@ class OfferController extends Controller
     public function index(): Response
     {
         return Inertia::render('admin/offers/index', [
-            'offers' => Offer::with('department')->orderBy('title')->get(),
+            'offers' => Offer::with('doctor.department')->orderBy('title')->get(),
         ]);
     }
 
@@ -29,7 +29,7 @@ class OfferController extends Controller
     public function create(): Response
     {
         return Inertia::render('admin/offers/create', [
-            'departments' => Department::orderBy('name')->get(),
+            'doctors' => Doctor::with('department')->orderBy('name')->get(),
         ]);
     }
 
@@ -55,7 +55,7 @@ class OfferController extends Controller
     {
         return Inertia::render('admin/offers/edit', [
             'offer' => $offer,
-            'departments' => Department::orderBy('name')->get(),
+            'doctors' => Doctor::with('department')->orderBy('name')->get(),
         ]);
     }
 
@@ -96,15 +96,28 @@ class OfferController extends Controller
     }
 
     /**
-     * @return array{department_id: int, title: string, description: string}
+     * Restore an expired offer back to its original price.
+     */
+    public function restore(Offer $offer): RedirectResponse
+    {
+        $offer->update(['is_expired' => false]);
+
+        return back();
+    }
+
+    /**
+     * @return array{doctor_id: int, title: string, description: string, price: ?string, original_price: ?string, is_expired: bool}
      */
     private function validated(Request $request): array
     {
         return $request->validate([
-            'department_id' => ['required', 'exists:departments,id'],
+            'doctor_id' => ['required', 'exists:doctors,id'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'image' => ['nullable', 'image', 'max:4096'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'original_price' => ['nullable', 'numeric', 'min:0'],
+            'is_expired' => ['boolean'],
         ]);
     }
 

@@ -5,25 +5,32 @@ import { index } from '@/routes/admin/offers';
 import type { BreadcrumbItem } from '@/types';
 import OfferForm from './offer-form';
 
-type Department = {
+type Doctor = {
     id: number;
     name: string;
+    department: {
+        id: number;
+        name: string;
+    };
 };
 
 type Offer = {
     id: number;
-    department_id: number;
+    doctor_id: number;
     title: string;
     description: string;
     image: string | null;
+    price: string | null;
+    original_price: string | null;
+    is_expired: boolean;
 };
 
 export default function EditOffer({
     offer,
-    departments,
+    doctors,
 }: {
     offer: Offer;
-    departments: Department[];
+    doctors: Doctor[];
 }) {
     return (
         <>
@@ -34,7 +41,7 @@ export default function EditOffer({
 
                 <OfferForm
                     form={OfferController.update.form(offer.id)}
-                    departments={departments}
+                    doctors={doctors}
                     offer={offer}
                     imageUrl={offer.image ? `/storage/${offer.image}` : null}
                 />

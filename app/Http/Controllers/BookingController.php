@@ -24,7 +24,7 @@ class BookingController extends Controller
         abort_unless($doctor->is_active, 404);
 
         return Inertia::render('site/booking/show', [
-            'doctor' => $doctor->load('department.offers'),
+            'doctor' => $doctor->load('offers'),
             'availableWeekdays' => $doctor->availabilities()->distinct()->pluck('weekday'),
         ]);
     }

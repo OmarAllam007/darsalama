@@ -1,36 +1,41 @@
-import { router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
+    ArrowLeft,
+    ArrowRight,
     Baby,
     Bandage,
     Bone,
     Brain,
     BrainCircuit,
+    CalendarPlus,
     Dna,
     Droplet,
     Ear,
     Eye,
     HeartPulse,
     LayoutGrid,
+    RotateCcw,
     Search,
-    SearchX,
     ShieldPlus,
     Smile,
     Sparkles,
     Stethoscope,
+    Tag,
     Users,
     UserRound,
-    UsersRound,
+    UserX,
     Venus,
     Wind,
     X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { show as doctorProfileShow } from '@/routes/doctors';
-import bannerPhoto from '@/site/assets/images/doctors/doc1.jpg';
 import BookingModal from '@/site/components/BookingModal';
+import DoctorsHero from '@/site/components/DoctorsHero';
+import DoctorsIdleScreensaver from '@/site/components/DoctorsIdleScreensaver';
+import FloatActions from '@/site/components/FloatActions';
 import OffersModal from '@/site/components/OffersModal';
-import PageBanner from '@/site/components/PageBanner';
 import { useLanguage } from '@/site/i18n/LanguageContext';
 
 type Service = {
@@ -55,6 +60,9 @@ type Offer = {
     title: string;
     description: string;
     image: string | null;
+    price: string | null;
+    original_price: string | null;
+    is_expired: boolean;
 };
 
 type Department = {
@@ -107,8 +115,150 @@ function departmentServiceLabels(
     return [...seen];
 }
 
+function departmentServices(department: Department): Service[] {
+    const seen = new Map<string, Service>();
+
+    for (const doctor of department.doctors) {
+        for (const service of doctor.services) {
+            if (!seen.has(service.name)) {
+                seen.set(service.name, service);
+            }
+        }
+    }
+
+    return [...seen.values()];
+}
+
 function matches(haystack: string, needle: string): boolean {
     return haystack.toLowerCase().includes(needle.toLowerCase());
+}
+
+function DoctorCard({
+    doctor,
+    department,
+    lang,
+    t,
+    matchedService,
+    onBook,
+    onOffers,
+}: {
+    doctor: Doctor;
+    department: Department;
+    lang: 'en' | 'ar';
+    t: (key: string) => string;
+    matchedService: string | null;
+    onBook: () => void;
+    onOffers: () => void;
+}) {
+    const initials = doctor.name
+        .replace(/^Dr\.?\s*/i, '')
+        .split(/\s+/)
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+
+    return (
+        <article
+            className="doc"
+            role="link"
+            tabIndex={0}
+            onClick={() => router.visit(doctorProfileShow(doctor.id).url)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    router.visit(doctorProfileShow(doctor.id).url);
+                }
+            }}
+        >
+            <div className={doctor.image ? 'doc-portrait' : 'doc-portrait mono'}>
+                {doctor.image ? (
+                    <img
+                        src={`/storage/${doctor.image}`}
+                        alt={lang === 'ar' ? doctor.name_ar : doctor.name}
+                    />
+                ) : (
+                    <span className="initials">{initials}</span>
+                )}
+                {doctor.nationality?.flag && (
+                    <span className="d2-flag">
+                        <span style={{ fontSize: 22 }}>
+                            {doctor.nationality.flag}
+                        </span>
+                    </span>
+                )}
+                <div className="d2-scrim" />
+                <div className="d2-id">
+                    <div className="nm">
+                        {lang === 'ar' ? doctor.name_ar : doctor.name}
+                    </div>
+                    <div className="nm-ar">
+                        {lang === 'ar' ? '' : doctor.name_ar}
+                    </div>
+                    <span className="rule" />
+                    <div className="role">
+                        {lang === 'ar' ? doctor.job_ar : doctor.job}
+                    </div>
+                </div>
+            </div>
+            <div className="doc-body">
+                <div className="svc-tags">
+                    {doctor.services.slice(0, 4).map((service) => (
+                        <span
+                            className={
+                                service.name === matchedService
+                                    ? 'svc-tag match'
+                                    : 'svc-tag'
+                            }
+                            key={service.name}
+                        >
+                            {lang === 'ar' ? service.name_ar : service.name}
+                        </span>
+                    ))}
+                </div>
+                <div className="doc-cta">
+                    <button
+                        type="button"
+                        className="btn-view"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            router.visit(doctorProfileShow(doctor.id).url);
+                        }}
+                    >
+                        <Eye size={14} />
+                        {t('doctors.viewProfile')}
+                    </button>
+                    <button
+                        type="button"
+                        className="btn-book"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onBook();
+                        }}
+                    >
+                        <CalendarPlus size={14} />
+                        {t('doctors.bookNow')}
+                    </button>
+                    {department.offers_count > 0 && (
+                        <button
+                            type="button"
+                            className="btn-offers"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOffers();
+                            }}
+                        >
+                            <Tag size={14} />
+                            {t('doctors.offers')}
+                            <span className="obadge">
+                                {department.offers_count}
+                            </span>
+                        </button>
+                    )}
+                </div>
+            </div>
+        </article>
+    );
 }
 
 export default function Doctors({
@@ -117,9 +267,17 @@ export default function Doctors({
     departments: Department[];
 }) {
     const { t, lang } = useLanguage();
-    const [view, setView] = useState<'departments' | 'doctors'>('departments');
+    const isRtl = lang === 'ar';
+    const [view, setView] = useState<'departments' | 'doctors'>(() =>
+        new URLSearchParams(window.location.search).get('mode') === 'docs'
+            ? 'doctors'
+            : 'departments',
+    );
     const [query, setQuery] = useState('');
-    const [filter, setFilter] = useState<number | 'all'>('all');
+    const [detail, setDetail] = useState<Department | null>(null);
+    const [selectedServices, setSelectedServices] = useState<Set<string>>(
+        new Set(),
+    );
     const [bookingDoctor, setBookingDoctor] = useState<Doctor | null>(null);
     const [offersDepartment, setOffersDepartment] = useState<{
         doctorName: string;
@@ -149,21 +307,14 @@ export default function Doctors({
         });
     }, [staffedDepartments, query, lang]);
 
-    const visibleDoctorDepartments = useMemo(() => {
-        const byDepartment =
-            filter === 'all'
-                ? staffedDepartments
-                : staffedDepartments.filter(
-                      (department) => department.id === filter,
-                  );
-
+    const allDoctorsGroups = useMemo(() => {
         const q = query.trim();
 
         if (!q) {
-            return byDepartment;
+            return staffedDepartments;
         }
 
-        return byDepartment
+        return staffedDepartments
             .map((department) => ({
                 ...department,
                 doctors: department.doctors.filter(
@@ -175,185 +326,499 @@ export default function Doctors({
                 ),
             }))
             .filter((department) => department.doctors.length > 0);
-    }, [staffedDepartments, filter, query]);
+    }, [staffedDepartments, query]);
 
-    const totalDoctors = visibleDoctorDepartments.reduce(
+    const totalDoctors = staffedDepartments.reduce(
         (sum, department) => sum + department.doctors.length,
         0,
     );
 
-    function exploreDepartment(id: number) {
-        setView('doctors');
-        setFilter(id);
+    const openDetail = (department: Department) => {
+        setSelectedServices(new Set());
+        setDetail(department);
         requestAnimationFrame(() => {
             document
-                .getElementById(`department-${id}`)
+                .getElementById('crumb')
                 ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    };
+
+    useEffect(() => {
+        const departmentId = new URLSearchParams(window.location.search).get(
+            'department',
+        );
+
+        if (!departmentId) {
+            return;
+        }
+
+        const department = staffedDepartments.find(
+            (d) => String(d.id) === departmentId,
+        );
+
+        if (department) {
+            setSelectedServices(new Set());
+            setDetail(department);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [staffedDepartments]);
+
+    const detailServices = detail ? departmentServices(detail) : [];
+    const detailDoctors = detail
+        ? detail.doctors.filter(
+              (doctor) =>
+                  selectedServices.size === 0 ||
+                  doctor.services.some((s) => selectedServices.has(s.name)),
+          )
+        : [];
+
+    function toggleService(name: string) {
+        setSelectedServices((prev) => {
+            const next = new Set(prev);
+
+            if (next.has(name)) {
+                next.delete(name);
+            } else {
+                next.add(name);
+            }
+
+            return next;
         });
     }
 
+    const idleEnabled = !detail && !bookingDoctor && !offersDepartment;
+
     return (
         <>
-            <PageBanner
-                eyebrow={t('doctors.eyebrow')}
-                title={t('doctors.title')}
-                intro={t('doctors.intro')}
-                image={bannerPhoto}
+            <Head title={t('doctors.title')}>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link
+                    rel="preconnect"
+                    href="https://fonts.gstatic.com"
+                    crossOrigin=""
+                />
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap"
+                />
+            </Head>
+
+            <DoctorsHero
+                onBrowseDepartments={() => {
+                    setDetail(null);
+                    setView('departments');
+                    document
+                        .getElementById('toolbar')
+                        ?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                        });
+                }}
+                onBrowseDoctors={() => {
+                    setDetail(null);
+                    setView('doctors');
+                    document
+                        .getElementById('toolbar')
+                        ?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                        });
+                }}
             />
 
-            <section className="directory">
-                <div className="container">
-                    <div className="directory-toolbar">
-                        <div
-                            className={`directory-tabs ${view === 'doctors' ? 'is-doctors' : ''}`}
+            <div className="dsm dsm-page" dir={isRtl ? 'rtl' : 'ltr'}>
+                <section className="intro">
+                    <div className="eyebrow">
+                        <span className="dot" />
+                        {t('doctors.eyebrow')}
+                    </div>
+                    <h1>{t('doctors.title')}</h1>
+                    <p className="sub">{t('doctors.intro')}</p>
+                    <span className="rule" />
+                </section>
+
+                <div className="toolbar" id="toolbar">
+                    <div className="mode-toggle">
+                        <button
+                            type="button"
+                            className={
+                                view === 'departments' && !detail ? 'on' : ''
+                            }
+                            onClick={() => {
+                                setDetail(null);
+                                setView('departments');
+                            }}
                         >
-                            <span
-                                className="directory-tabs__thumb"
-                                aria-hidden="true"
-                            />
-                            <button
-                                type="button"
-                                className={`directory-tab ${view === 'departments' ? 'is-active' : ''}`}
-                                onClick={() => setView('departments')}
-                            >
-                                <LayoutGrid size={16} />
-                                {t('doctors.tabDepartments')}
-                            </button>
-                            <button
-                                type="button"
-                                className={`directory-tab ${view === 'doctors' ? 'is-active' : ''}`}
-                                onClick={() => setView('doctors')}
-                            >
-                                <UsersRound size={16} />
-                                {t('doctors.tabDoctors')}
-                            </button>
-                        </div>
-
-                        <label className="directory-search">
-                            <Search size={17} />
-                            <input
-                                type="search"
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder={t('doctors.searchPlaceholder')}
-                            />
-                            {query && (
-                                <button
-                                    type="button"
-                                    className="directory-search__clear"
-                                    aria-label={t('doctors.clearSearch')}
-                                    onClick={() => setQuery('')}
-                                >
-                                    <X size={13} />
-                                </button>
-                            )}
-                        </label>
-
-                        <span className="directory-count">
-                            {view === 'departments'
-                                ? `${filteredDepartments.length} ${t('doctors.allDepartmentsLabel')}`
-                                : `${totalDoctors} ${t('doctors.doctorsAvailableLabel')}`}
-                        </span>
+                            <LayoutGrid size={16} />
+                            {t('doctors.tabDepartments')}
+                        </button>
+                        <button
+                            type="button"
+                            className={
+                                view === 'doctors' && !detail ? 'on' : ''
+                            }
+                            onClick={() => {
+                                setDetail(null);
+                                setView('doctors');
+                            }}
+                        >
+                            <Users size={16} />
+                            {t('doctors.tabDoctors')}
+                        </button>
                     </div>
 
-                    {view === 'departments' ? (
-                        <div
-                            className="department-grid directory-view"
-                            key="departments"
-                        >
-                            {filteredDepartments.map((department, index) => {
-                                const Icon = departmentIcon(department.name);
-                                const services = departmentServiceLabels(
-                                    department,
-                                    lang,
-                                );
+                    <div className="search-box">
+                        <Search size={19} />
+                        <input
+                            type="search"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder={t('doctors.searchPlaceholder')}
+                        />
+                    </div>
 
-                                return (
-                                    <article
-                                        className="department-card"
-                                        style={
-                                            {
-                                                '--i': index,
-                                            } as React.CSSProperties
-                                        }
-                                        key={department.id}
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={() =>
-                                            exploreDepartment(department.id)
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (
-                                                e.key === 'Enter' ||
-                                                e.key === ' '
-                                            ) {
-                                                e.preventDefault();
-                                                exploreDepartment(
-                                                    department.id,
-                                                );
-                                            }
-                                        }}
-                                    >
-                                        <header className="department-card__head">
-                                            <span className="department-card__icon">
-                                                <Icon size={22} />
+                    <span className="result-count">
+                        {detail
+                            ? `${detailDoctors.length} ${detailDoctors.length === 1 ? t('doctors.doctorLabel') : t('doctors.doctorsLabel')}`
+                            : view === 'departments'
+                              ? `${filteredDepartments.length} ${t('doctors.allDepartmentsLabel')}`
+                              : `${totalDoctors} ${t('doctors.doctorsAvailableLabel')}`}
+                    </span>
+                </div>
+
+                <main>
+                    {detail ? (
+                        <div className="view">
+                            <nav className="crumb" id="crumb">
+                                <button
+                                    type="button"
+                                    onClick={() => setDetail(null)}
+                                >
+                                    {isRtl ? (
+                                        <ArrowRight size={16} />
+                                    ) : (
+                                        <ArrowLeft size={16} />
+                                    )}
+                                    {t('doctors.tabDepartments')}
+                                </button>
+                                <span className="sep">/</span>
+                                <span className="here">
+                                    {lang === 'ar'
+                                        ? detail.name_ar
+                                        : detail.name}
+                                </span>
+                            </nav>
+
+                            <div className="dhero">
+                                <div className="dh-wm">
+                                    {(() => {
+                                        const Icon = departmentIcon(
+                                            detail.name,
+                                        );
+
+                                        return <Icon size={160} />;
+                                    })()}
+                                </div>
+                                <div className="dh-content">
+                                    <div className="dh-ico">
+                                        {(() => {
+                                            const Icon = departmentIcon(
+                                                detail.name,
+                                            );
+
+                                            return <Icon size={26} />;
+                                        })()}
+                                    </div>
+                                    <div className="dh-en">
+                                        {lang === 'ar'
+                                            ? detail.name_ar
+                                            : detail.name}
+                                    </div>
+                                    <div className="dh-ar">
+                                        {lang === 'ar'
+                                            ? detail.name
+                                            : detail.name_ar}
+                                    </div>
+                                    <div className="dh-stats">
+                                        <span className="st">
+                                            <Users size={14} />
+                                            <b>{detail.doctors.length}</b>{' '}
+                                            {detail.doctors.length === 1
+                                                ? t('doctors.doctorLabel')
+                                                : t('doctors.doctorsLabel')}
+                                        </span>
+                                        {detail.offers_count > 0 && (
+                                            <span className="st">
+                                                <Tag size={14} />
+                                                <b>
+                                                    {detail.offers_count}
+                                                </b>{' '}
+                                                {t('doctors.offers')}
                                             </span>
-                                            <div>
-                                                <h3>
-                                                    {lang === 'ar'
-                                                        ? department.name_ar
-                                                        : department.name}
-                                                </h3>
-                                                <p
-                                                    dir={
-                                                        lang === 'ar'
-                                                            ? 'ltr'
-                                                            : 'rtl'
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="detail-layout">
+                                <aside className="filter-panel">
+                                    <div className="fp-head">
+                                        <h3>
+                                            {t('doctors.filterServicesTitle')}
+                                        </h3>
+                                    </div>
+                                    <p className="fp-hint">
+                                        {t('doctors.filterHint')}
+                                    </p>
+                                    <div className="svc-list">
+                                        {detailServices.map((service) => {
+                                            const count = detail.doctors.filter(
+                                                (d) =>
+                                                    d.services.some(
+                                                        (s) =>
+                                                            s.name ===
+                                                            service.name,
+                                                    ),
+                                            ).length;
+                                            const on = selectedServices.has(
+                                                service.name,
+                                            );
+
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={service.name}
+                                                    className={
+                                                        on
+                                                            ? 'svc-chip on'
+                                                            : 'svc-chip'
+                                                    }
+                                                    onClick={() =>
+                                                        toggleService(
+                                                            service.name,
+                                                        )
                                                     }
                                                 >
-                                                    {lang === 'ar'
-                                                        ? department.name
-                                                        : department.name_ar}
-                                                </p>
-                                            </div>
-                                        </header>
-
-                                        {services.length > 0 && (
-                                            <div className="department-card__tags">
-                                                {services
-                                                    .slice(0, 3)
-                                                    .map((label) => (
-                                                        <span
-                                                            className="tag"
-                                                            key={label}
+                                                    <span className="check">
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="3"
                                                         >
-                                                            {label}
-                                                        </span>
-                                                    ))}
-                                                {services.length > 3 && (
-                                                    <span className="tag tag--muted">
-                                                        +{services.length - 3}
+                                                            <path d="M20 6 9 17l-5-5" />
+                                                        </svg>
                                                     </span>
+                                                    <span className="svc-tt">
+                                                        {lang === 'ar'
+                                                            ? service.name_ar
+                                                            : service.name}
+                                                    </span>
+                                                    <span className="svc-cnt">
+                                                        {count}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="clear-filter"
+                                        disabled={selectedServices.size === 0}
+                                        onClick={() =>
+                                            setSelectedServices(new Set())
+                                        }
+                                    >
+                                        <RotateCcw size={14} />
+                                        {t('doctors.clearFilters')}
+                                    </button>
+                                </aside>
+
+                                <div>
+                                    <div className="docs-head">
+                                        <div className="lbl">
+                                            {t('doctors.showing')}{' '}
+                                            <b>{detailDoctors.length}</b>{' '}
+                                            {t('doctors.of')}{' '}
+                                            {detail.doctors.length}
+                                        </div>
+                                        {selectedServices.size > 0 && (
+                                            <div className="active-filters">
+                                                {[...selectedServices].map(
+                                                    (name) => {
+                                                        const svc =
+                                                            detailServices.find(
+                                                                (s) =>
+                                                                    s.name ===
+                                                                    name,
+                                                            );
+
+                                                        return (
+                                                            <span
+                                                                className="af"
+                                                                key={name}
+                                                            >
+                                                                {svc
+                                                                    ? lang ===
+                                                                      'ar'
+                                                                        ? svc.name_ar
+                                                                        : svc.name
+                                                                    : name}
+                                                                <X
+                                                                    size={12}
+                                                                    onClick={() =>
+                                                                        toggleService(
+                                                                            name,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </span>
+                                                        );
+                                                    },
                                                 )}
                                             </div>
                                         )}
+                                    </div>
 
-                                        <div className="department-card__footer">
-                                            <div className="avatar-stack">
-                                                {department.doctors
-                                                    .slice(0, 4)
-                                                    .map((doctor) => (
-                                                        <span
-                                                            className="avatar-stack__item"
-                                                            key={doctor.id}
-                                                        >
-                                                            {doctor.image ? (
+                                    {detailDoctors.length > 0 ? (
+                                        <div className="docs-grid">
+                                            {detailDoctors.map((doctor) => (
+                                                <DoctorCard
+                                                    key={doctor.id}
+                                                    doctor={doctor}
+                                                    department={detail}
+                                                    lang={lang}
+                                                    t={t}
+                                                    matchedService={
+                                                        [
+                                                            ...selectedServices,
+                                                        ][0] ?? null
+                                                    }
+                                                    onBook={() =>
+                                                        setBookingDoctor(doctor)
+                                                    }
+                                                    onOffers={() =>
+                                                        setOffersDepartment({
+                                                            doctorName:
+                                                                lang === 'ar'
+                                                                    ? doctor.name_ar
+                                                                    : doctor.name,
+                                                            offers: detail.offers,
+                                                        })
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="empty-state">
+                                            <UserX
+                                                size={32}
+                                                strokeWidth={1.5}
+                                            />
+                                            <p>{t('doctors.comingSoon')}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="detail-back-wrap">
+                                        <button
+                                            type="button"
+                                            className="detail-back"
+                                            onClick={() => setDetail(null)}
+                                        >
+                                            {isRtl ? (
+                                                <ArrowRight size={17} />
+                                            ) : (
+                                                <ArrowLeft size={17} />
+                                            )}
+                                            {t('doctors.backToDepartments')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : view === 'departments' ? (
+                        <div className="view">
+                            <div className="dept-grid">
+                                {filteredDepartments.map((department) => {
+                                    const Icon = departmentIcon(
+                                        department.name,
+                                    );
+                                    const services = departmentServiceLabels(
+                                        department,
+                                        lang,
+                                    );
+
+                                    return (
+                                        <button
+                                            type="button"
+                                            className="dept-card"
+                                            key={department.id}
+                                            onClick={() =>
+                                                openDetail(department)
+                                            }
+                                        >
+                                            <div className="dc-media">
+                                                <span className="dc-wm">
+                                                    <Icon size={104} />
+                                                </span>
+                                                <span className="dc-gold" />
+                                                <div className="dc-titles">
+                                                    <div className="nm-en">
+                                                        {lang === 'ar'
+                                                            ? department.name_ar
+                                                            : department.name}
+                                                    </div>
+                                                    <div className="nm-ar">
+                                                        {lang === 'ar'
+                                                            ? department.name
+                                                            : department.name_ar}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="dc-body">
+                                                {services.length > 0 && (
+                                                    <div className="dc-svcs">
+                                                        {services
+                                                            .slice(0, 3)
+                                                            .map((label) => (
+                                                                <span
+                                                                    className="s"
+                                                                    key={label}
+                                                                >
+                                                                    {label}
+                                                                </span>
+                                                            ))}
+                                                        {services.length >
+                                                            3 && (
+                                                            <span className="s more">
+                                                                +
+                                                                {services.length -
+                                                                    3}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="dc-foot">
+                                                <span className="dc-avs">
+                                                    {department.doctors
+                                                        .slice(0, 4)
+                                                        .map((doctor) =>
+                                                            doctor.image ? (
                                                                 <img
+                                                                    key={
+                                                                        doctor.id
+                                                                    }
                                                                     src={`/storage/${doctor.image}`}
                                                                     alt=""
                                                                 />
                                                             ) : (
-                                                                <span className="avatar-stack__fallback">
+                                                                <span
+                                                                    className="av-mono"
+                                                                    key={
+                                                                        doctor.id
+                                                                    }
+                                                                >
                                                                     {doctor.name
                                                                         .replace(
                                                                             'Dr. ',
@@ -363,277 +828,109 @@ export default function Doctors({
                                                                             0,
                                                                         )}
                                                                 </span>
-                                                            )}
-                                                        </span>
-                                                    ))}
-                                                <span className="department-card__count">
+                                                            ),
+                                                        )}
+                                                </span>
+                                                <span className="dc-cnt">
+                                                    <b>
+                                                        {
+                                                            department.doctors
+                                                                .length
+                                                        }
+                                                    </b>{' '}
                                                     {department.doctors
                                                         .length === 1
-                                                        ? `1 ${t('doctors.doctorLabel')}`
-                                                        : `${department.doctors.length} ${t('doctors.doctorsLabel')}`}
+                                                        ? t(
+                                                              'doctors.doctorLabel',
+                                                          )
+                                                        : t(
+                                                              'doctors.doctorsLabel',
+                                                          )}
+                                                </span>
+                                                <span className="go">
+                                                    {t('doctors.explore')}
+                                                    {isRtl ? (
+                                                        <ArrowLeft size={15} />
+                                                    ) : (
+                                                        <ArrowRight size={15} />
+                                                    )}
                                                 </span>
                                             </div>
-                                            <span className="department-card__explore">
-                                                {t('doctors.explore')}{' '}
-                                                <span aria-hidden="true">
-                                                    →
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </article>
-                                );
-                            })}
-
-                            {filteredDepartments.length === 0 && (
-                                <div className="directory-empty">
-                                    <SearchX size={32} strokeWidth={1.5} />
-                                    <p>{t('doctors.noResults')}</p>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="directory-view" key="doctors">
-                            <div className="department-pills">
-                                <button
-                                    type="button"
-                                    style={{ '--i': 0 } as React.CSSProperties}
-                                    className={`department-pill ${filter === 'all' ? 'is-active' : ''}`}
-                                    onClick={() => setFilter('all')}
-                                >
-                                    <span className="department-pill__icon">
-                                        <LayoutGrid size={22} />
-                                    </span>
-                                    <span className="department-pill__label">
-                                        {t('doctors.all')}
-                                    </span>
-                                </button>
-                                {staffedDepartments.map((department, index) => {
-                                    const Icon = departmentIcon(
-                                        department.name,
-                                    );
-
-                                    return (
-                                        <button
-                                            type="button"
-                                            key={department.id}
-                                            style={
-                                                {
-                                                    '--i': index + 1,
-                                                } as React.CSSProperties
-                                            }
-                                            className={`department-pill ${filter === department.id ? 'is-active' : ''}`}
-                                            onClick={() =>
-                                                setFilter(department.id)
-                                            }
-                                        >
-                                            <span className="department-pill__icon">
-                                                <Icon size={22} />
-                                            </span>
-                                            <span className="department-pill__label">
-                                                {lang === 'ar'
-                                                    ? department.name_ar
-                                                    : department.name}
-                                            </span>
                                         </button>
                                     );
                                 })}
                             </div>
 
-                            {visibleDoctorDepartments.map((department) => {
+                            {filteredDepartments.length === 0 && (
+                                <div className="empty-state">
+                                    <UserX size={32} strokeWidth={1.5} />
+                                    <p>{t('doctors.noResults')}</p>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="view">
+                            {allDoctorsGroups.map((department) => {
                                 const Icon = departmentIcon(department.name);
 
                                 return (
                                     <div
-                                        className="department-section"
+                                        className="doc-group"
                                         id={`department-${department.id}`}
                                         key={department.id}
                                     >
-                                        <div className="department-banner">
-                                            <span className="department-banner__icon">
-                                                <Icon size={22} />
+                                        <div className="doc-group-head">
+                                            <span className="ico">
+                                                <Icon size={20} />
                                             </span>
-                                            <div className="department-banner__text">
-                                                <h3>
+                                            <div className="tt">
+                                                <div className="en">
                                                     {lang === 'ar'
                                                         ? department.name_ar
                                                         : department.name}
-                                                </h3>
-                                                <p
-                                                    dir={
-                                                        lang === 'ar'
-                                                            ? 'ltr'
-                                                            : 'rtl'
-                                                    }
-                                                >
+                                                </div>
+                                                <div className="ar">
                                                     {lang === 'ar'
                                                         ? department.name
                                                         : department.name_ar}
-                                                </p>
+                                                </div>
                                             </div>
-                                            <span className="department-banner__count">
+                                            <span className="cnt">
+                                                {department.doctors.length}{' '}
                                                 {department.doctors.length === 1
-                                                    ? `1 ${t('doctors.doctorLabel')}`
-                                                    : `${department.doctors.length} ${t('doctors.doctorsLabel')}`}
+                                                    ? t('doctors.doctorLabel')
+                                                    : t('doctors.doctorsLabel')}
                                             </span>
-                                            <button
-                                                type="button"
-                                                className="btn btn--ghost-light btn--sm"
-                                                onClick={() =>
-                                                    setFilter(department.id)
-                                                }
-                                            >
-                                                {t('doctors.openDepartment')}
-                                            </button>
                                         </div>
 
-                                        <div className="doctors__grid">
+                                        <div className="docs-grid">
                                             {department.doctors.map(
-                                                (doctor, index) => (
-                                                    <article
-                                                        className="doctor-card"
-                                                        style={
-                                                            {
-                                                                '--i': index,
-                                                            } as React.CSSProperties
-                                                        }
+                                                (doctor) => (
+                                                    <DoctorCard
                                                         key={doctor.id}
-                                                        role="link"
-                                                        tabIndex={0}
-                                                        onClick={() =>
-                                                            router.visit(
-                                                                doctorProfileShow(
-                                                                    doctor.id,
-                                                                ).url,
+                                                        doctor={doctor}
+                                                        department={department}
+                                                        lang={lang}
+                                                        t={t}
+                                                        matchedService={null}
+                                                        onBook={() =>
+                                                            setBookingDoctor(
+                                                                doctor,
                                                             )
                                                         }
-                                                        onKeyDown={(e) => {
-                                                            if (
-                                                                e.key ===
-                                                                    'Enter' ||
-                                                                e.key === ' '
-                                                            ) {
-                                                                e.preventDefault();
-                                                                router.visit(
-                                                                    doctorProfileShow(
-                                                                        doctor.id,
-                                                                    ).url,
-                                                                );
-                                                            }
-                                                        }}
-                                                    >
-                                                        <div className="doctor-card__photo">
-                                                            {doctor.image && (
-                                                                <img
-                                                                    src={`/storage/${doctor.image}`}
-                                                                    alt={
+                                                        onOffers={() =>
+                                                            setOffersDepartment(
+                                                                {
+                                                                    doctorName:
                                                                         lang ===
                                                                         'ar'
                                                                             ? doctor.name_ar
-                                                                            : doctor.name
-                                                                    }
-                                                                />
-                                                            )}
-                                                            {doctor.nationality
-                                                                ?.flag && (
-                                                                <span
-                                                                    className="doctor-card__flag"
-                                                                    title={
-                                                                        lang ===
-                                                                        'ar'
-                                                                            ? doctor
-                                                                                  .nationality
-                                                                                  .name_ar
-                                                                            : doctor
-                                                                                  .nationality
-                                                                                  .name
-                                                                    }
-                                                                >
-                                                                    {
-                                                                        doctor
-                                                                            .nationality
-                                                                            .flag
-                                                                    }
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="doctor-card__body">
-                                                            <span className="doctor-card__title-link">
-                                                                <h3>
-                                                                    {lang ===
-                                                                    'ar'
-                                                                        ? doctor.name_ar
-                                                                        : doctor.name}
-                                                                </h3>
-                                                            </span>
-                                                            <p
-                                                                dir={
-                                                                    lang ===
-                                                                    'ar'
-                                                                        ? 'ltr'
-                                                                        : 'rtl'
-                                                                }
-                                                                className="doctor-card__name-alt"
-                                                            >
-                                                                {lang === 'ar'
-                                                                    ? doctor.name
-                                                                    : doctor.name_ar}
-                                                            </p>
-                                                            <span className="doctor-card__job">
-                                                                {lang === 'ar'
-                                                                    ? doctor.job_ar
-                                                                    : doctor.job}
-                                                            </span>
-                                                            <div className="doctor-card__actions">
-                                                                {department.offers_count >
-                                                                    0 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn--sand btn--sm"
-                                                                        onClick={(
-                                                                            e,
-                                                                        ) => {
-                                                                            e.stopPropagation();
-                                                                            setOffersDepartment(
-                                                                                {
-                                                                                    doctorName:
-                                                                                        lang ===
-                                                                                        'ar'
-                                                                                            ? doctor.name_ar
-                                                                                            : doctor.name,
-                                                                                    offers: department.offers,
-                                                                                },
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        {t(
-                                                                            'doctors.offers',
-                                                                        )}
-                                                                        <span className="badge">
-                                                                            {
-                                                                                department.offers_count
-                                                                            }
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn--ink btn--sm"
-                                                                    onClick={(
-                                                                        e,
-                                                                    ) => {
-                                                                        e.stopPropagation();
-                                                                        setBookingDoctor(
-                                                                            doctor,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    {t(
-                                                                        'doctors.bookNow',
-                                                                    )}
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </article>
+                                                                            : doctor.name,
+                                                                    offers: department.offers,
+                                                                },
+                                                            )
+                                                        }
+                                                    />
                                                 ),
                                             )}
                                         </div>
@@ -641,16 +938,23 @@ export default function Doctors({
                                 );
                             })}
 
-                            {visibleDoctorDepartments.length === 0 && (
-                                <div className="directory-empty">
-                                    <SearchX size={32} strokeWidth={1.5} />
+                            {allDoctorsGroups.length === 0 && (
+                                <div className="empty-state">
+                                    <UserX size={32} strokeWidth={1.5} />
                                     <p>{t('doctors.noResults')}</p>
                                 </div>
                             )}
                         </div>
                     )}
-                </div>
-            </section>
+                </main>
+            </div>
+
+            <FloatActions />
+
+            <DoctorsIdleScreensaver
+                departments={staffedDepartments}
+                enabled={idleEnabled}
+            />
 
             <BookingModal
                 doctor={bookingDoctor}

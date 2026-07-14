@@ -49,6 +49,38 @@ test('an authenticated user can create a doctor with an image, availability, qua
     Storage::disk('public')->assertExists($doctor->image);
 });
 
+test('the edit form receives availability times without seconds so resubmitting them unchanged passes validation', function () {
+    $this->actingAs(User::factory()->create());
+    $doctor = Doctor::factory()->create();
+    // Time columns round-trip from the database with seconds (e.g. "09:00:00").
+    $doctor->availabilities()->create(['weekday' => 0, 'start_time' => '09:00:00', 'end_time' => '17:00:00', 'slot_minutes' => 30]);
+
+    $response = $this->get(route('admin.doctors.edit', $doctor));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->where('doctor.availabilities.0.start_time', '09:00')
+        ->where('doctor.availabilities.0.end_time', '17:00'));
+
+    // Resubmitting the exact values the edit form was given must not fail H:i validation.
+    $update = $this->put(route('admin.doctors.update', $doctor), [
+        'department_id' => $doctor->department_id,
+        'name' => $doctor->name,
+        'name_ar' => $doctor->name_ar,
+        'job' => $doctor->job,
+        'job_ar' => $doctor->job_ar,
+        'is_active' => '1',
+        'availabilities' => [
+            ['weekday' => 0, 'start_time' => '09:00', 'end_time' => '17:00', 'slot_minutes' => 30],
+        ],
+        'qualifications' => [],
+        'services' => [],
+    ]);
+
+    $update->assertRedirect(route('admin.doctors.index'));
+    $update->assertSessionDoesntHaveErrors();
+});
+
 test('an authenticated user can update a doctor and replace its availability, qualifications, and services', function () {
     $this->actingAs(User::factory()->create());
     $doctor = Doctor::factory()->create();

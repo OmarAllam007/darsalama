@@ -10,6 +10,9 @@ type Offer = {
     title: string;
     description: string;
     image: string | null;
+    price: string | null;
+    original_price: string | null;
+    is_expired: boolean;
 };
 
 type Doctor = {
@@ -17,7 +20,8 @@ type Doctor = {
     name: string;
     name_ar: string;
     image: string | null;
-    department: { name: string; name_ar: string; offers: Offer[] };
+    department: { name: string; name_ar: string };
+    offers: Offer[];
 };
 
 export default function BookingShow({
@@ -30,7 +34,7 @@ export default function BookingShow({
     const { t, lang } = useLanguage();
     const [offersOpen, setOffersOpen] = useState(false);
     const doctorName = lang === 'ar' ? doctor.name_ar : doctor.name;
-    const offers = doctor.department.offers;
+    const offers = doctor.offers;
 
     return (
         <>

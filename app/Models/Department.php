@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 #[Fillable(['name', 'name_ar'])]
 class Department extends Model
 {
-    /** @use HasFactory<\Database\Factories\DepartmentFactory> */
+    /** @use HasFactory<DepartmentFactory> */
     use HasFactory;
 
     /**
@@ -30,10 +32,13 @@ class Department extends Model
     }
 
     /**
-     * @return HasMany<Offer, $this>
+     * Offers belong to a doctor, not directly to a department — this
+     * aggregates every offer across the department's doctors.
+     *
+     * @return HasManyThrough<Offer, Doctor, $this>
      */
-    public function offers(): HasMany
+    public function offers(): HasManyThrough
     {
-        return $this->hasMany(Offer::class);
+        return $this->hasManyThrough(Offer::class, Doctor::class);
     }
 }

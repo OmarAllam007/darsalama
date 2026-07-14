@@ -1,29 +1,22 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     ArrowRight,
     CalendarPlus,
-    Check,
+    ChevronLeft,
+    ChevronRight,
     Clock,
-    Globe,
-    Maximize2,
-    Phone,
     PhoneCall,
+    X,
 } from 'lucide-react';
-import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useEffect, useState } from 'react';
 import { doctors as doctorsIndex } from '@/routes';
 import BookingModal from '@/site/components/BookingModal';
 import CallbackModal from '@/site/components/CallbackModal';
+import DoctorProfileCard from '@/site/components/DoctorProfileCard';
+import DoctorsHero from '@/site/components/DoctorsHero';
 import OffersModal from '@/site/components/OffersModal';
-import WhatsAppIcon from '@/site/components/WhatsAppIcon';
-import {
-    EMERGENCY_PHONE,
-    EMERGENCY_TEL,
-    HOSPITAL_NAME_AR,
-    HOSPITAL_NAME_EN,
-    WHATSAPP_LINK,
-} from '@/site/i18n/constants';
+import ScaledDoctorCard from '@/site/components/ScaledDoctorCard';
 import { useLanguage } from '@/site/i18n/LanguageContext';
 
 type NamePair = {
@@ -36,6 +29,9 @@ type Offer = {
     title: string;
     description: string;
     image: string | null;
+    price: string | null;
+    original_price: string | null;
+    is_expired: boolean;
 };
 
 type Package = {
@@ -57,11 +53,11 @@ type Doctor = {
     qualifications: NamePair[];
     services: NamePair[];
     availabilities: { weekday: number }[];
+    offers: Offer[];
     department: {
         id: number;
         name: string;
         name_ar: string;
-        offers: Offer[];
         packages: Package[];
     };
 };
@@ -109,26 +105,58 @@ function workingDaysLabel(
 
 export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
     const { t, lang } = useLanguage();
-    const [photoOpen, setPhotoOpen] = useState(false);
+    const isRtl = lang === 'ar';
+    const [expandOpen, setExpandOpen] = useState(false);
     const [bookingOpen, setBookingOpen] = useState(false);
     const [callbackOpen, setCallbackOpen] = useState(false);
     const [offersOpen, setOffersOpen] = useState(false);
-    const BackArrow = lang === 'ar' ? ArrowRight : ArrowLeft;
+    const BackArrow = isRtl ? ArrowRight : ArrowLeft;
+    const DeptChevron = isRtl ? ChevronRight : ChevronLeft;
     const doctorName = lang === 'ar' ? doctor.name_ar : doctor.name;
+    const departmentName =
+        lang === 'ar' ? doctor.department.name_ar : doctor.department.name;
 
-    const days = workingDaysLabel(
-        doctor.availabilities.map((a) => a.weekday),
-        lang,
-    );
+    useEffect(() => {
+        if (!expandOpen) {
+            return;
+        }
+
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [expandOpen]);
+
+    const weekdays = doctor.availabilities.map((a) => a.weekday);
+    const days = workingDaysLabel(weekdays, lang);
+    const daysAlt = workingDaysLabel(weekdays, lang === 'ar' ? 'en' : 'ar');
 
     const offerCards = [
-        ...doctor.department.offers.map((offer) => ({
+        ...doctor.offers.map((offer) => ({
+            id: `offer-${offer.id}`,
+            title: offer.title,
+            description: offer.description,
+            tag: t('doctorProfile.offer'),
+        })),
+        ...doctor.department.packages.map((pkg) => ({
+            id: `package-${pkg.id}`,
+            title: lang === 'ar' ? pkg.name_ar : pkg.name,
+            description: pkg.description,
+            tag: t('doctorProfile.package'),
+        })),
+    ];
+
+    const modalOfferCards = [
+        ...doctor.offers.map((offer) => ({
             id: `offer-${offer.id}`,
             image: offer.image,
             title: offer.title,
             subtitle: null as string | null,
             description: offer.description,
-            price: null as string | null,
+            price: offer.price,
+            original_price: offer.original_price,
+            is_expired: offer.is_expired,
             tag: t('doctorProfile.offer'),
         })),
         ...doctor.department.packages.map((pkg) => ({
@@ -138,324 +166,199 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
             subtitle: lang === 'ar' ? pkg.name : pkg.name_ar,
             description: pkg.description,
             price: pkg.price,
+            original_price: null as string | null,
+            is_expired: false,
             tag: t('doctorProfile.package'),
         })),
     ];
 
-    const whatsappHref = (offerTitle: string) =>
-        `${WHATSAPP_LINK}?text=${encodeURIComponent(
-            lang === 'ar'
-                ? `مرحباً، أرغب بالحجز مع ${doctorName} - ${offerTitle}`
-                : `Hi, I'd like to book with ${doctorName} - ${offerTitle}`,
-        )}`;
-
     return (
         <>
-            <Head title={lang === 'ar' ? doctor.name_ar : doctor.name} />
+            <Head title={doctorName}>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link
+                    rel="preconnect"
+                    href="https://fonts.gstatic.com"
+                    crossOrigin=""
+                />
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap"
+                />
+            </Head>
 
-            <section className="doctor-profile">
-                <div className="container">
-                    <div className="doctor-profile__crumbs">
-                        <span>
-                            {lang === 'ar'
-                                ? doctor.department.name_ar
-                                : doctor.department.name}
-                            {' / '}
-                            {lang === 'ar' ? doctor.name_ar : doctor.name}
-                        </span>
-                        <Link
-                            href={doctorsIndex()}
-                            className="doctor-profile__back"
-                        >
-                            <BackArrow size={15} />
+            <DoctorsHero
+                onBrowseDepartments={() => router.visit(doctorsIndex())}
+                onBrowseDoctors={() =>
+                    router.visit(`${doctorsIndex().url}?mode=docs`)
+                }
+            />
+
+            <div className="dsm dsm-page" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div
+                    style={{
+                        maxWidth: 1300,
+                        margin: '0 auto',
+                        padding: '34px 24px 80px',
+                    }}
+                >
+                    <nav
+                        className="crumb"
+                        style={{
+                            position: 'static',
+                            background: 'transparent',
+                            backdropFilter: 'none',
+                        }}
+                    >
+                        <Link href={doctorsIndex()}>
+                            <BackArrow size={16} />
                             {t('doctors.tabDoctors')}
                         </Link>
-                    </div>
+                        <span className="sep">/</span>
+                        <Link
+                            className="crumb-dept"
+                            href={`${doctorsIndex().url}?department=${doctor.department.id}`}
+                        >
+                            <DeptChevron size={16} />
+                            {departmentName}
+                        </Link>
+                        <span className="sep">/</span>
+                        <span className="here">{doctorName}</span>
+                    </nav>
 
-                    <div className="doctor-profile__card">
-                        <div className="doctor-profile__header">
-                            <h2>{HOSPITAL_NAME_AR}</h2>
-                            <p>{HOSPITAL_NAME_EN}</p>
-                            <i />
-                        </div>
+                    <div className="profile-post">
+                        <ScaledDoctorCard>
+                            <DoctorProfileCard
+                                doctor={doctor}
+                                departmentName={doctor.department.name}
+                                departmentNameAr={doctor.department.name_ar}
+                                onExpand={() => setExpandOpen(true)}
+                                expandLabel={t('doctorProfile.enlargePhoto')}
+                            />
+                        </ScaledDoctorCard>
 
-                        {doctor.image && (
-                            <button
-                                type="button"
-                                className="doctor-profile__enlarge"
-                                onClick={() => setPhotoOpen(true)}
-                            >
-                                <Maximize2 size={13} />
-                                {t('doctorProfile.enlargePhoto')}
-                            </button>
-                        )}
-
-                        <div className="doctor-profile__body">
-                            <div className="doctor-profile__photo">
-                                {doctor.image ? (
-                                    <img
-                                        src={`/storage/${doctor.image}`}
-                                        alt={doctorName}
-                                    />
-                                ) : (
-                                    <div className="doctor-profile__photo-fallback">
-                                        {doctorName.charAt(0)}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="doctor-profile__info">
-                                {doctor.nationality && (
-                                    <div className="doctor-profile__flag">
-                                        {doctor.nationality.flag && (
-                                            <span>
-                                                {doctor.nationality.flag}
-                                            </span>
-                                        )}
-                                        {lang === 'ar'
-                                            ? doctor.nationality.name_ar
-                                            : doctor.nationality.name}
-                                    </div>
-                                )}
-
-                                <h1 className="doctor-profile__name">
-                                    {lang === 'ar'
-                                        ? doctor.name_ar
-                                        : doctor.name}
-                                </h1>
-                                <p className="doctor-profile__name-alt">
-                                    {lang === 'ar'
-                                        ? doctor.name
-                                        : doctor.name_ar}
-                                </p>
-
-                                <p className="doctor-profile__job">
-                                    {lang === 'ar' ? doctor.job_ar : doctor.job}
-                                </p>
-                                <p className="doctor-profile__job-alt">
-                                    {lang === 'ar' ? doctor.job : doctor.job_ar}
-                                </p>
-
-                                <span className="doctor-profile__badge">
-                                    {lang === 'ar'
-                                        ? doctor.department.name_ar
-                                        : doctor.department.name}
-                                    <i />
-                                    {lang === 'ar'
-                                        ? doctor.department.name
-                                        : doctor.department.name_ar}
-                                </span>
-
-                                {doctor.qualifications.length > 0 && (
-                                    <div className="doctor-profile__section">
-                                        <p className="doctor-profile__section-head">
-                                            {t('doctorProfile.qualifications')}
-                                        </p>
-                                        <ul className="doctor-profile__quals">
-                                            {doctor.qualifications.map(
-                                                (item, index) => (
-                                                    <li key={index}>
-                                                        <span className="doctor-profile__check">
-                                                            <Check size={12} />
-                                                        </span>
-                                                        <span>
-                                                            <strong>
-                                                                {lang === 'ar'
-                                                                    ? item.name_ar
-                                                                    : item.name}
-                                                            </strong>
-                                                            <em>
-                                                                {lang === 'ar'
-                                                                    ? item.name
-                                                                    : item.name_ar}
-                                                            </em>
-                                                        </span>
-                                                    </li>
-                                                ),
-                                            )}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {doctor.services.length > 0 && (
-                                    <div className="doctor-profile__section">
-                                        <p className="doctor-profile__section-head">
-                                            {t('doctorProfile.services')}
-                                        </p>
-                                        <div className="doctor-profile__services-grid">
-                                            {doctor.services.map(
-                                                (item, index) => (
-                                                    <div
-                                                        className="doctor-profile__service-card"
-                                                        key={index}
-                                                    >
-                                                        <strong>
-                                                            {lang === 'ar'
-                                                                ? item.name_ar
-                                                                : item.name}
-                                                        </strong>
-                                                        <span>
-                                                            {lang === 'ar'
-                                                                ? item.name
-                                                                : item.name_ar}
-                                                        </span>
-                                                    </div>
-                                                ),
-                                            )}
+                        <div className="p-extra">
+                            <div>
+                                <div className="xlabel">
+                                    {t('doctorProfile.workingHours')}
+                                    <span className="ar">أوقات العمل</span>
+                                </div>
+                                <div className="hours-card">
+                                    <span className="h-ico">
+                                        <Clock size={22} />
+                                    </span>
+                                    <div>
+                                        <div className="h-days">
+                                            {days ??
+                                                t('doctorProfile.hoursVary')}
                                         </div>
+                                        <span className="ar">
+                                            {daysAlt ??
+                                                t('doctorProfile.checkBooking')}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="doctor-profile__contact-row">
-                            <a
-                                href="https://www.dasmh.sa"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                <Globe size={15} />
-                                www.dasmh.sa
-                            </a>
-                            <a
-                                href={EMERGENCY_TEL}
-                                className="doctor-profile__phone"
-                            >
-                                <span>
-                                    <small>
-                                        {t('doctorProfile.forInquiries')}
-                                    </small>
-                                    <bdi dir="ltr">{EMERGENCY_PHONE}</bdi>
-                                </span>
-                                <i>
-                                    <Phone size={16} />
-                                </i>
-                            </a>
-                        </div>
-
-                        <div className="doctor-profile__section">
-                            <p className="doctor-profile__section-head">
-                                {t('doctorProfile.workingHours')}
-                            </p>
-                            <div className="doctor-profile__hours">
-                                <span className="tag">
-                                    {days ?? t('doctorProfile.hoursVary')}
-                                </span>
-                                <span className="doctor-profile__hours-days">
-                                    {days ?? t('doctorProfile.checkBooking')}
-                                </span>
-                                <i>
-                                    <Clock size={16} />
-                                </i>
-                            </div>
-                        </div>
-
-                        <div className="doctor-profile__cta-row doctor-profile__cta-row--stacked">
-                            <button
-                                type="button"
-                                className="btn btn--ink"
-                                onClick={() => setBookingOpen(true)}
-                            >
-                                <CalendarPlus size={16} />
-                                {t('doctors.bookNow')}
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn--maroon"
-                                onClick={() => setCallbackOpen(true)}
-                            >
-                                <PhoneCall size={16} />
-                                {t('doctorProfile.requestCallback')}
-                            </button>
-                        </div>
-
-                        {offerCards.length > 0 && (
-                            <div className="doctor-profile__section">
-                                <p className="doctor-profile__section-head">
-                                    {t('doctors.offers')}
-                                </p>
-                                <div className="doctor-profile__offers-grid">
-                                    {offerCards.map((offer) => (
-                                        <div
-                                            className="doctor-profile__offer-card"
-                                            key={offer.id}
-                                            role="button"
-                                            tabIndex={0}
-                                            onClick={() =>
-                                                setOffersOpen(true)
-                                            }
-                                            onKeyDown={(e) => {
-                                                if (
-                                                    e.key === 'Enter' ||
-                                                    e.key === ' '
-                                                ) {
-                                                    e.preventDefault();
-                                                    setOffersOpen(true);
-                                                }
-                                            }}
-                                        >
-                                            {offer.image && (
-                                                <img
-                                                    src={`/storage/${offer.image}`}
-                                                    alt={offer.title}
-                                                />
-                                            )}
-                                            <div>
-                                                <span className="doctor-profile__offer-tag">
-                                                    {offer.tag}
-                                                </span>
-                                                <strong>{offer.title}</strong>
-                                                {offer.subtitle && (
-                                                    <span className="doctor-profile__offer-subtitle">
-                                                        {offer.subtitle}
-                                                    </span>
-                                                )}
-                                                <p className="doctor-profile__offer-excerpt">
-                                                    {offer.description}
-                                                </p>
-                                                {offer.price && (
-                                                    <span className="doctor-profile__offer-price">
-                                                        {offer.price}{' '}
-                                                        {t('doctorProfile.sar')}
-                                                    </span>
-                                                )}
-                                                <a
-                                                    href={whatsappHref(
-                                                        offer.title,
-                                                    )}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                    className="btn btn--whatsapp btn--sm doctor-profile__offer-whatsapp"
-                                                >
-                                                    <WhatsAppIcon size={14} />
-                                                    {t(
-                                                        'doctorProfile.bookViaWhatsapp',
-                                                    )}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    ))}
+                                    <div className="h-shift">
+                                        <span className="badge">
+                                            {t('doctorProfile.checkBooking')}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        )}
+
+                            <div className="x-actions">
+                                <button
+                                    type="button"
+                                    className="x-book"
+                                    onClick={() => setBookingOpen(true)}
+                                >
+                                    <CalendarPlus size={18} />
+                                    {t('doctors.bookNow')}
+                                </button>
+                            </div>
+                            <div className="x-actions" style={{ marginTop: 10 }}>
+                                <button
+                                    type="button"
+                                    className="x-call"
+                                    onClick={() => setCallbackOpen(true)}
+                                >
+                                    <PhoneCall size={18} />
+                                    {t('doctorProfile.requestCallback')}
+                                </button>
+                            </div>
+
+                            <div>
+                                <div className="xlabel">
+                                    {t('doctors.offers')}
+                                    <span className="ar">العروض</span>
+                                </div>
+                                {offerCards.length > 0 ? (
+                                    <div className="x-offers">
+                                        {offerCards.map((offer) => (
+                                            <div
+                                                className="offer"
+                                                key={offer.id}
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={() =>
+                                                    setOffersOpen(true)
+                                                }
+                                                onKeyDown={(e) => {
+                                                    if (
+                                                        e.key === 'Enter' ||
+                                                        e.key === ' '
+                                                    ) {
+                                                        e.preventDefault();
+                                                        setOffersOpen(true);
+                                                    }
+                                                }}
+                                            >
+                                                <span className="o-tag">
+                                                    {offer.tag}
+                                                </span>
+                                                <div className="o-title">
+                                                    {offer.title}
+                                                </div>
+                                                <div className="o-desc">
+                                                    {offer.description}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="x-nooffers">
+                                        {t('doctors.noOffers')}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-                <DialogContent className="max-h-[90vh] overflow-hidden border-none bg-transparent p-0 shadow-none sm:max-w-2xl [&>button]:text-white">
-                    {doctor.image && (
-                        <img
-                            src={`/storage/${doctor.image}`}
-                            alt={lang === 'ar' ? doctor.name_ar : doctor.name}
-                            className="max-h-[90vh] w-full rounded-lg object-contain"
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
+            {expandOpen && (
+                <div
+                    className="dsm dp-expand-lb"
+                    onClick={() => setExpandOpen(false)}
+                >
+                    <button
+                        type="button"
+                        className="olb-x"
+                        aria-label="Close"
+                        onClick={() => setExpandOpen(false)}
+                    >
+                        <X size={22} />
+                    </button>
+                    <div className="dp" onClick={(e) => e.stopPropagation()}>
+                        <div className="dp-scaler">
+                            <DoctorProfileCard
+                                doctor={doctor}
+                                departmentName={doctor.department.name}
+                                departmentNameAr={doctor.department.name_ar}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <BookingModal
                 doctor={bookingOpen ? doctor : null}
@@ -472,7 +375,7 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
 
             <OffersModal
                 doctorName={doctorName}
-                offers={offerCards}
+                offers={modalOfferCards}
                 open={offersOpen}
                 onOpenChange={setOffersOpen}
             />

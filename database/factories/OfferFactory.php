@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Department;
+use App\Models\Doctor;
 use App\Models\Offer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,10 +19,21 @@ class OfferFactory extends Factory
     public function definition(): array
     {
         return [
-            'department_id' => Department::factory(),
+            'doctor_id' => Doctor::factory(),
             'title' => fake()->sentence(4),
             'description' => fake()->paragraph(),
             'image' => null,
+            'price' => null,
+            'original_price' => null,
+            'is_expired' => false,
         ];
+    }
+
+    /**
+     * @return Factory<Offer>
+     */
+    public function expired(): Factory
+    {
+        return $this->state(fn (array $attributes) => ['is_expired' => true]);
     }
 }
