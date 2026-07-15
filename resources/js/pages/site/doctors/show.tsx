@@ -36,10 +36,15 @@ type Offer = {
 
 type Package = {
     id: number;
-    name: string;
+    name_en: string;
     name_ar: string;
-    description: string;
-    price: string;
+    name_ur: string | null;
+    name_tl: string | null;
+    description_en: string | null;
+    description_ar: string | null;
+    description_ur: string | null;
+    description_tl: string | null;
+    price: string | null;
 };
 
 type Doctor = {
@@ -92,7 +97,7 @@ function workingDaysLabel(
     }
 
     const sorted = [...new Set(weekdays)].sort((a, b) => a - b);
-    const names = WEEKDAY_NAMES[lang];
+    const names = WEEKDAY_NAMES[lang] ?? WEEKDAY_NAMES.en;
     const isContiguous =
         sorted[sorted.length - 1] - sorted[0] + 1 === sorted.length;
 
@@ -104,8 +109,15 @@ function workingDaysLabel(
 }
 
 export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
-    const { t, lang } = useLanguage();
-    const isRtl = lang === 'ar';
+    const { t, lang, isRtl } = useLanguage();
+    const pickField = (row: Package, base: string): string => {
+        const fields = row as unknown as Record<string, string | null>;
+        const value = fields[`${base}_${lang}`];
+        if (typeof value === 'string' && value.length > 0) {
+            return value;
+        }
+        return fields[`${base}_en`] ?? '';
+    };
     const [expandOpen, setExpandOpen] = useState(false);
     const [bookingOpen, setBookingOpen] = useState(false);
     const [callbackOpen, setCallbackOpen] = useState(false);
@@ -141,8 +153,8 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
         })),
         ...doctor.department.packages.map((pkg) => ({
             id: `package-${pkg.id}`,
-            title: lang === 'ar' ? pkg.name_ar : pkg.name,
-            description: pkg.description,
+            title: pickField(pkg, 'name'),
+            description: pickField(pkg, 'description'),
             tag: t('doctorProfile.package'),
         })),
     ];
@@ -162,9 +174,9 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
         ...doctor.department.packages.map((pkg) => ({
             id: `package-${pkg.id}`,
             image: null as string | null,
-            title: lang === 'ar' ? pkg.name_ar : pkg.name,
-            subtitle: lang === 'ar' ? pkg.name : pkg.name_ar,
-            description: pkg.description,
+            title: pickField(pkg, 'name'),
+            subtitle: pkg.name_en,
+            description: pickField(pkg, 'description'),
             price: pkg.price,
             original_price: null as string | null,
             is_expired: false,

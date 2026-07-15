@@ -97,7 +97,12 @@ class BookingController extends Controller
      */
     private function availableSlotsFor(Doctor $doctor, string $date): array
     {
-        $weekday = Carbon::parse($date)->dayOfWeekIso - 1;
+        if ($this->isBeyondNextDayCutoff($date)) {
+            return [];
+        }
+
+        $timezone = $this->bookingTimezone();
+        $weekday = Carbon::parse($date, $timezone)->dayOfWeekIso - 1;
 
         $booked = $doctor->appointments()
             ->whereDate('date', $date)
@@ -105,12 +110,12 @@ class BookingController extends Controller
             ->map(fn ($time) => Carbon::parse($time)->format('H:i'))
             ->all();
 
-        $now = Carbon::now();
+        $now = Carbon::now($timezone);
         $slots = [];
 
         foreach ($doctor->availabilities()->where('weekday', $weekday)->get() as $availability) {
-            $cursor = Carbon::parse($date.' '.$availability->start_time);
-            $end = Carbon::parse($date.' '.$availability->end_time);
+            $cursor = Carbon::parse($date.' '.$availability->start_time, $timezone);
+            $end = Carbon::parse($date.' '.$availability->end_time, $timezone);
 
             while ($cursor->copy()->addMinutes($availability->slot_minutes)->lte($end)) {
                 if ($cursor->gt($now)) {
@@ -125,5 +130,26 @@ class BookingController extends Controller
         sort($slots);
 
         return $slots;
+    }
+
+    /**
+     * Determine whether the next-day booking cut-off has passed for a date.
+     *
+     * Bookings for the following day close at the configured hour (clinic local
+     * time) so reception has time to review the day's bookings.
+     */
+    private function isBeyondNextDayCutoff(string $date): bool
+    {
+        $timezone = $this->bookingTimezone();
+        $now = Carbon::now($timezone);
+        $target = Carbon::parse($date, $timezone)->startOfDay();
+
+        return $target->equalTo($now->copy()->addDay()->startOfDay())
+            && $now->hour >= (int) config('booking.next_day_cutoff_hour');
+    }
+
+    private function bookingTimezone(): string
+    {
+        return config('booking.timezone');
     }
 }

@@ -1,11 +1,22 @@
-import { useState } from 'react'
+import { useState, type CSSProperties, type FormEvent } from 'react'
 import bannerPhoto from '@/site/assets/slider/slider1.jpg'
 import PageBanner from '@/site/components/PageBanner'
+import Pearls from '@/site/components/Pearls'
 import { PHONE, PHONE_TEL, EMERGENCY_PHONE, EMERGENCY_TEL } from '@/site/i18n/constants'
 import { useLanguage } from '@/site/i18n/LanguageContext'
 
-const MAP_QUERY = encodeURIComponent('Dar As-Salama Hospital, Al Khobar Al Shamalia, Khobar, Saudi Arabia')
-const MAP_SRC = `https://www.google.com/maps?q=${MAP_QUERY}&output=embed`
+const MAP_DESTINATION = '26.2827618,50.2127421'
+const MAP_SRC = `https://www.google.com/maps?q=${MAP_DESTINATION}&output=embed`
+// Opens turn-by-turn navigation to the hospital in the Google Maps app / site.
+const MAP_NAV_URL = `https://www.google.com/maps/dir/?api=1&destination=${MAP_DESTINATION}`
+
+const RATINGS = [
+  { key: 'terrible', emoji: '😡', tone: '#ea4335' },
+  { key: 'bad', emoji: '🙁', tone: '#f97316' },
+  { key: 'okay', emoji: '😐', tone: '#eab308' },
+  { key: 'good', emoji: '🙂', tone: '#22c55e' },
+  { key: 'excellent', emoji: '😄', tone: '#3b82f6' },
+]
 
 const PIN_ICON = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -45,18 +56,100 @@ const ALERT_ICON = (
 export default function Contact() {
   const { t } = useLanguage()
   const [sent, setSent] = useState(false)
+  const [rating, setRating] = useState<string | null>(null)
+  const [feedbackSent, setFeedbackSent] = useState(false)
 
-  function handleSubmit(e) {
+  const ratingLabels = t('feedback.ratings')
+  const mobileRequired = rating === 'terrible' || rating === 'bad'
+
+  function handleMessageSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const data = Object.fromEntries(new FormData(e.target))
+    const data = Object.fromEntries(new FormData(e.currentTarget))
     // ponytail: static form for now — POST `data` to the real endpoint when the API is ready.
     console.log('contact form submit', data)
     setSent(true)
   }
 
+  function handleFeedbackSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const data = Object.fromEntries(new FormData(e.currentTarget))
+    // ponytail: static form for now — POST { rating, ...data } to the real endpoint when the API is ready.
+    console.log('feedback submit', { rating, ...data })
+    setFeedbackSent(true)
+  }
+
   return (
     <>
       <PageBanner eyebrow={t('contact.eyebrow')} title={t('contact.title')} intro={t('contact.intro')} image={bannerPhoto} />
+
+      {/* Feedback experience — mirrors the "How was your experience today?" block on the reference site. */}
+      <section className="contact-feedback">
+        <div className="container">
+          <div className="contact-feedback__card">
+            <div className="section-intro">
+              <p className="eyebrow">
+                <Pearls /> {t('feedback.eyebrow')}
+              </p>
+              <h2>{t('feedback.title')}</h2>
+              <p>{t('feedback.intro')}</p>
+            </div>
+
+            {feedbackSent ? (
+              <div className="contact-feedback__thanks">
+                <h3>{t('feedback.thanksHeading')}</h3>
+                <p>{t('feedback.thanksBody')}</p>
+              </div>
+            ) : (
+              <>
+                <div className="rating-picker">
+                  {RATINGS.map((r) => (
+                    <button
+                      key={r.key}
+                      type="button"
+                      style={{ '--rating-tone': r.tone } as CSSProperties}
+                      className={`rating-card${rating === r.key ? ' is-selected' : ''}`}
+                      onClick={() => setRating(r.key)}
+                    >
+                      <span className="rating-card__emoji">{r.emoji}</span>
+                      <span className="rating-card__label">{ratingLabels[r.key]}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {rating && (
+                  <form className="feedback-form" onSubmit={handleFeedbackSubmit}>
+                    <label className="feedback-form__label" htmlFor="fb-mobile">
+                      {t('feedback.mobileLabel')}{' '}
+                      <span className="feedback-form__hint">
+                        {mobileRequired ? t('feedback.mobileRequiredNote') : `(${t('feedback.mobileOptional')})`}
+                      </span>
+                    </label>
+                    <div className="feedback-form__phone">
+                      <span className="feedback-form__code">+966</span>
+                      <input
+                        id="fb-mobile"
+                        name="mobile"
+                        type="tel"
+                        placeholder={t('feedback.mobilePlaceholder')}
+                        required={mobileRequired}
+                      />
+                    </div>
+
+                    <label className="feedback-form__label" htmlFor="fb-notes">
+                      {t('feedback.improveLabel')}
+                    </label>
+                    <textarea id="fb-notes" name="notes" rows={5} placeholder={t('feedback.improvePlaceholder')} />
+
+                    <button type="submit" className="btn btn--coral">
+                      {t('feedback.submit')}
+                    </button>
+                  </form>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="contact-body">
         <div className="container">
@@ -94,7 +187,7 @@ export default function Contact() {
                 </li>
                 <li className="info-tile__hours-group">
                   <span>{t('contact.hoursOutpatientLabel')}</span>
-                  {t('contact.hoursOutpatientLines').map((line) => (
+                  {t('contact.hoursOutpatientLines').map((line: string) => (
                     <bdi dir="ltr" key={line}>
                       {line}
                     </bdi>
@@ -114,7 +207,7 @@ export default function Contact() {
               <>
                 <h2>{t('contact.form.heading')}</h2>
                 <p className="contact-form-card__sub">{t('contact.form.sub')}</p>
-                <form className="contact-form" onSubmit={handleSubmit}>
+                <form className="contact-form" onSubmit={handleMessageSubmit}>
                   <div className="contact-form__row">
                     <input name="name" required placeholder={t('contact.form.name')} />
                     <input name="email" type="email" required placeholder={t('contact.form.email')} />
@@ -151,12 +244,29 @@ export default function Contact() {
       </section>
 
       <section className="contact-map">
-        <iframe
-          src={MAP_SRC}
-          title="Dar As Salama Medical Hospital location"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+        <div className="container">
+          <a
+            className="contact-map__link"
+            href={MAP_NAV_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t('contact.getDirections')}
+          >
+            <iframe
+              src={MAP_SRC}
+              title="Dar As Salama Medical Hospital location"
+              loading="lazy"
+              tabIndex={-1}
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            <span className="contact-map__overlay">
+              <span className="contact-map__cta">
+                {PIN_ICON}
+                {t('contact.getDirections')}
+              </span>
+            </span>
+          </a>
+        </div>
       </section>
     </>
   )

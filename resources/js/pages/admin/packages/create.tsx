@@ -19,7 +19,7 @@ export default function CreatePackage({
         <>
             <Head title="New package" />
 
-            <div className="max-w-lg space-y-6 p-4">
+            <div className="max-w-2xl space-y-6 p-4">
                 <Heading title="New package" />
 
                 <PackageForm

@@ -8,9 +8,10 @@ import type { BreadcrumbItem } from '@/types';
 
 type Package = {
     id: number;
-    name: string;
+    name_en: string;
     name_ar: string;
-    price: string;
+    type: string;
+    price: string | null;
     department: {
         id: number;
         name: string;
@@ -48,11 +49,11 @@ export default function PackagesIndex({ packages }: { packages: Package[] }) {
                         <tbody>
                             {packages.map((pkg) => (
                                 <tr key={pkg.id} className="border-t">
-                                    <td className="p-3">{pkg.name}</td>
+                                    <td className="p-3">{pkg.name_en}</td>
                                     <td className="p-3">
                                         {pkg.department.name}
                                     </td>
-                                    <td className="p-3">{pkg.price}</td>
+                                    <td className="p-3">{pkg.price ?? '—'}</td>
                                     <td className="space-x-3 p-3 text-right">
                                         <Link
                                             className="text-sm underline"
@@ -71,7 +72,7 @@ export default function PackagesIndex({ packages }: { packages: Package[] }) {
                                                     PackageController.destroy.url(
                                                         pkg.id,
                                                     ),
-                                                    pkg.name,
+                                                    pkg.name_en,
                                                 )
                                             }
                                         >

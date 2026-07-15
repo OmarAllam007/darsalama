@@ -17,6 +17,7 @@ type Nationality = {
 
 type Doctor = {
     id: number;
+    code: string;
     name: string;
     name_ar: string;
     job: string;

@@ -4,6 +4,16 @@ use App\Models\Appointment;
 use App\Models\Doctor;
 use Illuminate\Support\Carbon;
 
+beforeEach(function () {
+    // Freeze to a fixed morning (clinic time) so the 8pm next-day cut-off
+    // never makes these time-of-day dependent tests flaky.
+    Carbon::setTestNow(Carbon::parse('2026-07-15 09:00', config('booking.timezone')));
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
+});
+
 function bookableDoctor(): Doctor
 {
     $doctor = Doctor::factory()->create();
@@ -95,4 +105,42 @@ test('booking an already taken slot fails validation', function () {
     $response->assertRedirect(route('booking.show', $doctor));
     $response->assertSessionHasErrors('time');
     expect(Appointment::count())->toBe(1);
+});
+
+test('bookings for the next day close after the evening cut-off', function () {
+    Carbon::setTestNow(Carbon::parse('2026-07-15 20:30', config('booking.timezone')));
+    $doctor = bookableDoctor();
+    $date = Carbon::tomorrow()->toDateString();
+
+    $slots = $this->getJson(route('booking.slots', $doctor).'?date='.$date);
+    $slots->assertOk();
+    expect($slots->json('slots'))->toBeEmpty();
+
+    $response = $this->from(route('booking.show', $doctor))->post(route('booking.store', $doctor), [
+        'date' => $date,
+        'time' => '09:00',
+        'first_name' => 'Jane',
+        'last_name' => 'Doe',
+    ]);
+
+    $response->assertSessionHasErrors('time');
+    expect(Appointment::count())->toBe(0);
+});
+
+test('the day after next stays bookable after the evening cut-off', function () {
+    Carbon::setTestNow(Carbon::parse('2026-07-15 20:30', config('booking.timezone')));
+    $dayAfter = Carbon::now(config('booking.timezone'))->addDays(2);
+
+    $doctor = Doctor::factory()->create();
+    $doctor->availabilities()->create([
+        'weekday' => $dayAfter->dayOfWeekIso - 1,
+        'start_time' => '09:00',
+        'end_time' => '12:00',
+        'slot_minutes' => 30,
+    ]);
+
+    $slots = $this->getJson(route('booking.slots', $doctor).'?date='.$dayAfter->toDateString());
+
+    $slots->assertOk();
+    expect($slots->json('slots'))->not->toBeEmpty();
 });

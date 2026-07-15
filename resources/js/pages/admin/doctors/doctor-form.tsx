@@ -41,6 +41,7 @@ type Nationality = {
 };
 
 type Doctor = {
+    code?: string;
     name: string;
     name_ar: string;
     job: string;
@@ -203,6 +204,23 @@ export default function DoctorForm({
             {({ processing, errors }) => (
                 
                 <>
+                    {doctor?.code && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="code">Doctor code</Label>
+                            <Input
+                                id="code"
+                                value={doctor.code}
+                                readOnly
+                                disabled
+                                className="font-mono"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Automatically generated and unique to this
+                                doctor.
+                            </p>
+                        </div>
+                    )}
+
                     <div className="grid gap-2">
                         <Label htmlFor="name">Name</Label>
                         <Input

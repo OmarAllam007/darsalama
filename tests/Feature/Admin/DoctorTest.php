@@ -49,6 +49,14 @@ test('an authenticated user can create a doctor with an image, availability, qua
     Storage::disk('public')->assertExists($doctor->image);
 });
 
+test('each created doctor receives an auto-generated unique code', function () {
+    $first = Doctor::factory()->create();
+    $second = Doctor::factory()->create();
+
+    expect($first->code)->toBe('DOC-'.str_pad((string) $first->id, 4, '0', STR_PAD_LEFT));
+    expect($second->code)->not->toBeNull()->not->toBe($first->code);
+});
+
 test('the edit form receives availability times without seconds so resubmitting them unchanged passes validation', function () {
     $this->actingAs(User::factory()->create());
     $doctor = Doctor::factory()->create();

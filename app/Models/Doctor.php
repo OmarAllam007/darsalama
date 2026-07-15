@@ -15,6 +15,16 @@ class Doctor extends Model
     /** @use HasFactory<DoctorFactory> */
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::created(function (Doctor $doctor): void {
+            if ($doctor->code === null) {
+                $doctor->code = 'DOC-'.str_pad((string) $doctor->getKey(), 4, '0', STR_PAD_LEFT);
+                $doctor->saveQuietly();
+            }
+        });
+    }
+
     /**
      * @return array<string, string>
      */

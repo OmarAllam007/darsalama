@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import logo from '../assets/images/logo.png'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -11,9 +11,7 @@ function isActivePath(currentPath, linkPath) {
 
 export default function Header() {
   const [open, setOpen] = useState(false)
-  const [contactOpen, setContactOpen] = useState(false)
-  const contactRef = useRef(null)
-  const { t, toggleLang } = useLanguage()
+  const { t, lang, setLang, languages } = useLanguage()
   const currentPath = usePage().url.split('?')[0]
 
   const links = [
@@ -21,30 +19,8 @@ export default function Header() {
     { to: '/about', label: t('nav.about') },
     { to: '/doctors', label: t('nav.doctors') },
     { to: '/services', label: t('nav.services') },
+    { to: '/obgyn', label: t('nav.obgyn') },
   ]
-
-  const contactLinks = [
-    { to: '/contact', label: t('nav.getInTouch') },
-    { to: '/feedback', label: t('nav.feedback') },
-  ]
-
-  const contactActive = contactLinks.some((l) => isActivePath(currentPath, l.to))
-
-  useEffect(() => {
-    if (!contactOpen) return
-    const onClickOutside = (e) => {
-      if (contactRef.current && !contactRef.current.contains(e.target)) setContactOpen(false)
-    }
-    const onEscape = (e) => {
-      if (e.key === 'Escape') setContactOpen(false)
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    document.addEventListener('keydown', onEscape)
-    return () => {
-      document.removeEventListener('mousedown', onClickOutside)
-      document.removeEventListener('keydown', onEscape)
-    }
-  }, [contactOpen])
 
   return (
     <header className="nav">
@@ -58,45 +34,30 @@ export default function Header() {
         </Link>
 
         <nav className="nav__links" aria-label="Primary">
-          {links.map((l) => (
-            <Link
-              key={l.label}
-              href={l.to}
-              className={isActivePath(currentPath, l.to) ? 'is-active' : undefined}
-              aria-current={isActivePath(currentPath, l.to) ? 'page' : undefined}
-            >
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) => {
+            const active = isActivePath(currentPath, l.to)
+            const isObgyn = l.to === '/obgyn'
+            return (
+              <Link
+                key={l.label}
+                href={l.to}
+                className={[isObgyn ? 'nav__obgyn' : '', active ? 'is-active' : '']
+                  .filter(Boolean)
+                  .join(' ') || undefined}
+                aria-current={active ? 'page' : undefined}
+              >
+                {l.label}
+              </Link>
+            )
+          })}
 
-          <div className={`nav__dropdown${contactOpen ? ' is-open' : ''}`} ref={contactRef}>
-            <button
-              type="button"
-              className={`nav__dropdown-trigger${contactActive ? ' is-active' : ''}`}
-              aria-haspopup="true"
-              aria-expanded={contactOpen}
-              onClick={() => setContactOpen((v) => !v)}
-            >
-              {t('nav.contact')}
-              <svg className="nav__dropdown-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <div className="nav__dropdown-menu" role="menu">
-              {contactLinks.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.to}
-                  role="menuitem"
-                  className={isActivePath(currentPath, l.to) ? 'is-active' : undefined}
-                  aria-current={isActivePath(currentPath, l.to) ? 'page' : undefined}
-                  onClick={() => setContactOpen(false)}
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <Link
+            href="/contact"
+            className={isActivePath(currentPath, '/contact') ? 'is-active' : undefined}
+            aria-current={isActivePath(currentPath, '/contact') ? 'page' : undefined}
+          >
+            {t('nav.contact')}
+          </Link>
 
           <Link
             href="/offers"
@@ -109,9 +70,18 @@ export default function Header() {
 
         <div className="nav__actions">
           <SiteSearch />
-          <button type="button" className="nav__lang" onClick={toggleLang}>
-            {t('nav.langToggle')}
-          </button>
+          <select
+            className="nav__lang nav__lang-select"
+            aria-label={t('nav.chooseLanguage')}
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+          >
+            {languages.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.label}
+              </option>
+            ))}
+          </select>
           <Link className="btn btn--ghost-ink" href="/#book">
             {t('nav.book')}
           </Link>
@@ -131,30 +101,32 @@ export default function Header() {
       </div>
 
       <div className={`nav__mobile${open ? ' is-open' : ''}`}>
-        {links.map((l) => (
-          <Link
-            key={l.label}
-            href={l.to}
-            className={isActivePath(currentPath, l.to) ? 'is-active' : undefined}
-            aria-current={isActivePath(currentPath, l.to) ? 'page' : undefined}
-            onClick={() => setOpen(false)}
-          >
-            {l.label}
-          </Link>
-        ))}
+        {links.map((l) => {
+          const active = isActivePath(currentPath, l.to)
+          const isObgyn = l.to === '/obgyn'
+          return (
+            <Link
+              key={l.label}
+              href={l.to}
+              className={[isObgyn ? 'nav__obgyn' : '', active ? 'is-active' : '']
+                .filter(Boolean)
+                .join(' ') || undefined}
+              aria-current={active ? 'page' : undefined}
+              onClick={() => setOpen(false)}
+            >
+              {l.label}
+            </Link>
+          )
+        })}
 
-        <span className="nav__mobile-label">{t('nav.contact')}</span>
-        {contactLinks.map((l) => (
-          <Link
-            key={l.label}
-            href={l.to}
-            className={`nav__mobile-sublink${isActivePath(currentPath, l.to) ? ' is-active' : ''}`}
-            aria-current={isActivePath(currentPath, l.to) ? 'page' : undefined}
-            onClick={() => setOpen(false)}
-          >
-            {l.label}
-          </Link>
-        ))}
+        <Link
+          href="/contact"
+          className={isActivePath(currentPath, '/contact') ? 'is-active' : undefined}
+          aria-current={isActivePath(currentPath, '/contact') ? 'page' : undefined}
+          onClick={() => setOpen(false)}
+        >
+          {t('nav.contact')}
+        </Link>
 
         <Link
           href="/offers"
@@ -165,16 +137,18 @@ export default function Header() {
           {t('nav.offers')}
         </Link>
 
-        <button
-          type="button"
-          className="nav__lang nav__lang--mobile"
-          onClick={() => {
-            toggleLang()
-            setOpen(false)
-          }}
+        <select
+          className="nav__lang nav__lang--mobile nav__lang-select"
+          aria-label={t('nav.chooseLanguage')}
+          value={lang}
+          onChange={(e) => setLang(e.target.value)}
         >
-          {t('nav.langToggle')}
-        </button>
+          {languages.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </select>
         <Link className="btn btn--coral text-white" href="/#book" onClick={() => setOpen(false)}>
           {t('nav.book')}
         </Link>

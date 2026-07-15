@@ -9,6 +9,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type Doctor = {
     id: number;
+    code: string;
     name: string;
     name_ar: string;
     image: string | null;
@@ -36,6 +37,7 @@ export default function DoctorsIndex({ doctors }: { doctors: Doctor[] }) {
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
+                                <th className="p-3 font-medium">Code</th>
                                 <th className="p-3 font-medium">Doctor</th>
                                 <th className="p-3 font-medium">Department</th>
                                 <th className="p-3 font-medium">Status</th>
@@ -45,6 +47,9 @@ export default function DoctorsIndex({ doctors }: { doctors: Doctor[] }) {
                         <tbody>
                             {doctors.map((doctor) => (
                                 <tr key={doctor.id} className="border-t">
+                                    <td className="p-3 font-mono text-xs text-muted-foreground">
+                                        {doctor.code}
+                                    </td>
                                     <td className="flex items-center gap-3 p-3">
                                         {doctor.image ? (
                                             <img
@@ -103,7 +108,7 @@ export default function DoctorsIndex({ doctors }: { doctors: Doctor[] }) {
                                 <tr>
                                     <td
                                         className="p-3 text-muted-foreground"
-                                        colSpan={4}
+                                        colSpan={5}
                                     >
                                         No doctors yet.
                                     </td>

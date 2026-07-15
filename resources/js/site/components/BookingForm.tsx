@@ -4,6 +4,10 @@ import BookingController from '@/actions/App/Http/Controllers/BookingController'
 import InputError from '@/components/input-error';
 import { useLanguage } from '@/site/i18n/LanguageContext';
 
+// Keep in sync with config/booking.php.
+const CLINIC_TIMEZONE = 'Asia/Riyadh';
+const NEXT_DAY_CUTOFF_HOUR = 20;
+
 function isoDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -12,11 +16,31 @@ function isoDate(date: Date): string {
     return `${year}-${month}-${day}`;
 }
 
-function startOfToday(): Date {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+// Current date/hour in the clinic timezone, independent of the visitor's browser timezone.
+function clinicNow(): { dateIso: string; hour: number } {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: CLINIC_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(new Date());
 
-    return today;
+    const value = (type: string) =>
+        parts.find((part) => part.type === type)?.value ?? '';
+
+    return {
+        dateIso: `${value('year')}-${value('month')}-${value('day')}`,
+        hour: Number(value('hour')),
+    };
+}
+
+function addDaysIso(iso: string, days: number): string {
+    const [year, month, day] = iso.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day + days));
+
+    return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
 }
 
 export default function BookingForm({
@@ -27,10 +51,15 @@ export default function BookingForm({
     availableWeekdays: number[];
 }) {
     const { t, lang } = useLanguage();
-    const today = useMemo(() => startOfToday(), []);
-    const [month, setMonth] = useState(
-        () => new Date(today.getFullYear(), today.getMonth(), 1),
-    );
+    const clinic = useMemo(() => clinicNow(), []);
+    const todayIso = clinic.dateIso;
+    const tomorrowIso = useMemo(() => addDaysIso(todayIso, 1), [todayIso]);
+    const nextDayClosed = clinic.hour >= NEXT_DAY_CUTOFF_HOUR;
+    const [month, setMonth] = useState(() => {
+        const [year, monthNumber] = todayIso.split('-').map(Number);
+
+        return new Date(year, monthNumber - 1, 1);
+    });
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -136,9 +165,11 @@ export default function BookingForm({
                     ))}
                     {days.map((day) => {
                         const weekday = (day.getDay() + 6) % 7;
-                        const disabled =
-                            day < today || !availableWeekdays.includes(weekday);
                         const iso = isoDate(day);
+                        const disabled =
+                            iso < todayIso ||
+                            !availableWeekdays.includes(weekday) ||
+                            (nextDayClosed && iso === tomorrowIso);
                         const isSelected = selectedDate === iso;
 
                         return (

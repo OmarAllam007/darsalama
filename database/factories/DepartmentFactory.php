@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Department;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Department>
@@ -17,10 +18,13 @@ class DepartmentFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->randomElement([
+            'Ophthalmology', 'Pediatrics', 'Anesthesia', 'OBGyn', 'General Surgery', 'Cardiology', 'Dermatology',
+        ]);
+
         return [
-            'name' => fake()->unique()->randomElement([
-                'Ophthalmology', 'Pediatrics', 'Anesthesia', 'OBGyn', 'General Surgery', 'Cardiology', 'Dermatology',
-            ]),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 100000),
+            'name' => $name,
             'name_ar' => fake()->unique()->randomElement([
                 'طب العيون', 'طب الأطفال', 'التخدير', 'أمراض النساء والولادة', 'الجراحة العامة', 'أمراض القلب', 'الأمراض الجلدية',
             ]),
