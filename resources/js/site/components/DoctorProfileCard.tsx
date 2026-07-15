@@ -77,7 +77,11 @@ export default function DoctorProfileCard({
                         <div className="origin">
                             {doctor.nationality.flag && (
                                 <span className="flag">
-                                    {doctor.nationality.flag}
+                                    <img
+                                        src={doctor.nationality.flag}
+                                        alt={doctor.nationality.name}
+                                        loading="lazy"
+                                    />
                                 </span>
                             )}
                             <span className="flag-name">

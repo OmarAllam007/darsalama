@@ -22,6 +22,7 @@ export default function NationalityForm({
     return (
         <Form
             {...form}
+            encType="multipart/form-data"
             className="space-y-6"
             onSuccess={() =>
                 toast.success(
@@ -60,14 +61,24 @@ export default function NationalityForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="flag">Flag emoji</Label>
+                        <Label htmlFor="flag">Flag image</Label>
+                        {nationality?.flag && (
+                            <img
+                                src={nationality.flag}
+                                alt="Current flag"
+                                className="h-8 w-12 rounded-sm border object-cover"
+                            />
+                        )}
                         <Input
                             id="flag"
                             name="flag"
-                            defaultValue={nationality?.flag ?? undefined}
-                            placeholder="🇪🇬"
-                            className="w-20 text-center text-lg"
+                            type="file"
+                            accept="image/*"
                         />
+                        <p className="text-xs text-muted-foreground">
+                            PNG, JPG or SVG. Recommended a rectangular flag,
+                            up to 2MB.
+                        </p>
                         <InputError message={errors.flag} />
                     </div>
 

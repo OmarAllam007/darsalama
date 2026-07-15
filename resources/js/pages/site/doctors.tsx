@@ -182,9 +182,11 @@ function DoctorCard({
                 )}
                 {doctor.nationality?.flag && (
                     <span className="d2-flag">
-                        <span style={{ fontSize: 22 }}>
-                            {doctor.nationality.flag}
-                        </span>
+                        <img
+                            src={doctor.nationality.flag}
+                            alt={doctor.nationality.name}
+                            loading="lazy"
+                        />
                     </span>
                 )}
                 <div className="d2-scrim" />

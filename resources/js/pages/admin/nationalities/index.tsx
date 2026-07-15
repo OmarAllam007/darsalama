@@ -48,8 +48,14 @@ export default function NationalitiesIndex({
                         <tbody>
                             {nationalities.map((nationality) => (
                                 <tr key={nationality.id} className="border-t">
-                                    <td className="p-3 text-lg">
-                                        {nationality.flag}
+                                    <td className="p-3">
+                                        {nationality.flag && (
+                                            <img
+                                                src={nationality.flag}
+                                                alt={`${nationality.name} flag`}
+                                                className="h-6 w-9 rounded-sm border object-cover"
+                                            />
+                                        )}
                                     </td>
                                     <td className="p-3">{nationality.name}</td>
                                     <td className="p-3" dir="rtl">

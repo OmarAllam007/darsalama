@@ -633,8 +633,12 @@ export default function ObgynDepartment({
                                                 className={`doc-nameplate${i === 0 ? '' : ' pink'}`}
                                             >
                                                 {doctor.nationality?.flag && (
-                                                    <span className="doc-flag doc-flag--emoji">
-                                                        {doctor.nationality.flag}
+                                                    <span className="doc-flag">
+                                                        <img
+                                                            src={doctor.nationality.flag}
+                                                            alt={doctor.nationality.name}
+                                                            loading="lazy"
+                                                        />
                                                     </span>
                                                 )}
                                                 <div className="ar-name">
