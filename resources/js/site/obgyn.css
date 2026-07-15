@@ -301,7 +301,7 @@
 /* ---- hero ---- */
 #hero.snap {
     background:
-        url('/obgyn/hero-bg.jpeg') 30% center / contain no-repeat;
+        url('/obgyn-media/hero-bg.jpeg') 30% center / contain no-repeat;
     position: relative;
 }
 #hero.snap::before {

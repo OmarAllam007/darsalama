@@ -222,7 +222,7 @@ export default function ObgynDepartment({
             'maternity-care': 'post-followup.jpg',
             'transport-after-delivery': 'post-transport.jpg',
         };
-        return map[pkg.slug] ? `/obgyn/packages/${map[pkg.slug]}` : null;
+        return map[pkg.slug] ? `/obgyn-media/packages/${map[pkg.slug]}` : null;
     };
 
     const packageOptions = packages.map((pkg) =>
@@ -776,7 +776,7 @@ export default function ObgynDepartment({
                                         >
                                             <img
                                                 loading="lazy"
-                                                src={`/obgyn/rooms/${file}`}
+                                                src={`/obgyn-media/rooms/${file}`}
                                                 alt={roomCaptions[i]}
                                             />
                                             <div className="room-cap">
