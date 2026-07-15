@@ -17,6 +17,7 @@ import {
     RotateCcw,
     Search,
     ShieldPlus,
+    SlidersHorizontal,
     Smile,
     Sparkles,
     Stethoscope,
@@ -334,6 +335,37 @@ export default function Doctors({
         (sum, department) => sum + department.doctors.length,
         0,
     );
+
+    const [activeDeptId, setActiveDeptId] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (view !== 'doctors' || detail || allDoctorsGroups.length === 0) {
+            return;
+        }
+
+        const sections = allDoctorsGroups
+            .map((department) =>
+                document.getElementById(`department-${department.id}`),
+            )
+            .filter((el): el is HTMLElement => el !== null);
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setActiveDeptId(
+                            Number(entry.target.id.replace('department-', '')),
+                        );
+                    }
+                });
+            },
+            { rootMargin: '-260px 0px -55% 0px', threshold: 0 },
+        );
+
+        sections.forEach((section) => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, [view, detail, allDoctorsGroups]);
 
     const openDetail = (department: Department) => {
         setSelectedServices(new Set());
@@ -872,6 +904,48 @@ export default function Doctors({
                         </div>
                     ) : (
                         <div className="view">
+                            {allDoctorsGroups.length > 0 && (
+                                <div className="dept-iconbar" id="docs-iconbar">
+                                    {allDoctorsGroups.map((department) => {
+                                        const Icon = departmentIcon(
+                                            department.name,
+                                        );
+
+                                        return (
+                                            <button
+                                                key={department.id}
+                                                type="button"
+                                                className={
+                                                    activeDeptId ===
+                                                    department.id
+                                                        ? 'dept-chip on'
+                                                        : 'dept-chip'
+                                                }
+                                                onClick={() =>
+                                                    document
+                                                        .getElementById(
+                                                            `department-${department.id}`,
+                                                        )
+                                                        ?.scrollIntoView({
+                                                            behavior: 'smooth',
+                                                            block: 'start',
+                                                        })
+                                                }
+                                            >
+                                                <span className="ci">
+                                                    <Icon size={23} />
+                                                </span>
+                                                <span className="cl">
+                                                    {lang === 'ar'
+                                                        ? department.name_ar
+                                                        : department.name}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
                             {allDoctorsGroups.map((department) => {
                                 const Icon = departmentIcon(department.name);
 
@@ -881,11 +955,11 @@ export default function Doctors({
                                         id={`department-${department.id}`}
                                         key={department.id}
                                     >
-                                        <div className="doc-group-head">
-                                            <span className="ico">
-                                                <Icon size={20} />
-                                            </span>
-                                            <div className="tt">
+                                        <div className="dept-divider">
+                                            <div className="dv-ico">
+                                                <Icon size={26} />
+                                            </div>
+                                            <div className="dv-tt">
                                                 <div className="en">
                                                     {lang === 'ar'
                                                         ? department.name_ar
@@ -897,12 +971,35 @@ export default function Doctors({
                                                         : department.name_ar}
                                                 </div>
                                             </div>
-                                            <span className="cnt">
-                                                {department.doctors.length}{' '}
-                                                {department.doctors.length === 1
-                                                    ? t('doctors.doctorLabel')
-                                                    : t('doctors.doctorsLabel')}
-                                            </span>
+                                            <div className="dv-meta">
+                                                <span className="dv-cnt">
+                                                    {department.doctors.length}{' '}
+                                                    {department.doctors
+                                                        .length === 1
+                                                        ? t(
+                                                              'doctors.doctorLabel',
+                                                          )
+                                                        : t(
+                                                              'doctors.doctorsLabel',
+                                                          )}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    className="dv-open"
+                                                    onClick={() =>
+                                                        openDetail(department)
+                                                    }
+                                                >
+                                                    <SlidersHorizontal
+                                                        size={15}
+                                                    />
+                                                    <span>
+                                                        {t(
+                                                            'doctors.openDepartment',
+                                                        )}
+                                                    </span>
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <div className="docs-grid">
