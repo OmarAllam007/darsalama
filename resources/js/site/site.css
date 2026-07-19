@@ -5177,6 +5177,13 @@ textarea {
     margin-top: 12px;
     color: var(--text-soft);
 }
+.contact-feedback__redirect {
+    font-weight: 600;
+    color: var(--ink);
+}
+.contact-feedback__thanks .btn {
+    margin-top: 18px;
+}
 
 @media (max-width: 640px) {
     .contact-feedback__card {

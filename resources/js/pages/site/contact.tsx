@@ -1,4 +1,6 @@
 import { useState, type CSSProperties, type FormEvent } from 'react'
+import { router } from '@inertiajs/react'
+import { store as storeFeedback } from '@/actions/App/Http/Controllers/FeedbackController'
 import bannerPhoto from '@/site/assets/slider/slider1.jpg'
 import PageBanner from '@/site/components/PageBanner'
 import Pearls from '@/site/components/Pearls'
@@ -53,11 +55,16 @@ const ALERT_ICON = (
   </svg>
 )
 
-export default function Contact() {
+const POSITIVE_RATINGS = ['good', 'excellent']
+const REVIEW_REDIRECT_DELAY_MS = 2500
+
+export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string }) {
   const { t } = useLanguage()
   const [sent, setSent] = useState(false)
   const [rating, setRating] = useState<string | null>(null)
   const [feedbackSent, setFeedbackSent] = useState(false)
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
+  const [redirectingToReview, setRedirectingToReview] = useState(false)
 
   const ratingLabels = t('feedback.ratings')
   const mobileRequired = rating === 'terrible' || rating === 'bad'
@@ -72,10 +79,27 @@ export default function Contact() {
 
   function handleFeedbackSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (!rating) return
     const data = Object.fromEntries(new FormData(e.currentTarget))
-    // ponytail: static form for now — POST { rating, ...data } to the real endpoint when the API is ready.
-    console.log('feedback submit', { rating, ...data })
-    setFeedbackSent(true)
+    router.post(
+      storeFeedback.url(),
+      { rating, mobile: data.mobile ?? '', notes: data.notes ?? '' },
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onStart: () => setFeedbackSubmitting(true),
+        onFinish: () => setFeedbackSubmitting(false),
+        onSuccess: () => {
+          setFeedbackSent(true)
+          if (googleReviewUrl && POSITIVE_RATINGS.includes(rating)) {
+            setRedirectingToReview(true)
+            window.setTimeout(() => {
+              window.location.href = googleReviewUrl
+            }, REVIEW_REDIRECT_DELAY_MS)
+          }
+        },
+      },
+    )
   }
 
   return (
@@ -98,6 +122,14 @@ export default function Contact() {
               <div className="contact-feedback__thanks">
                 <h3>{t('feedback.thanksHeading')}</h3>
                 <p>{t('feedback.thanksBody')}</p>
+                {redirectingToReview && googleReviewUrl && (
+                  <>
+                    <p className="contact-feedback__redirect">{t('feedback.redirectNote')}</p>
+                    <a className="btn btn--coral" href={googleReviewUrl} target="_blank" rel="noopener noreferrer">
+                      {t('feedback.googleReviewCta')}
+                    </a>
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -140,7 +172,7 @@ export default function Contact() {
                     </label>
                     <textarea id="fb-notes" name="notes" rows={5} placeholder={t('feedback.improvePlaceholder')} />
 
-                    <button type="submit" className="btn btn--coral">
+                    <button type="submit" className="btn btn--coral" disabled={feedbackSubmitting}>
                       {t('feedback.submit')}
                     </button>
                   </form>

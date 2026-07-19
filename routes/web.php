@@ -3,6 +3,7 @@
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CallbackRequestController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\PublicDepartmentController;
 use App\Http\Controllers\PublicDoctorController;
 use Illuminate\Support\Facades\Route;
@@ -15,8 +16,11 @@ Route::post('doctors/{doctor}/callback-requests', [CallbackRequestController::cl
 Route::inertia('services', 'site/services')->name('services');
 Route::get('obgyn', [PublicDepartmentController::class, 'obgyn'])->name('obgyn');
 Route::post('departments/{department:slug}/callback-requests', [CallbackRequestController::class, 'storeForDepartment'])->name('departments.callback-requests.store');
-Route::inertia('contact', 'site/contact')->name('contact');
+Route::inertia('contact', 'site/contact', [
+    'googleReviewUrl' => config('services.google.review_url'),
+])->name('contact');
 Route::redirect('feedback', 'contact')->name('feedback');
+Route::post('feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 Route::inertia('offers', 'site/offers')->name('offers');
 
 Route::get('book/{doctor}', [BookingController::class, 'show'])->name('booking.show');

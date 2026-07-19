@@ -482,6 +482,8 @@ export const translations = {
             thanksHeading: 'Thank you for your feedback',
             thanksBody:
                 "We've received your response and will use it to improve your next visit.",
+            redirectNote: 'Taking you to Google so you can share your review…',
+            googleReviewCta: 'Leave a Google review',
         },
         offers: {
             eyebrow: 'Offers',
@@ -1039,6 +1041,8 @@ export const translations = {
             submit: 'إرسال الملاحظات',
             thanksHeading: 'شكرًا لملاحظاتك',
             thanksBody: 'تم استلام ردك وسنستخدمه لتحسين زيارتك القادمة.',
+            redirectNote: 'يتم تحويلك إلى Google لمشاركة تقييمك…',
+            googleReviewCta: 'اترك تقييمًا على Google',
         },
         offers: {
             eyebrow: 'العروض',

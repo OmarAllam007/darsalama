@@ -3,6 +3,7 @@ import {
     CalendarClock,
     Flag,
     LayoutGrid,
+    MessageSquareHeart,
     Package as PackageIcon,
     Percent,
     PhoneCall,
@@ -26,6 +27,7 @@ import { index as appointments } from '@/routes/admin/appointments';
 import { index as callbackRequests } from '@/routes/admin/callback-requests';
 import { index as departments } from '@/routes/admin/departments';
 import { index as doctors } from '@/routes/admin/doctors';
+import { index as feedback } from '@/routes/admin/feedback';
 import { index as nationalities } from '@/routes/admin/nationalities';
 import { index as offers } from '@/routes/admin/offers';
 import { index as packages } from '@/routes/admin/packages';
@@ -46,6 +48,11 @@ const mainNavItems: NavItem[] = [
         title: 'Callback Requests',
         href: callbackRequests(),
         icon: PhoneCall,
+    },
+    {
+        title: 'Feedback',
+        href: feedback(),
+        icon: MessageSquareHeart,
     },
     {
         title: 'Doctors',

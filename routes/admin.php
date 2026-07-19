@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\CallbackRequestController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DoctorController;
+use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\NationalityController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\PackageController;
@@ -32,4 +33,5 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('nationalities', NationalityController::class)->except('show');
     Route::get('appointments', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::get('callback-requests', [CallbackRequestController::class, 'index'])->name('callback-requests.index');
+    Route::get('feedback', [FeedbackController::class, 'index'])->name('feedback.index');
 });

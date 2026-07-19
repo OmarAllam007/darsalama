@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    /*
+    | Deep link used to send happy patients straight to the "write a review"
+    | dialog for the hospital's Google Business Profile. Prefer the exact
+    | https://search.google.com/local/writereview?placeid=... URL.
+    */
+    'google' => [
+        'review_url' => env(
+            'GOOGLE_REVIEW_URL',
+            'https://www.google.com/maps/search/?api=1&query=Dar+As-Salama+Hospital+Al+Khobar',
+        ),
+    ],
+
 ];

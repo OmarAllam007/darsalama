@@ -126,4 +126,16 @@ return [
 
     'admin_address' => env('MAIL_ADMIN_ADDRESS', env('MAIL_FROM_ADDRESS', 'hello@example.com')),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Feedback Alert Address
+    |--------------------------------------------------------------------------
+    |
+    | Where negative (bad / terrible) patient feedback alerts are sent so the
+    | team can follow up. Configure via MAIL_FEEDBACK_ADDRESS.
+    |
+    */
+
+    'feedback_address' => env('MAIL_FEEDBACK_ADDRESS', 'nasscrg@as-salama.com'),
+
 ];
