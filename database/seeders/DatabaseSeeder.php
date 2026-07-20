@@ -24,5 +24,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call(ObgynPackageSeeder::class);
         $this->call(DoctorSeeder::class);
+        $this->call(DepartmentOfferSeeder::class);
     }
 }
