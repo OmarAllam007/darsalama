@@ -88,6 +88,10 @@ const WEEKDAY_NAMES = {
     ],
 };
 
+// The clinic week runs Saturday → Friday (Friday off), so day ranges are computed
+// in that order rather than the Monday-first weekday numbering.
+const CLINIC_WEEK_ORDER = [5, 6, 0, 1, 2, 3, 4];
+
 function workingDaysLabel(
     weekdays: number[],
     lang: 'en' | 'ar',
@@ -96,26 +100,60 @@ function workingDaysLabel(
         return null;
     }
 
-    const sorted = [...new Set(weekdays)].sort((a, b) => a - b);
     const names = WEEKDAY_NAMES[lang] ?? WEEKDAY_NAMES.en;
+    const positions = [...new Set(weekdays)]
+        .map((day) => CLINIC_WEEK_ORDER.indexOf(day))
+        .sort((a, b) => a - b);
     const isContiguous =
-        sorted[sorted.length - 1] - sorted[0] + 1 === sorted.length;
+        positions[positions.length - 1] - positions[0] + 1 ===
+        positions.length;
 
-    if (isContiguous && sorted.length > 1) {
-        return `${names[sorted[0]]} – ${names[sorted[sorted.length - 1]]}`;
+    if (isContiguous && positions.length > 1) {
+        const first = CLINIC_WEEK_ORDER[positions[0]];
+        const last = CLINIC_WEEK_ORDER[positions[positions.length - 1]];
+
+        return `${names[first]} – ${names[last]}`;
     }
 
-    return sorted.map((day) => names[day]).join(', ');
+    return positions.map((p) => names[CLINIC_WEEK_ORDER[p]]).join(', ');
 }
 
-export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
+function to12Hour(time: string): string {
+    const [hour, minute] = time.split(':').map(Number);
+    const period = hour < 12 ? 'AM' : 'PM';
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+
+    return minute === 0
+        ? `${hour12} ${period}`
+        : `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
+}
+
+function formatWorkingHours(
+    windows: { start: string; end: string }[],
+): string {
+    return windows
+        .map((w) => `${to12Hour(w.start)} – ${to12Hour(w.end)}`)
+        .join(' & ');
+}
+
+export default function DoctorProfile({
+    doctor,
+    workingWeekdays,
+    workingHours,
+}: {
+    doctor: Doctor;
+    workingWeekdays: number[];
+    workingHours: { start: string; end: string }[] | null;
+}) {
     const { t, lang, isRtl } = useLanguage();
     const pickField = (row: Package, base: string): string => {
         const fields = row as unknown as Record<string, string | null>;
         const value = fields[`${base}_${lang}`];
+
         if (typeof value === 'string' && value.length > 0) {
             return value;
         }
+
         return fields[`${base}_en`] ?? '';
     };
     const [expandOpen, setExpandOpen] = useState(false);
@@ -140,9 +178,11 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
         };
     }, [expandOpen]);
 
-    const weekdays = doctor.availabilities.map((a) => a.weekday);
-    const days = workingDaysLabel(weekdays, lang);
-    const daysAlt = workingDaysLabel(weekdays, lang === 'ar' ? 'en' : 'ar');
+    const days = workingDaysLabel(workingWeekdays, lang);
+    const daysAlt = workingDaysLabel(
+        workingWeekdays,
+        lang === 'ar' ? 'en' : 'ar',
+    );
 
     const offerCards = [
         ...doctor.offers.map((offer) => ({
@@ -271,7 +311,12 @@ export default function DoctorProfile({ doctor }: { doctor: Doctor }) {
                                     </div>
                                     <div className="h-shift">
                                         <span className="badge">
-                                            {t('doctorProfile.checkBooking')}
+                                            {workingHours &&
+                                            workingHours.length > 0
+                                                ? formatWorkingHours(
+                                                      workingHours,
+                                                  )
+                                                : t('doctorProfile.hoursVary')}
                                         </span>
                                     </div>
                                 </div>

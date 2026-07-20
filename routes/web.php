@@ -25,6 +25,7 @@ Route::inertia('offers', 'site/offers')->name('offers');
 
 Route::get('book/{doctor}', [BookingController::class, 'show'])->name('booking.show');
 Route::get('book/{doctor}/slots', [BookingController::class, 'slots'])->name('booking.slots');
+Route::get('book/{doctor}/days', [BookingController::class, 'days'])->name('booking.days');
 Route::post('book/{doctor}', [BookingController::class, 'store'])->name('booking.store');
 Route::get('appointments/{appointment}', [BookingController::class, 'confirmation'])->name('appointments.show');
 

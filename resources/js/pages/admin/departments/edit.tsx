@@ -13,6 +13,7 @@ type Department = {
     id: number;
     name: string;
     name_ar: string;
+    slot_minutes: number;
 };
 
 export default function EditDepartment({
@@ -57,6 +58,23 @@ export default function EditDepartment({
                                     required
                                 />
                                 <InputError message={errors.name_ar} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="slot_minutes">
+                                    Appointment duration (minutes)
+                                </Label>
+                                <Input
+                                    id="slot_minutes"
+                                    name="slot_minutes"
+                                    type="number"
+                                    min={5}
+                                    max={240}
+                                    step={5}
+                                    defaultValue={department.slot_minutes}
+                                    required
+                                />
+                                <InputError message={errors.slot_minutes} />
                             </div>
 
                             <Button disabled={processing}>Save</Button>

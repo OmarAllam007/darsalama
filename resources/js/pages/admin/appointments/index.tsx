@@ -3,7 +3,10 @@ import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { index as appointmentsIndex } from '@/routes/admin/appointments';
+import {
+    create as appointmentsCreate,
+    index as appointmentsIndex,
+} from '@/routes/admin/appointments';
 import type { BreadcrumbItem } from '@/types';
 
 type Appointment = {
@@ -72,10 +75,15 @@ export default function AppointmentsIndex({
             <Head title="Appointments" />
 
             <div className="space-y-6 p-4">
-                <Heading
-                    title="Appointments"
-                    description="Every appointment booked through the public site"
-                />
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <Heading
+                        title="Appointments"
+                        description="Every appointment booked through the public site"
+                    />
+                    <Link href={appointmentsCreate()}>
+                        <Button size="sm">Book appointment</Button>
+                    </Link>
+                </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                     {RANGE_OPTIONS.map((option) => (

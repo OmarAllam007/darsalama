@@ -72,6 +72,41 @@ export default function BookingForm({
         setSelectedTime(null);
     }
 
+    // Bookable dates for the displayed month, driven by the doctor's schedule
+    // (falls back to the weekly template until the month's data has loaded).
+    const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+    const [daysByMonth, setDaysByMonth] = useState<Record<string, string[]>>(
+        {},
+    );
+
+    useEffect(() => {
+        if (daysByMonth[monthKey]) {
+            return;
+        }
+
+        let cancelled = false;
+
+        fetch(
+            BookingController.days.url(doctorId, { query: { month: monthKey } }),
+            { headers: { Accept: 'application/json' } },
+        )
+            .then((response) => response.json())
+            .then((data) => {
+                if (!cancelled) {
+                    setDaysByMonth((prev) => ({
+                        ...prev,
+                        [monthKey]: data.days ?? [],
+                    }));
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [doctorId, monthKey, daysByMonth]);
+
+    const bookableDays = daysByMonth[monthKey];
+
     const firstOfMonth = month;
     const daysInMonth = new Date(
         month.getFullYear(),
@@ -166,9 +201,15 @@ export default function BookingForm({
                     {days.map((day) => {
                         const weekday = (day.getDay() + 6) % 7;
                         const iso = isoDate(day);
+                        // Prefer the schedule-driven day set; before it loads for
+                        // this month, fall back to the weekly template.
+                        const open = bookableDays
+                            ? bookableDays.includes(iso)
+                            : availableWeekdays.includes(weekday);
+                        // Public bookings start tomorrow: today and past are closed.
                         const disabled =
-                            iso < todayIso ||
-                            !availableWeekdays.includes(weekday) ||
+                            iso <= todayIso ||
+                            !open ||
                             (nextDayClosed && iso === tomorrowIso);
                         const isSelected = selectedDate === iso;
 

@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react'
+import { cloneElement } from 'react'
 import bannerPhoto from '@/site/assets/images/doctors/doc2.jpg'
 import PageBanner from '@/site/components/PageBanner'
 import { EMERGENCY_PHONE, EMERGENCY_TEL } from '@/site/i18n/constants'
@@ -68,12 +69,6 @@ const PHONE_ICON = (
   </svg>
 )
 
-const CHEVRON = (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-    <path d="M9 5l6 7-6 7" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
 const CHECK = (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
     <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -96,24 +91,30 @@ export default function Services() {
             <h2>{t('services.departments.heading')}</h2>
             <p>{t('services.departments.sub')}</p>
           </div>
-          <div className="dept-grid">
-            {departments.map((d, i) => (
-              <article className="dept-card" key={d.title}>
-                <div className="dept-card__head">
-                  <span className="dept-card__icon">{DEPT_ICONS[i]}</span>
-                  <h3>{d.title}</h3>
-                </div>
-                <p className="dept-card__body">{d.body}</p>
-                <ul className="dept-card__list">
-                  {d.services.map((s) => (
-                    <li key={s}>
-                      {CHEVRON}
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ))}
+          <div className="dsm">
+            <div className="dept-grid">
+              {departments.map((d, i) => (
+                <article className="dept-card dept-card--upright" key={d.title}>
+                  <div className="dc-media">
+                    <span className="dc-wm">{cloneElement(DEPT_ICONS[i], { width: 104, height: 104 })}</span>
+                    <span className="dc-gold" />
+                    <div className="dc-titles">
+                      <div className="nm-en">{d.title}</div>
+                    </div>
+                  </div>
+                  <div className="dc-body">
+                    <p className="dc-desc">{d.body}</p>
+                    <div className="dc-svcs">
+                      {d.services.map((s) => (
+                        <span className="s" key={s}>
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>

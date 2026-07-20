@@ -49,6 +49,23 @@ export default function CreateDepartment() {
                                 <InputError message={errors.name_ar} />
                             </div>
 
+                            <div className="grid gap-2">
+                                <Label htmlFor="slot_minutes">
+                                    Appointment duration (minutes)
+                                </Label>
+                                <Input
+                                    id="slot_minutes"
+                                    name="slot_minutes"
+                                    type="number"
+                                    min={5}
+                                    max={240}
+                                    step={5}
+                                    defaultValue={15}
+                                    required
+                                />
+                                <InputError message={errors.slot_minutes} />
+                            </div>
+
                             <Button disabled={processing}>Save</Button>
                         </>
                     )}

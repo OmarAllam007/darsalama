@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     CalendarClock,
+    CalendarRange,
     Flag,
     LayoutGrid,
     MessageSquareHeart,
@@ -26,6 +27,7 @@ import { dashboard } from '@/routes';
 import { index as appointments } from '@/routes/admin/appointments';
 import { index as callbackRequests } from '@/routes/admin/callback-requests';
 import { index as departments } from '@/routes/admin/departments';
+import { index as doctorSchedules } from '@/routes/admin/doctor-schedules';
 import { index as doctors } from '@/routes/admin/doctors';
 import { index as feedback } from '@/routes/admin/feedback';
 import { index as nationalities } from '@/routes/admin/nationalities';
@@ -43,6 +45,11 @@ const mainNavItems: NavItem[] = [
         title: 'Appointments',
         href: appointments(),
         icon: CalendarClock,
+    },
+    {
+        title: 'Doctor Schedules',
+        href: doctorSchedules(),
+        icon: CalendarRange,
     },
     {
         title: 'Callback Requests',

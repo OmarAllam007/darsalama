@@ -74,13 +74,14 @@ class DepartmentController extends Controller
     }
 
     /**
-     * @return array{name: string, name_ar: string}
+     * @return array{name: string, name_ar: string, slot_minutes: int}
      */
     private function validated(Request $request): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'name_ar' => ['required', 'string', 'max:255'],
+            'slot_minutes' => ['required', 'integer', 'min:5', 'max:240'],
         ]);
     }
 }

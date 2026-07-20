@@ -183,7 +183,7 @@ export const translations = {
             heading: 'Featured Doctors',
             sub: 'Our distinguished team of specialists brings together decades of experience, advanced training, and a commitment to patient-centred care.',
             all: 'All',
-            bookNow: 'Book Now',
+            bookNow: 'Book',
             specialties: {
                 anesthesia: 'Anesthesia',
                 pediatrics: 'Pediatrics',

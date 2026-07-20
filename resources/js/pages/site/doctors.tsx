@@ -54,6 +54,8 @@ type Doctor = {
     nationality: { name: string; name_ar: string; flag: string | null } | null;
     services: Service[];
     availabilities: { weekday: number }[];
+    offers: Offer[];
+    offers_count: number;
 };
 
 type Offer = {
@@ -71,7 +73,6 @@ type Department = {
     name: string;
     name_ar: string;
     doctors: Doctor[];
-    offers: Offer[];
     offers_count: number;
 };
 
@@ -136,7 +137,6 @@ function matches(haystack: string, needle: string): boolean {
 
 function DoctorCard({
     doctor,
-    department,
     lang,
     t,
     matchedService,
@@ -144,7 +144,6 @@ function DoctorCard({
     onOffers,
 }: {
     doctor: Doctor;
-    department: Department;
     lang: 'en' | 'ar';
     t: (key: string) => string;
     matchedService: string | null;
@@ -242,7 +241,7 @@ function DoctorCard({
                         <CalendarPlus size={14} />
                         {t('doctors.bookNow')}
                     </button>
-                    {department.offers_count > 0 && (
+                    {doctor.offers_count > 0 && (
                         <button
                             type="button"
                             className="btn-offers"
@@ -254,7 +253,7 @@ function DoctorCard({
                             <Tag size={14} />
                             {t('doctors.offers')}
                             <span className="obadge">
-                                {department.offers_count}
+                                {doctor.offers_count}
                             </span>
                         </button>
                     )}
@@ -720,7 +719,6 @@ export default function Doctors({
                                                 <DoctorCard
                                                     key={doctor.id}
                                                     doctor={doctor}
-                                                    department={detail}
                                                     lang={lang}
                                                     t={t}
                                                     matchedService={
@@ -737,7 +735,7 @@ export default function Doctors({
                                                                 lang === 'ar'
                                                                     ? doctor.name_ar
                                                                     : doctor.name,
-                                                            offers: detail.offers,
+                                                            offers: doctor.offers,
                                                         })
                                                     }
                                                 />
@@ -1008,7 +1006,6 @@ export default function Doctors({
                                                     <DoctorCard
                                                         key={doctor.id}
                                                         doctor={doctor}
-                                                        department={department}
                                                         lang={lang}
                                                         t={t}
                                                         matchedService={null}
@@ -1025,7 +1022,7 @@ export default function Doctors({
                                                                         'ar'
                                                                             ? doctor.name_ar
                                                                             : doctor.name,
-                                                                    offers: department.offers,
+                                                                    offers: doctor.offers,
                                                                 },
                                                             )
                                                         }
