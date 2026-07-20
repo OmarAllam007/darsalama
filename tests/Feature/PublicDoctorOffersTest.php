@@ -3,6 +3,7 @@
 use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\Offer;
+use App\Models\Package;
 
 use function Pest\Laravel\get;
 
@@ -22,4 +23,19 @@ it('scopes offers to each doctor rather than the whole department', function () 
         );
 
     expect($withoutOffer->offers()->count())->toBe(0);
+});
+
+it('builds the doctor profile offers section from department packages, not offers', function () {
+    $department = Department::factory()->create();
+    $doctor = Doctor::factory()->for($department)->create();
+
+    Package::factory()->for($department)->create(['name_en' => 'Normal Delivery']);
+    Offer::factory()->for($doctor)->create(['title' => 'Stale Offer']);
+
+    get(route('doctors.show', $doctor))
+        ->assertInertia(fn ($page) => $page
+            ->has('doctor.department.packages', 1)
+            ->where('doctor.department.packages.0.name_en', 'Normal Delivery')
+            ->missing('doctor.offers')
+        );
 });

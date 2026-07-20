@@ -24,16 +24,6 @@ type NamePair = {
     name_ar: string;
 };
 
-type Offer = {
-    id: number;
-    title: string;
-    description: string;
-    image: string | null;
-    price: string | null;
-    original_price: string | null;
-    is_expired: boolean;
-};
-
 type Package = {
     id: number;
     name_en: string;
@@ -58,7 +48,6 @@ type Doctor = {
     qualifications: NamePair[];
     services: NamePair[];
     availabilities: { weekday: number }[];
-    offers: Offer[];
     department: {
         id: number;
         name: string;
@@ -105,8 +94,7 @@ function workingDaysLabel(
         .map((day) => CLINIC_WEEK_ORDER.indexOf(day))
         .sort((a, b) => a - b);
     const isContiguous =
-        positions[positions.length - 1] - positions[0] + 1 ===
-        positions.length;
+        positions[positions.length - 1] - positions[0] + 1 === positions.length;
 
     if (isContiguous && positions.length > 1) {
         const first = CLINIC_WEEK_ORDER[positions[0]];
@@ -128,9 +116,7 @@ function to12Hour(time: string): string {
         : `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
 }
 
-function formatWorkingHours(
-    windows: { start: string; end: string }[],
-): string {
+function formatWorkingHours(windows: { start: string; end: string }[]): string {
     return windows
         .map((w) => `${to12Hour(w.start)} – ${to12Hour(w.end)}`)
         .join(' & ');
@@ -184,45 +170,24 @@ export default function DoctorProfile({
         lang === 'ar' ? 'en' : 'ar',
     );
 
-    const offerCards = [
-        ...doctor.offers.map((offer) => ({
-            id: `offer-${offer.id}`,
-            title: offer.title,
-            description: offer.description,
-            tag: t('doctorProfile.offer'),
-        })),
-        ...doctor.department.packages.map((pkg) => ({
-            id: `package-${pkg.id}`,
-            title: pickField(pkg, 'name'),
-            description: pickField(pkg, 'description'),
-            tag: t('doctorProfile.package'),
-        })),
-    ];
+    const offerCards = doctor.department.packages.map((pkg) => ({
+        id: `package-${pkg.id}`,
+        title: pickField(pkg, 'name'),
+        description: pickField(pkg, 'description'),
+        tag: t('doctorProfile.package'),
+    }));
 
-    const modalOfferCards = [
-        ...doctor.offers.map((offer) => ({
-            id: `offer-${offer.id}`,
-            image: offer.image,
-            title: offer.title,
-            subtitle: null as string | null,
-            description: offer.description,
-            price: offer.price,
-            original_price: offer.original_price,
-            is_expired: offer.is_expired,
-            tag: t('doctorProfile.offer'),
-        })),
-        ...doctor.department.packages.map((pkg) => ({
-            id: `package-${pkg.id}`,
-            image: null as string | null,
-            title: pickField(pkg, 'name'),
-            subtitle: pkg.name_en,
-            description: pickField(pkg, 'description'),
-            price: pkg.price,
-            original_price: null as string | null,
-            is_expired: false,
-            tag: t('doctorProfile.package'),
-        })),
-    ];
+    const modalOfferCards = doctor.department.packages.map((pkg) => ({
+        id: `package-${pkg.id}`,
+        image: null as string | null,
+        title: pickField(pkg, 'name'),
+        subtitle: pkg.name_en,
+        description: pickField(pkg, 'description'),
+        price: pkg.price,
+        original_price: null as string | null,
+        is_expired: false,
+        tag: t('doctorProfile.package'),
+    }));
 
     return (
         <>
@@ -332,7 +297,10 @@ export default function DoctorProfile({
                                     {t('doctors.bookNow')}
                                 </button>
                             </div>
-                            <div className="x-actions" style={{ marginTop: 10 }}>
+                            <div
+                                className="x-actions"
+                                style={{ marginTop: 10 }}
+                            >
                                 <button
                                     type="button"
                                     className="x-call"

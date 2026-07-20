@@ -38,7 +38,6 @@ class PublicDoctorController extends Controller
         abort_unless($doctor->is_active, 404);
 
         $doctor->load([
-            'offers',
             'department.packages',
             'nationality',
             'qualifications',
