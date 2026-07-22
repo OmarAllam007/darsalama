@@ -15,8 +15,9 @@ import BookingModal from '@/site/components/BookingModal';
 import CallbackModal from '@/site/components/CallbackModal';
 import DoctorProfileCard from '@/site/components/DoctorProfileCard';
 import DoctorsHero from '@/site/components/DoctorsHero';
-import OffersModal from '@/site/components/OffersModal';
 import ScaledDoctorCard from '@/site/components/ScaledDoctorCard';
+import WhatsAppIcon from '@/site/components/WhatsAppIcon';
+import { WHATSAPP_LINK } from '@/site/i18n/constants';
 import { useLanguage } from '@/site/i18n/LanguageContext';
 
 type NamePair = {
@@ -34,6 +35,14 @@ type Package = {
     description_ar: string | null;
     description_ur: string | null;
     description_tl: string | null;
+    category_label_en: string | null;
+    category_label_ar: string | null;
+    category_label_ur: string | null;
+    category_label_tl: string | null;
+    tagline_en: string | null;
+    tagline_ar: string | null;
+    tagline_ur: string | null;
+    tagline_tl: string | null;
     price: string | null;
 };
 
@@ -145,7 +154,6 @@ export default function DoctorProfile({
     const [expandOpen, setExpandOpen] = useState(false);
     const [bookingOpen, setBookingOpen] = useState(false);
     const [callbackOpen, setCallbackOpen] = useState(false);
-    const [offersOpen, setOffersOpen] = useState(false);
     const BackArrow = isRtl ? ArrowRight : ArrowLeft;
     const DeptChevron = isRtl ? ChevronRight : ChevronLeft;
     const doctorName = lang === 'ar' ? doctor.name_ar : doctor.name;
@@ -174,19 +182,8 @@ export default function DoctorProfile({
         id: `package-${pkg.id}`,
         title: pickField(pkg, 'name'),
         description: pickField(pkg, 'description'),
-        tag: t('doctorProfile.package'),
-    }));
-
-    const modalOfferCards = doctor.department.packages.map((pkg) => ({
-        id: `package-${pkg.id}`,
-        image: null as string | null,
-        title: pickField(pkg, 'name'),
-        subtitle: pkg.name_en,
-        description: pickField(pkg, 'description'),
-        price: pkg.price,
-        original_price: null as string | null,
-        is_expired: false,
-        tag: t('doctorProfile.package'),
+        tag: pickField(pkg, 'category_label') || t('doctorProfile.package'),
+        valid: pickField(pkg, 'tagline'),
     }));
 
     return (
@@ -322,20 +319,6 @@ export default function DoctorProfile({
                                             <div
                                                 className="offer"
                                                 key={offer.id}
-                                                role="button"
-                                                tabIndex={0}
-                                                onClick={() =>
-                                                    setOffersOpen(true)
-                                                }
-                                                onKeyDown={(e) => {
-                                                    if (
-                                                        e.key === 'Enter' ||
-                                                        e.key === ' '
-                                                    ) {
-                                                        e.preventDefault();
-                                                        setOffersOpen(true);
-                                                    }
-                                                }}
                                             >
                                                 <span className="o-tag">
                                                     {offer.tag}
@@ -345,6 +328,22 @@ export default function DoctorProfile({
                                                 </div>
                                                 <div className="o-desc">
                                                     {offer.description}
+                                                </div>
+                                                <div className="o-foot">
+                                                    <span className="o-valid">
+                                                        {offer.valid}
+                                                    </span>
+                                                    <a
+                                                        className="o-book"
+                                                        href={`${WHATSAPP_LINK}?text=${encodeURIComponent(
+                                                            `${t('doctorProfile.interestedIn')} ${offer.title}`,
+                                                        )}`}
+                                                        target="_blank"
+                                                        rel="noopener"
+                                                    >
+                                                        <WhatsAppIcon />
+                                                        {t('doctors.bookNow')}
+                                                    </a>
                                                 </div>
                                             </div>
                                         ))}
@@ -396,13 +395,6 @@ export default function DoctorProfile({
                 open={callbackOpen}
                 onOpenChange={setCallbackOpen}
                 packageOptions={offerCards.map((offer) => offer.title)}
-            />
-
-            <OffersModal
-                doctorName={doctorName}
-                offers={modalOfferCards}
-                open={offersOpen}
-                onOpenChange={setOffersOpen}
             />
         </>
     );

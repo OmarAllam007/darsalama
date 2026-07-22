@@ -14,14 +14,14 @@
 }
 @keyframes viewGlow {
     0% {
-    box-shadow: 0 0 0 0 rgba(21, 38, 92, .4);
-}
-70% {
-    box-shadow: 0 0 0 9px rgba(21, 38, 92, 0);
-}
-100% {
-    box-shadow: 0 0 0 0 rgba(21, 38, 92, 0);
-}
+        box-shadow: 0 0 0 0 rgba(21, 38, 92, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 9px rgba(21, 38, 92, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(21, 38, 92, 0);
+    }
 }
 :root {
     --ink: #13457a;
@@ -2006,10 +2006,12 @@ button {
     position: absolute;
     right: -14px;
     bottom: -20px;
-    color: rgba(255, 255, 255, .1);
+    color: rgba(255, 255, 255, 0.1);
     z-index: 1;
     transform: rotate(-8deg);
-    transition: transform .4s, color .4s;
+    transition:
+        transform 0.4s,
+        color 0.4s;
 }
 .dept-card:hover .dc-media .dc-wm {
     transform: scale(1.1);
@@ -2969,7 +2971,7 @@ button {
     height: 15px;
 }
 .btn-view {
-   flex: 1;
+    flex: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2983,7 +2985,7 @@ button {
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    transition: all .2s;
+    transition: all 0.2s;
     white-space: nowrap;
     animation: viewGlow 2s ease-in-out infinite;
 }
@@ -3936,6 +3938,40 @@ button {
     color: var(--slate);
     line-height: 1.5;
     margin-top: 6px;
+}
+.x-offers .o-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    gap: 10px;
+}
+.x-offers .o-valid {
+    font-size: 11.5px;
+    color: var(--slate-2);
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+}
+.x-offers .o-book {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #25d366;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+.x-offers .o-book:hover {
+    transform: translateY(-2px);
+}
+.x-offers .o-book svg {
+    width: 14px;
+    height: 14px;
+    fill: #fff;
 }
 .x-nooffers {
     text-align: center;
@@ -4987,11 +5023,19 @@ textarea {
     align-items: flex-end;
     justify-content: center;
     padding-bottom: 28px;
-    background: linear-gradient(to top, rgba(14, 42, 59, 0.28), rgba(14, 42, 59, 0) 45%);
+    background: linear-gradient(
+        to top,
+        rgba(14, 42, 59, 0.28),
+        rgba(14, 42, 59, 0) 45%
+    );
     transition: background 0.2s ease;
 }
 .contact-map__link:hover .contact-map__overlay {
-    background: linear-gradient(to top, rgba(14, 42, 59, 0.38), rgba(14, 42, 59, 0) 55%);
+    background: linear-gradient(
+        to top,
+        rgba(14, 42, 59, 0.38),
+        rgba(14, 42, 59, 0) 55%
+    );
 }
 .contact-map__cta {
     display: inline-flex;

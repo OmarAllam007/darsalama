@@ -242,6 +242,7 @@ export const translations = {
             bookViaWhatsapp: 'Book',
             offer: 'Offer',
             package: 'Package',
+            interestedIn: "I'm interested in:",
         },
         callback: {
             formTitle: 'Request a Callback',
@@ -493,7 +494,8 @@ export const translations = {
         obgyn: {
             kicker: 'OB / GYN Department',
             heroTitle: 'Safe Motherhood Begins with Salama',
-            heroLead: 'A complete care journey for mother and baby — discounted delivery packages, private rooms with hospitality service, prenatal follow-up, and after-delivery transport. All in one place.',
+            heroLead:
+                'A complete care journey for mother and baby — discounted delivery packages, private rooms with hospitality service, prenatal follow-up, and after-delivery transport. All in one place.',
             explorePackages: 'Explore Packages',
             meetDoctors: 'Meet Our Doctors',
             bookConsultation: 'Book Consultation',
@@ -503,26 +505,33 @@ export const translations = {
             priceLabel: 'Price',
             ourSpecialists: 'Our Specialists',
             doctorsTitle: 'Meet Our Doctors',
-            doctorsLead: 'A team of OB/GYN consultants and specialists, dedicated to a calm, dignified delivery experience for every mother.',
+            doctorsLead:
+                'A team of OB/GYN consultants and specialists, dedicated to a calm, dignified delivery experience for every mother.',
             credentials: 'Credentials',
             services: 'Services',
             bookAppointment: 'Book Appointment',
             whatsapp: 'WhatsApp',
             roomsEyebrow: 'Rooms & Facilities',
             roomsTitle: 'Hospitality at Salama',
-            roomsLead: 'Every delivery package includes a private room with hotel-grade hospitality — a quiet family lounge, a comfortable electric bed, and premium catering services.',
+            roomsLead:
+                'Every delivery package includes a private room with hotel-grade hospitality — a quiet family lounge, a comfortable electric bed, and premium catering services.',
             roomsStats: [
                 { value: '24 / 7', label: 'Nursing' },
                 { value: 'Wi-Fi', label: 'Complimentary' },
                 { value: 'F & B', label: 'Hospitality' },
                 { value: 'Catering', label: 'Services' },
             ],
-            rooms: ['Deluxe Patient Suite', 'Family Lounge', 'Comfortable Electric Bed'],
+            rooms: [
+                'Deluxe Patient Suite',
+                'Family Lounge',
+                'Comfortable Electric Bed',
+            ],
             consultationsRow: 'Consultations',
             free: 'FREE',
             freeConsultationsNote: 'Free consultations included',
             contactTitle: 'Book Your Consultation',
-            contactLead: 'Leave your details and our OB/GYN coordinator will call you back shortly to confirm your appointment and walk you through the package details.',
+            contactLead:
+                'Leave your details and our OB/GYN coordinator will call you back shortly to confirm your appointment and walk you through the package details.',
             forInquiries: 'For Inquiries',
             whatsappChat: 'Chat with our team',
             openInMaps: 'Open in Maps',
@@ -542,8 +551,10 @@ export const translations = {
                 afternoon: 'Afternoon · 12 – 4 PM',
                 evening: 'Evening · 4 – 8 PM',
                 notes: 'Notes',
-                notesPlaceholder: 'Estimated due date, language preference, anything else we should know…',
-                consent: 'By submitting you agree to be contacted by Dar As Salama Medical Hospital. We never share your details.',
+                notesPlaceholder:
+                    'Estimated due date, language preference, anything else we should know…',
+                consent:
+                    'By submitting you agree to be contacted by Dar As Salama Medical Hospital. We never share your details.',
                 submit: 'Submit Request',
                 sending: 'Sending…',
                 thankYouTitle: "Thank you — we'll be in touch.",
@@ -792,6 +803,7 @@ export const translations = {
             bookViaWhatsapp: 'احجز',
             offer: 'عرض',
             package: 'باقة',
+            interestedIn: 'أرغب بالاستفسار عن:',
         },
         callback: {
             formTitle: 'طلب اتصال',
@@ -1052,7 +1064,8 @@ export const translations = {
         obgyn: {
             kicker: 'قسم النساء والولادة',
             heroTitle: 'لأن سلامتك تهمنا',
-            heroLead: 'رحلة رعاية متكاملة للأم والطفل — باقات ولادة مخفضة، غرف خاصة بضيافة فندقية، متابعة الحمل، ونقل بعد الولادة. كل ذلك في مكان واحد.',
+            heroLead:
+                'رحلة رعاية متكاملة للأم والطفل — باقات ولادة مخفضة، غرف خاصة بضيافة فندقية، متابعة الحمل، ونقل بعد الولادة. كل ذلك في مكان واحد.',
             explorePackages: 'استكشفي الباقات',
             meetDoctors: 'تعرفي على أطبائنا',
             bookConsultation: 'احجزي استشارة',
@@ -1062,14 +1075,16 @@ export const translations = {
             priceLabel: 'السعر',
             ourSpecialists: 'أطباؤنا المتخصصون',
             doctorsTitle: 'تعرّفي على أطبائنا',
-            doctorsLead: 'فريق من استشاريي وأخصائيي أمراض النساء والتوليد، ملتزمون بتقديم تجربة ولادة هادئة وكريمة لكل أم.',
+            doctorsLead:
+                'فريق من استشاريي وأخصائيي أمراض النساء والتوليد، ملتزمون بتقديم تجربة ولادة هادئة وكريمة لكل أم.',
             credentials: 'الشهادات',
             services: 'الخدمات',
             bookAppointment: 'احجز موعداً',
             whatsapp: 'واتساب',
             roomsEyebrow: 'غرف فندقية',
             roomsTitle: 'غرف خاصة وضيافة فندقية',
-            roomsLead: 'كل باقة ولادة تشمل غرفة خاصة بضيافة فندقية — صالة عائلية هادئة، سرير كهربائي مريح، وخدمات ضيافة مميزة.',
+            roomsLead:
+                'كل باقة ولادة تشمل غرفة خاصة بضيافة فندقية — صالة عائلية هادئة، سرير كهربائي مريح، وخدمات ضيافة مميزة.',
             roomsStats: [
                 { value: '24 / 7', label: 'طاقم تمريض' },
                 { value: 'Wi-Fi', label: 'إنترنت مجاني' },
@@ -1081,7 +1096,8 @@ export const translations = {
             free: 'مجاناً',
             freeConsultationsNote: 'استشارتان مجانيتان',
             contactTitle: 'احجزي استشارتك',
-            contactLead: 'اتركي تفاصيلك وسيتواصل معك منسقنا في أقرب وقت لتأكيد موعدك وشرح تفاصيل الباقة.',
+            contactLead:
+                'اتركي تفاصيلك وسيتواصل معك منسقنا في أقرب وقت لتأكيد موعدك وشرح تفاصيل الباقة.',
             forInquiries: 'للاستفسارات',
             whatsappChat: 'تحدثي مع فريقنا',
             openInMaps: 'فتح في الخرائط',
@@ -1101,8 +1117,10 @@ export const translations = {
                 afternoon: 'ظهراً · 12 – 4',
                 evening: 'مساءً · 4 – 8',
                 notes: 'ملاحظات',
-                notesPlaceholder: 'موعد الولادة المتوقع، لغة التواصل المفضلة، أو أي شيء آخر…',
-                consent: 'بالإرسال، توافقين على التواصل معك من قبل مستشفى دار السلامة الطبية. لن نشارك بياناتك أبداً.',
+                notesPlaceholder:
+                    'موعد الولادة المتوقع، لغة التواصل المفضلة، أو أي شيء آخر…',
+                consent:
+                    'بالإرسال، توافقين على التواصل معك من قبل مستشفى دار السلامة الطبية. لن نشارك بياناتك أبداً.',
                 submit: 'إرسال',
                 sending: 'جارٍ الإرسال…',
                 thankYouTitle: 'شكراً لك — سنتواصل معك قريباً.',
@@ -1133,7 +1151,8 @@ export const translations = {
         obgyn: {
             kicker: 'شعبہ زچگی و امراض نسواں',
             heroTitle: 'محفوظ زچگی کا آغاز سلامہ سے',
-            heroLead: 'ماں اور بچے کے لیے ایک مکمل نگہداشت کا سفر — رعایتی ڈیلیوری پیکجز، مہمان نوازی کے ساتھ نجی کمرے، قبل از پیدائش دیکھ بھال، اور ڈیلیوری کے بعد ٹرانسپورٹ۔ سب ایک جگہ پر۔',
+            heroLead:
+                'ماں اور بچے کے لیے ایک مکمل نگہداشت کا سفر — رعایتی ڈیلیوری پیکجز، مہمان نوازی کے ساتھ نجی کمرے، قبل از پیدائش دیکھ بھال، اور ڈیلیوری کے بعد ٹرانسپورٹ۔ سب ایک جگہ پر۔',
             explorePackages: 'پیکجز دیکھیں',
             meetDoctors: 'ہمارے ڈاکٹرز سے ملیں',
             bookConsultation: 'مشاورت بک کریں',
@@ -1143,19 +1162,22 @@ export const translations = {
             priceLabel: 'قیمت',
             ourSpecialists: 'ہمارے ماہرین',
             doctorsTitle: 'ہمارے ڈاکٹرز سے ملیں',
-            doctorsLead: 'OB/GYN ماہرین کی ایک ٹیم، ہر ماں کے لیے پرسکون اور باوقار ڈیلیوری تجربے کے لیے پرعزم۔',
+            doctorsLead:
+                'OB/GYN ماہرین کی ایک ٹیم، ہر ماں کے لیے پرسکون اور باوقار ڈیلیوری تجربے کے لیے پرعزم۔',
             credentials: 'اسناد',
             services: 'خدمات',
             bookAppointment: 'اپوائنٹمنٹ بک کریں',
             whatsapp: 'واٹس ایپ',
             roomsEyebrow: 'کمرے اور سہولیات',
             roomsTitle: 'سلامہ میں مہمان نوازی',
-            roomsLead: 'ہر ڈیلیوری پیکج میں پرائیویٹ کمرہ شامل ہے — خاموش فیملی لاؤنج، آرام دہ الیکٹرک بیڈ، اور کیٹرنگ کی خدمات۔',
+            roomsLead:
+                'ہر ڈیلیوری پیکج میں پرائیویٹ کمرہ شامل ہے — خاموش فیملی لاؤنج، آرام دہ الیکٹرک بیڈ، اور کیٹرنگ کی خدمات۔',
             consultationsRow: 'مشاورتیں',
             free: 'مفت',
             freeConsultationsNote: '2 مفت مشاورتیں شامل ہیں',
             contactTitle: 'اپنی مشاورت بک کریں',
-            contactLead: 'اپنی تفصیلات چھوڑیں اور ہمارا کوآرڈینیٹر جلد ہی آپ کو واپس کال کرے گا۔',
+            contactLead:
+                'اپنی تفصیلات چھوڑیں اور ہمارا کوآرڈینیٹر جلد ہی آپ کو واپس کال کرے گا۔',
             forInquiries: 'پوچھ گچھ کے لیے',
             whatsappChat: 'ہماری ٹیم سے چیٹ کریں',
             openInMaps: 'نقشے میں کھولیں',
@@ -1175,8 +1197,10 @@ export const translations = {
                 afternoon: 'دوپہر · 12 – 4',
                 evening: 'شام · 4 – 8',
                 notes: 'نوٹس',
-                notesPlaceholder: 'متوقع تاریخ پیدائش، زبان کی ترجیح، یا کوئی اور بات…',
-                consent: 'جمع کروانے سے آپ ہسپتال کے رابطے کے لیے رضامند ہیں۔ ہم آپ کی تفصیلات کبھی شیئر نہیں کرتے۔',
+                notesPlaceholder:
+                    'متوقع تاریخ پیدائش، زبان کی ترجیح، یا کوئی اور بات…',
+                consent:
+                    'جمع کروانے سے آپ ہسپتال کے رابطے کے لیے رضامند ہیں۔ ہم آپ کی تفصیلات کبھی شیئر نہیں کرتے۔',
                 submit: 'درخواست جمع کریں',
                 sending: 'بھیج رہا ہے…',
                 thankYouTitle: 'شکریہ — ہم جلد رابطہ کریں گے۔',
@@ -1207,7 +1231,8 @@ export const translations = {
         obgyn: {
             kicker: 'OB / GYN Department',
             heroTitle: 'Ligtas na Pagiging Ina, Nagsisimula sa Salama',
-            heroLead: 'Isang kumpletong paglalakbay ng pangangalaga para sa ina at sanggol — mga diskwentong pakete ng panganganak, mga pribadong silid na may serbisyong hospitality, pagsubaybay sa pagbubuntis, at transportasyon pagkatapos manganak. Lahat sa isang lugar.',
+            heroLead:
+                'Isang kumpletong paglalakbay ng pangangalaga para sa ina at sanggol — mga diskwentong pakete ng panganganak, mga pribadong silid na may serbisyong hospitality, pagsubaybay sa pagbubuntis, at transportasyon pagkatapos manganak. Lahat sa isang lugar.',
             explorePackages: 'Tingnan ang Mga Pakete',
             meetDoctors: 'Makilala ang Aming mga Doktor',
             bookConsultation: 'Mag-Book ng Konsultasyon',
@@ -1217,19 +1242,22 @@ export const translations = {
             priceLabel: 'Presyo',
             ourSpecialists: 'Aming mga Espesyalista',
             doctorsTitle: 'Makilala ang Aming mga Doktor',
-            doctorsLead: 'Isang koponan ng mga OB/GYN consultant at specialist, nakatuon sa isang mahinahon at marangal na karanasan ng panganganak para sa bawat ina.',
+            doctorsLead:
+                'Isang koponan ng mga OB/GYN consultant at specialist, nakatuon sa isang mahinahon at marangal na karanasan ng panganganak para sa bawat ina.',
             credentials: 'Mga Kredensyal',
             services: 'Mga Serbisyo',
             bookAppointment: 'Mag-Book ng Appointment',
             whatsapp: 'WhatsApp',
             roomsEyebrow: 'Mga Silid at Pasilidad',
             roomsTitle: 'Hospitality sa Salama',
-            roomsLead: 'Kasama sa bawat pakete ng panganganak ang isang pribadong silid — isang tahimik na family lounge, isang komportableng electric bed, at mga serbisyo sa catering.',
+            roomsLead:
+                'Kasama sa bawat pakete ng panganganak ang isang pribadong silid — isang tahimik na family lounge, isang komportableng electric bed, at mga serbisyo sa catering.',
             consultationsRow: 'Mga Konsultasyon',
             free: 'LIBRE',
             freeConsultationsNote: '2 Libreng Konsultasyon kasama',
             contactTitle: 'Mag-Book ng Iyong Konsultasyon',
-            contactLead: 'Iwanan ang iyong mga detalye at ang aming OB/GYN coordinator ay tatawag sa inyo sa lalong madaling panahon.',
+            contactLead:
+                'Iwanan ang iyong mga detalye at ang aming OB/GYN coordinator ay tatawag sa inyo sa lalong madaling panahon.',
             forInquiries: 'Para sa Mga Katanungan',
             whatsappChat: 'Makipag-chat sa aming koponan',
             openInMaps: 'Buksan sa Maps',
@@ -1249,12 +1277,15 @@ export const translations = {
                 afternoon: 'Hapon · 12 – 4 PM',
                 evening: 'Gabi · 4 – 8 PM',
                 notes: 'Mga Tala',
-                notesPlaceholder: 'Tinatayang petsa ng panganganak, gustong wika, o iba pang dapat naming malaman…',
-                consent: 'Sa pag-submit, sumasang-ayon kayo na makipag-ugnayan ang ospital. Hindi namin ibabahagi ang inyong mga detalye.',
+                notesPlaceholder:
+                    'Tinatayang petsa ng panganganak, gustong wika, o iba pang dapat naming malaman…',
+                consent:
+                    'Sa pag-submit, sumasang-ayon kayo na makipag-ugnayan ang ospital. Hindi namin ibabahagi ang inyong mga detalye.',
                 submit: 'I-submit ang Kahilingan',
                 sending: 'Ipinapadala…',
                 thankYouTitle: 'Salamat — makikipag-ugnayan kami sa inyo.',
-                thankYouBody: 'Isa sa aming mga coordinator ang makikipag-ugnayan sa inyo sa lalong madaling panahon.',
+                thankYouBody:
+                    'Isa sa aming mga coordinator ang makikipag-ugnayan sa inyo sa lalong madaling panahon.',
             },
         },
     },
