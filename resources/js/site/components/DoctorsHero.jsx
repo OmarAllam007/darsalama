@@ -1,4 +1,4 @@
-import { LayoutGrid, Stethoscope } from 'lucide-react';
+import { LayoutGrid, Sparkles, Stethoscope } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -11,7 +11,13 @@ const slides = Object.entries(
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, src]) => src);
 
-export default function DoctorsHero({ onBrowseDepartments, onBrowseDoctors }) {
+export default function DoctorsHero({
+    eyebrow = undefined,
+    title = undefined,
+    intro = undefined,
+    onBrowseDepartments,
+    onBrowseDoctors,
+}) {
     const { t } = useLanguage();
     const [index, setIndex] = useState(0);
 
@@ -26,28 +32,32 @@ export default function DoctorsHero({ onBrowseDepartments, onBrowseDoctors }) {
 
     return (
         <>
-            <div className="cin-hero">
+            <section className="cin-hero page-banner page-banner--doctors">
                 {slides.map((src, i) => (
                     <img
                         key={src}
                         src={src}
                         alt=""
-                        className="cin-hero-photo"
+                        className="cin-hero-photo page-banner__img"
                         style={{ opacity: i === index ? 1 : 0 }}
                     />
                 ))}
-                <div className="cin-overlay" />
-                <div className="cin-content">
-                    <div className="cin-tag">
+                <div className="cin-overlay page-banner__scrim" />
+                <Sparkles className="page-banner__mark" aria-hidden="true" />
+                <div className="cin-content page-banner__inner container">
+                    <p className="cin-tag page-banner__eyebrow">
                         <span className="cin-dot" />
-                        {t('doctorsHero.tag')}
-                    </div>
+                        {eyebrow ?? t('doctorsHero.tag')}
+                    </p>
                     <h1>
-                        {t('doctorsHero.titleLines').map((line) => (
-                            <span key={line}>{line}</span>
-                        ))}
+                        {title ??
+                            t('doctorsHero.titleLines').map((line) => (
+                                <span key={line}>{line}</span>
+                            ))}
                     </h1>
-                    <p className="cin-sub">{t('doctorsHero.sub')}</p>
+                    <p className="cin-sub page-banner__intro">
+                        {intro ?? t('doctorsHero.sub')}
+                    </p>
                     <div className="cin-cta">
                         <button
                             type="button"
@@ -67,8 +77,8 @@ export default function DoctorsHero({ onBrowseDepartments, onBrowseDoctors }) {
                         </button>
                     </div>
                 </div>
-            </div>
-            <div className="cin-gold-line" />
+                <div className="page-banner__gold-line" />
+            </section>
         </>
     );
 }

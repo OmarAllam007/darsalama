@@ -171,7 +171,9 @@ function DoctorCard({
                 }
             }}
         >
-            <div className={doctor.image ? 'doc-portrait' : 'doc-portrait mono'}>
+            <div
+                className={doctor.image ? 'doc-portrait' : 'doc-portrait mono'}
+            >
                 {doctor.image ? (
                     <img
                         src={`/storage/${doctor.image}`}
@@ -440,39 +442,28 @@ export default function Doctors({
             </Head>
 
             <DoctorsHero
+                eyebrow={t('doctors.eyebrow')}
+                title={t('doctors.title')}
+                intro={t('doctors.intro')}
                 onBrowseDepartments={() => {
                     setDetail(null);
                     setView('departments');
-                    document
-                        .getElementById('toolbar')
-                        ?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start',
-                        });
+                    document.getElementById('toolbar')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                    });
                 }}
                 onBrowseDoctors={() => {
                     setDetail(null);
                     setView('doctors');
-                    document
-                        .getElementById('toolbar')
-                        ?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start',
-                        });
+                    document.getElementById('toolbar')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                    });
                 }}
             />
 
             <div className="dsm dsm-page" dir={isRtl ? 'rtl' : 'ltr'}>
-                <section className="intro">
-                    <div className="eyebrow">
-                        <span className="dot" />
-                        {t('doctors.eyebrow')}
-                    </div>
-                    <h1>{t('doctors.title')}</h1>
-                    <p className="sub">{t('doctors.intro')}</p>
-                    <span className="rule" />
-                </section>
-
                 <div className="toolbar" id="toolbar">
                     <div className="mode-toggle">
                         <button

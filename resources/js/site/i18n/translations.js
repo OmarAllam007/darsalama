@@ -29,8 +29,14 @@ export const translations = {
             lede: 'Experience exceptional healthcare with our team of dedicated professionals, advanced technology, and patient-centered approach.',
             cta1: 'Book an appointment',
             cta2: 'Call',
+            explore: 'Explore our services',
+            trust: 'Trusted care in Khobar since 1976',
+            needCare: 'Need care now?',
         },
         features: {
+            eyebrow: 'Care, thoughtfully delivered',
+            heading: 'Everything you need, connected under one roof.',
+            intro: 'From everyday consultations to urgent care, every part of your visit is designed around clarity, comfort, and clinical confidence.',
             items: [
                 {
                     title: 'Expert Care',
@@ -53,6 +59,10 @@ export const translations = {
         why: {
             eyebrow: 'Why choose Dar As Salama',
             heading: 'Expertise and technology, delivered with genuine care',
+            intro: 'We combine the personal attention of a community hospital with the standards, systems, and specialists expected from modern healthcare.',
+            proofLabel: 'Established in Khobar',
+            proofValue: 'Since 1976',
+            cta: 'Meet our medical team',
             points: [
                 {
                     title: 'Fifty years in Khobar',
@@ -74,6 +84,7 @@ export const translations = {
             body: 'Join thousands of patients who trust Dar As Salama for their care. Register today and book your first appointment in minutes.',
             cta1: 'Book an appointment',
             cta2: 'Call',
+            photoLabel: 'Care led by people',
             stats: [
                 { num: '50+', label: 'Years of excellence' },
                 { num: '45+', label: 'Expert doctors' },
@@ -83,6 +94,8 @@ export const translations = {
         },
         trusted: {
             label: 'Recognised and regulated by',
+            heading: 'Standards you can trust.',
+            body: 'Our work is guided by Saudi healthcare regulators, national quality frameworks, and trusted insurance infrastructure.',
             alts: {
                 'acc1.png':
                     'CBAHI — Saudi Central Board for Accreditation of Healthcare Institutions',
@@ -127,6 +140,20 @@ export const translations = {
             eyebrow: 'About Us',
             title: 'Dar As Salama',
             intro: "For over fifty years, we've been committed to providing exceptional healthcare services with compassion, excellence, and innovation at the heart of everything we do.",
+            discoverStory: 'Discover our story',
+            exploreServices: 'Explore our services',
+            established: 'Established',
+            storyEyebrow: 'Our foundation',
+            storyHeading: 'A legacy of care, built with Khobar.',
+            missionLabel: 'What guides us',
+            visionLabel: 'Where we are going',
+            valuesIntro:
+                'Four principles shape every decision, every interaction, and every patient journey.',
+            stats: [
+                { value: '50+', label: 'Years serving Khobar' },
+                { value: '15+', label: 'Medical specialties' },
+                { value: '24 / 7', label: 'Emergency care' },
+            ],
             mission: {
                 heading: 'Our Mission',
                 body: 'To provide comprehensive, compassionate, and high-quality healthcare services that improve the health and well-being of our community. We are committed to advancing medical knowledge, educating future healthcare professionals, and delivering patient-centred care with dignity and respect.',
@@ -530,6 +557,26 @@ export const translations = {
             eyebrow: 'Offers',
             title: 'Our Latest Offers',
             intro: 'Seasonal packages and promotions from Dar As Salama Medical Hospital.',
+            liveOffers: 'current offers',
+            browseEyebrow: 'Care made accessible',
+            browseHeading: 'Explore our current packages',
+            browseBody:
+                'Browse each offer, then speak with our team to confirm availability and find the right care for you.',
+            current: 'Current offer',
+            featured: 'Featured package',
+            offerLabel: 'Offer',
+            detailBody:
+                'This campaign is available for a limited time. Our care coordinators can explain the included services and help you arrange your visit.',
+            assurance: 'Hospital-led care from trusted clinical teams',
+            callUs: 'Call for details',
+            enquire: 'Ask about this offer',
+            bookAppointment: 'Book an appointment',
+            fineprint:
+                'Availability and terms may vary. Please confirm with our team before your visit.',
+            previous: 'Previous offer',
+            next: 'Next offer',
+            thumbnailLabel: 'Choose an offer',
+            empty: 'New offers are coming soon.',
         },
         obgyn: {
             kicker: 'OB / GYN Department',
@@ -637,8 +684,14 @@ export const translations = {
             lede: 'استمتع برعاية صحية استثنائية مع فريقنا من المتخصصين المتفانين، وأحدث التقنيات، ونهج يركّز على المريض.',
             cta1: 'احجز موعدك',
             cta2: 'اتصل',
+            explore: 'استكشف خدماتنا',
+            trust: 'رعاية موثوقة في الخبر منذ عام 1976',
+            needCare: 'تحتاج إلى رعاية الآن؟',
         },
         features: {
+            eyebrow: 'رعاية مصممة بعناية',
+            heading: 'كل ما تحتاجه، متكامل تحت سقف واحد.',
+            intro: 'من الاستشارات اليومية إلى الرعاية العاجلة، صُممت كل تفاصيل زيارتك لتمنحك الوضوح والراحة والثقة الطبية.',
             items: [
                 {
                     title: 'رعاية متخصصة',
@@ -661,6 +714,10 @@ export const translations = {
         why: {
             eyebrow: 'لماذا تختار دار السلامة',
             heading: 'خبرة وتقنية، بلمسة إنسانية صادقة',
+            intro: 'نجمع بين الاهتمام الشخصي الذي يميز مستشفى المجتمع، والمعايير والأنظمة والتخصصات التي تتطلبها الرعاية الصحية الحديثة.',
+            proofLabel: 'تأسس في الخبر',
+            proofValue: 'منذ 1976',
+            cta: 'تعرّف على فريقنا الطبي',
             points: [
                 {
                     title: 'خمسون عامًا في الخبر',
@@ -682,6 +739,7 @@ export const translations = {
             body: 'انضم إلى آلاف المرضى الذين يثقون بدار السلامة لرعايتهم. سجّل اليوم واحجز موعدك الأول خلال دقائق.',
             cta1: 'احجز موعدك',
             cta2: 'اتصل',
+            photoLabel: 'رعاية يقودها الإنسان',
             stats: [
                 { num: '+50', label: 'عامًا من التميز' },
                 { num: '+45', label: 'طبيبًا خبيرًا' },
@@ -691,6 +749,8 @@ export const translations = {
         },
         trusted: {
             label: 'معتمدون ومرخّصون من',
+            heading: 'معايير تمنحك الثقة.',
+            body: 'نسترشد في عملنا بالجهات الصحية السعودية، وأطر الجودة الوطنية، ومنظومة التأمين الصحي الموثوقة.',
             alts: {
                 'acc1.png': 'المركز السعودي لاعتماد المنشآت الصحية (CBAHI)',
                 'acc2.png': 'رؤية 2030 — المملكة العربية السعودية',
@@ -734,6 +794,20 @@ export const translations = {
             eyebrow: 'من نحن',
             title: 'دار السلامة',
             intro: 'منذ أكثر من خمسين عامًا، ونحن ملتزمون بتقديم رعاية صحية استثنائية، جاعلين التعاطف والتميز والابتكار في صميم كل ما نقوم به.',
+            discoverStory: 'اكتشف قصتنا',
+            exploreServices: 'استكشف خدماتنا',
+            established: 'تأسس عام',
+            storyEyebrow: 'أساسنا',
+            storyHeading: 'إرث من الرعاية، نما مع مدينة الخبر.',
+            missionLabel: 'ما يرشدنا',
+            visionLabel: 'إلى أين نتجه',
+            valuesIntro:
+                'أربعة مبادئ تشكّل كل قرار وكل تفاعل وكل رحلة رعاية لمريض.',
+            stats: [
+                { value: '+50', label: 'عامًا في خدمة الخبر' },
+                { value: '+15', label: 'تخصصًا طبيًا' },
+                { value: '24 / 7', label: 'رعاية طوارئ' },
+            ],
             mission: {
                 heading: 'رسالتنا',
                 body: 'تقديم رعاية صحية شاملة وعالية الجودة، تُحسّن صحة مجتمعنا وسلامته. نلتزم بتطوير المعرفة الطبية، وتأهيل الكوادر الصحية المستقبلية، وتقديم رعاية تتمحور حول المريض بكرامة واحترام.',
@@ -1144,6 +1218,26 @@ export const translations = {
             eyebrow: 'العروض',
             title: 'أحدث عروضنا',
             intro: 'باقات وعروض موسمية من مستشفى دار السلامة الطبية.',
+            liveOffers: 'عروض حالية',
+            browseEyebrow: 'رعاية في متناولك',
+            browseHeading: 'استكشف باقاتنا الحالية',
+            browseBody:
+                'تصفّح العروض وتحدث مع فريقنا للتأكد من التوفر واختيار الرعاية الأنسب لك.',
+            current: 'العرض الحالي',
+            featured: 'باقة مميزة',
+            offerLabel: 'العرض',
+            detailBody:
+                'هذه الحملة متاحة لفترة محدودة. يمكن لمنسقي الرعاية شرح الخدمات المشمولة ومساعدتك في ترتيب زيارتك.',
+            assurance: 'رعاية طبية موثوقة يقدمها فريق المستشفى',
+            callUs: 'اتصل للتفاصيل',
+            enquire: 'استفسر عن العرض',
+            bookAppointment: 'احجز موعدًا',
+            fineprint:
+                'قد تختلف شروط وتوفر العرض. يرجى التأكد من فريقنا قبل الزيارة.',
+            previous: 'العرض السابق',
+            next: 'العرض التالي',
+            thumbnailLabel: 'اختر عرضًا',
+            empty: 'عروض جديدة قريبًا.',
         },
         obgyn: {
             kicker: 'قسم النساء والولادة',
