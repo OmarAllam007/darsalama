@@ -18,8 +18,11 @@ class FeedbackController extends Controller
     {
         $validated = $request->validate([
             'rating' => ['required', Rule::in(['terrible', 'bad', 'okay', 'good', 'excellent'])],
-            'mobile' => ['nullable', 'required_if:rating,terrible,bad', 'string', 'max:32'],
+            // Saudi mobile as typed behind the +966 prefix, with a leading 0 tolerated.
+            'mobile' => ['nullable', 'required_if:rating,terrible,bad', 'string', 'regex:/^0?5\d{8}$/'],
             'notes' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'mobile.regex' => 'Enter a valid mobile number: 9 digits starting with 5.',
         ]);
 
         $feedback = Feedback::create($validated);

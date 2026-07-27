@@ -93,8 +93,16 @@ export const translations = {
         },
         footer: {
             tag: 'Modern medicine, rooted in trust. Serving Khobar and the Eastern Province for over fifty years.',
+            careEyebrow: 'Care when you need it',
+            careHeading: 'Your health should never have to wait.',
+            careBody:
+                'Speak with our care team or book your next visit in just a few steps.',
+            callNow: 'Call our team',
+            bookNow: 'Book an appointment',
+            trustNote: 'Trusted healthcare in Khobar since 1976',
             contactHeading: 'Contact',
             appHeading: 'Get the app',
+            appBody: 'Appointments and hospital services, wherever you are.',
             exploreHeading: 'Explore',
             exploreLinks: [
                 { to: '/', label: 'Home' },
@@ -105,8 +113,14 @@ export const translations = {
                 { to: '/#book', label: 'Book a visit' },
             ],
             phone: '0512 345 678',
+            phoneLabel: 'Call us',
             email: 'info@darsalama.com',
+            emailLabel: 'Email',
             address: 'Khobar, Saudi Arabia',
+            locationLabel: 'Visit us',
+            emergencyLabel: 'Emergency care',
+            openAllDay: 'Open 24 hours, every day',
+            backToTop: 'Back to top',
             copyright: '© 2026 Dar As Salama Hospital. All rights reserved.',
         },
         about: {
@@ -475,6 +489,8 @@ export const translations = {
                 subject: 'Subject',
                 message: 'Your message',
                 submit: 'Send message',
+                consent:
+                    'By submitting you agree to be contacted by Dar As Salama Medical Hospital. We never share your details.',
                 sentHeading: 'Message sent',
                 sentBody:
                     'Thanks for reaching out — our team will get back to you shortly.',
@@ -505,6 +521,8 @@ export const translations = {
             thanksHeading: 'Thank you for your feedback',
             thanksBody:
                 "We've received your response and will use it to improve your next visit.",
+            errorBody:
+                'We could not send your feedback. Check the mobile number (9 digits starting with 5) and try again.',
             redirectNote: 'Taking you to Google so you can share your review…',
             googleReviewCta: 'Leave a Google review',
         },
@@ -682,8 +700,16 @@ export const translations = {
         },
         footer: {
             tag: 'طب حديث متجذر في الثقة. نخدم الخبر والمنطقة الشرقية منذ أكثر من خمسين عامًا.',
+            careEyebrow: 'رعاية وقتما تحتاجها',
+            careHeading: 'صحتك لا تحتمل الانتظار.',
+            careBody:
+                'تحدث مع فريق الرعاية أو احجز زيارتك القادمة بخطوات بسيطة.',
+            callNow: 'اتصل بفريقنا',
+            bookNow: 'احجز موعدًا',
+            trustNote: 'رعاية صحية موثوقة في الخبر منذ عام 1976',
             contactHeading: 'تواصل معنا',
             appHeading: 'حمّل التطبيق',
+            appBody: 'مواعيدك وخدمات المستشفى معك أينما كنت.',
             exploreHeading: 'روابط',
             exploreLinks: [
                 { to: '/', label: 'الرئيسية' },
@@ -694,8 +720,14 @@ export const translations = {
                 { to: '/#book', label: 'احجز زيارة' },
             ],
             phone: '0512 345 678',
+            phoneLabel: 'اتصل بنا',
             email: 'info@darsalama.com',
+            emailLabel: 'البريد الإلكتروني',
             address: 'الخبر، المملكة العربية السعودية',
+            locationLabel: 'موقعنا',
+            emergencyLabel: 'رعاية الطوارئ',
+            openAllDay: 'نعمل على مدار الساعة يوميًا',
+            backToTop: 'العودة للأعلى',
             copyright: '© 2026 مستشفى دار السلامة. جميع الحقوق محفوظة.',
         },
         about: {
@@ -1072,6 +1104,8 @@ export const translations = {
                 subject: 'الموضوع',
                 message: 'رسالتك',
                 submit: 'إرسال الرسالة',
+                consent:
+                    'بالإرسال، توافق على أن يتواصل معك مستشفى دار السلامة الطبية. لن نشارك بياناتك أبداً.',
                 sentHeading: 'تم إرسال رسالتك',
                 sentBody:
                     'شكرًا لتواصلك معنا — سيقوم فريقنا بالرد عليك في أقرب وقت.',
@@ -1101,6 +1135,8 @@ export const translations = {
             submit: 'إرسال الملاحظات',
             thanksHeading: 'شكرًا لملاحظاتك',
             thanksBody: 'تم استلام ردك وسنستخدمه لتحسين زيارتك القادمة.',
+            errorBody:
+                'تعذّر إرسال ملاحظاتك. تحقق من رقم الجوال (٩ أرقام تبدأ بـ 5) وحاول مرة أخرى.',
             redirectNote: 'يتم تحويلك إلى Google لمشاركة تقييمك…',
             googleReviewCta: 'اترك تقييمًا على Google',
         },

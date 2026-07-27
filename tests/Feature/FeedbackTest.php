@@ -56,6 +56,29 @@ test('the mobile number is required for negative ratings', function () {
     Mail::assertNothingSent();
 });
 
+test('the mobile number must be a saudi mobile when given', function (string $mobile, bool $valid) {
+    Mail::fake();
+
+    $response = $this->post(route('feedback.store'), [
+        'rating' => 'bad',
+        'mobile' => $mobile,
+        'notes' => 'Please follow up',
+    ]);
+
+    $valid
+        ? $response->assertSessionHasNoErrors()
+        : $response->assertSessionHasErrors('mobile');
+
+    expect(Feedback::count())->toBe($valid ? 1 : 0);
+})->with([
+    ['512345678', true],
+    ['0512345678', true],
+    ['call me', false],
+    ['05123456ab', false],
+    ['412345678', false],
+    ['+966512345678', false],
+]);
+
 test('a rating is required and must be valid', function () {
     $this->post(route('feedback.store'), [
         'rating' => 'amazing',

@@ -6,6 +6,7 @@ import PageBanner from '@/site/components/PageBanner'
 import Pearls from '@/site/components/Pearls'
 import { PHONE, PHONE_TEL, EMERGENCY_PHONE, EMERGENCY_TEL } from '@/site/i18n/constants'
 import { useLanguage } from '@/site/i18n/LanguageContext'
+import { saudiPhoneInputProps } from '@/site/saudiPhoneInput'
 
 const MAP_DESTINATION = '26.2827618,50.2127421'
 const MAP_SRC = `https://www.google.com/maps?q=${MAP_DESTINATION}&output=embed`
@@ -64,6 +65,7 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
   const [rating, setRating] = useState<string | null>(null)
   const [feedbackSent, setFeedbackSent] = useState(false)
   const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
+  const [feedbackFailed, setFeedbackFailed] = useState(false)
   const [redirectingToReview, setRedirectingToReview] = useState(false)
 
   const ratingLabels = t('feedback.ratings')
@@ -87,8 +89,12 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
       {
         preserveScroll: true,
         preserveState: true,
-        onStart: () => setFeedbackSubmitting(true),
+        onStart: () => {
+          setFeedbackSubmitting(true)
+          setFeedbackFailed(false)
+        },
         onFinish: () => setFeedbackSubmitting(false),
+        onError: () => setFeedbackFailed(true),
         onSuccess: () => {
           setFeedbackSent(true)
           if (googleReviewUrl && POSITIVE_RATINGS.includes(rating)) {
@@ -150,6 +156,11 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
 
                 {rating && (
                   <form className="feedback-form" onSubmit={handleFeedbackSubmit}>
+                    {feedbackFailed && (
+                      <p className="feedback-form__error" role="alert">
+                        {t('feedback.errorBody')}
+                      </p>
+                    )}
                     <label className="feedback-form__label" htmlFor="fb-mobile">
                       {t('feedback.mobileLabel')}{' '}
                       <span className="feedback-form__hint">
@@ -161,7 +172,7 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
                       <input
                         id="fb-mobile"
                         name="mobile"
-                        type="tel"
+                        {...saudiPhoneInputProps}
                         placeholder={t('feedback.mobilePlaceholder')}
                         required={mobileRequired}
                       />
@@ -172,8 +183,11 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
                     </label>
                     <textarea id="fb-notes" name="notes" rows={5} placeholder={t('feedback.improvePlaceholder')} />
 
-                    <button type="submit" className="btn btn--coral" disabled={feedbackSubmitting}>
+                    <button type="submit" className="contact-form__submit" disabled={feedbackSubmitting}>
                       {t('feedback.submit')}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" width="15" height="15">
+                        <path d="M5 12h14M13 5l7 7-7 7" />
+                      </svg>
                     </button>
                   </form>
                 )}
@@ -232,6 +246,11 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
           <div className="contact-form-card">
             {sent ? (
               <div className="contact-form__sent">
+                <span className="contact-form__check">
+                  <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+                    <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                  </svg>
+                </span>
                 <h2>{t('contact.form.sentHeading')}</h2>
                 <p>{t('contact.form.sentBody')}</p>
               </div>
@@ -240,18 +259,41 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
                 <h2>{t('contact.form.heading')}</h2>
                 <p className="contact-form-card__sub">{t('contact.form.sub')}</p>
                 <form className="contact-form" onSubmit={handleMessageSubmit}>
-                  <div className="contact-form__row">
-                    <input name="name" required placeholder={t('contact.form.name')} />
-                    <input name="email" type="email" required placeholder={t('contact.form.email')} />
+                  <div className="contact-form__grid">
+                    <div className="contact-form__field">
+                      <label htmlFor="cf-name">{t('contact.form.name')} *</label>
+                      <input id="cf-name" name="name" required minLength={2} placeholder="Jane Doe" />
+                    </div>
+                    <div className="contact-form__field">
+                      <label htmlFor="cf-email">{t('contact.form.email')} *</label>
+                      <input id="cf-email" name="email" type="email" required placeholder="name@example.com" />
+                    </div>
+                    <div className="contact-form__field">
+                      <label htmlFor="cf-phone">{t('contact.form.phone')} *</label>
+                      <div className="contact-form__phone">
+                        <span className="cc">+966</span>
+                        <input id="cf-phone" name="phone" {...saudiPhoneInputProps} />
+                      </div>
+                    </div>
+                    <div className="contact-form__field">
+                      <label htmlFor="cf-subject">{t('contact.form.subject')} *</label>
+                      <input id="cf-subject" name="subject" required placeholder={t('contact.form.subject')} />
+                    </div>
+                    <div className="contact-form__field is-full">
+                      <label htmlFor="cf-message">{t('contact.form.message')} *</label>
+                      <textarea id="cf-message" name="message" rows={5} required placeholder={t('contact.form.message')} />
+                    </div>
                   </div>
-                  <div className="contact-form__row">
-                    <input name="phone" type="tel" required placeholder={t('contact.form.phone')} />
-                    <input name="subject" required placeholder={t('contact.form.subject')} />
+
+                  <div className="contact-form__foot">
+                    <p className="contact-form__consent">{t('contact.form.consent')}</p>
+                    <button type="submit" className="contact-form__submit">
+                      {t('contact.form.submit')}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" width="15" height="15">
+                        <path d="M5 12h14M13 5l7 7-7 7" />
+                      </svg>
+                    </button>
                   </div>
-                  <textarea name="message" rows={5} required placeholder={t('contact.form.message')} />
-                  <button type="submit" className="btn btn--coral">
-                    {t('contact.form.submit')}
-                  </button>
                 </form>
               </>
             )}
@@ -264,12 +306,19 @@ export default function Contact({ googleReviewUrl }: { googleReviewUrl?: string 
           <div className="emergency-banner__card">
             <span className="emergency-banner__icon">{ALERT_ICON}</span>
             <div className="emergency-banner__text">
+              <span className="emergency-banner__badge">
+                <span className="dot" />
+                {t('contact.hoursEmergencyLabel')} · {t('contact.hoursEmergencyValue')}
+              </span>
               <h3>{t('contact.emergencyLabel')}</h3>
               <p>{t('contact.emergencyNote')}</p>
             </div>
             <a className="emergency-banner__cta" href={EMERGENCY_TEL}>
               {PHONE_ICON}
-              <bdi dir="ltr">{EMERGENCY_PHONE}</bdi>
+              <span>
+                <small>{t('contact.phoneLabel')}</small>
+                <bdi dir="ltr">{EMERGENCY_PHONE}</bdi>
+              </span>
             </a>
           </div>
         </div>
