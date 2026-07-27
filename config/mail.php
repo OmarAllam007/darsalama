@@ -128,6 +128,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Callback Request Recipients
+    |--------------------------------------------------------------------------
+    |
+    | Extra addresses copied on every callback request, comma separated.
+    |
+    */
+
+    'callback_recipients' => array_filter(array_map(
+        'trim',
+        explode(',', (string) env('MAIL_CALLBACK_RECIPIENTS', 'norah.alawwad@as-salama.com,abdulaziz.meshal@as-salama.com'))
+    )),
+
+    /*
+    |--------------------------------------------------------------------------
     | Feedback Alert Address
     |--------------------------------------------------------------------------
     |

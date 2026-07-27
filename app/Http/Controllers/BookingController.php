@@ -11,6 +11,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,7 +27,7 @@ class BookingController extends Controller
         abort_unless($doctor->is_active, 404);
 
         return Inertia::render('site/booking/show', [
-            'doctor' => $doctor->load('offers'),
+            'doctor' => $doctor->load('offers', 'department'),
             'availableWeekdays' => $doctor->availabilities()->distinct()->pluck('weekday'),
         ]);
     }
@@ -95,16 +96,19 @@ class BookingController extends Controller
     {
         $appointment->load('doctor.department');
 
-        $qrCode = new Builder(
+        // The QR code is a check-in pass: once the appointment has passed, it is dead weight.
+        $startsAt = Carbon::parse("{$appointment->date->toDateString()} {$appointment->time}", config('booking.timezone'));
+
+        $qrCode = $startsAt->isFuture() ? new Builder(
             writer: new PngWriter,
             data: route('appointments.show', $appointment),
             size: 220,
             margin: 8,
-        );
+        ) : null;
 
         return Inertia::render('site/booking/confirmation', [
             'appointment' => $appointment,
-            'qrCodeDataUri' => $qrCode->build()->getDataUri(),
+            'qrCodeDataUri' => $qrCode?->build()->getDataUri(),
         ]);
     }
 }

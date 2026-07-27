@@ -85,6 +85,43 @@ test('a guest can book an available slot and reach the confirmation page', funct
         ->assertInertia(fn ($page) => $page->where('appointment.id', $appointment->id));
 });
 
+test('the confirmation page shows a stable APT- booking reference', function () {
+    $appointment = Appointment::factory()->create([
+        'doctor_id' => bookableDoctor()->id,
+        'date' => Carbon::tomorrow()->toDateString(),
+        'time' => '09:00',
+    ]);
+
+    expect($appointment->reference)
+        ->toMatch('/^APT-[0-9A-Z]{6}$/')
+        ->toBe($appointment->fresh()->reference);
+
+    $this->get(route('appointments.show', $appointment))
+        ->assertInertia(fn ($page) => $page->where('appointment.reference', $appointment->reference));
+});
+
+test('the check-in qr code is only shown while the appointment is still upcoming', function () {
+    $doctor = bookableDoctor();
+
+    $upcoming = Appointment::factory()->create([
+        'doctor_id' => $doctor->id,
+        'date' => Carbon::tomorrow()->toDateString(),
+        'time' => '09:00',
+    ]);
+
+    $past = Appointment::factory()->create([
+        'doctor_id' => $doctor->id,
+        'date' => Carbon::yesterday()->toDateString(),
+        'time' => '09:00',
+    ]);
+
+    $this->get(route('appointments.show', $upcoming))
+        ->assertInertia(fn ($page) => $page->where('qrCodeDataUri', fn ($uri) => str_starts_with($uri, 'data:image/png')));
+
+    $this->get(route('appointments.show', $past))
+        ->assertInertia(fn ($page) => $page->where('qrCodeDataUri', null));
+});
+
 test('booking an already taken slot fails validation', function () {
     $doctor = bookableDoctor();
     $date = Carbon::tomorrow()->toDateString();

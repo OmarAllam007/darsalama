@@ -182,9 +182,12 @@ function DoctorCard({
                 )}
                 {doctor.nationality?.flag && (
                     <span className="d2-flag">
+                        {/* Sized here too: SVG flags render at their huge intrinsic size until the CSS lands. */}
                         <img
                             src={doctor.nationality.flag}
                             alt={doctor.nationality.name}
+                            width={30}
+                            height={20}
                             loading="lazy"
                         />
                     </span>

@@ -1,20 +1,14 @@
 import { Form } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import BookingController from '@/actions/App/Http/Controllers/BookingController';
+import CallbackRequestController from '@/actions/App/Http/Controllers/CallbackRequestController';
 import InputError from '@/components/input-error';
 import { useLanguage } from '@/site/i18n/LanguageContext';
+import { saudiPhoneInputProps } from '@/site/saudiPhoneInput';
 
 // Keep in sync with config/booking.php.
 const CLINIC_TIMEZONE = 'Asia/Riyadh';
 const NEXT_DAY_CUTOFF_HOUR = 20;
-
-function isoDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-}
 
 // Current date/hour in the clinic timezone, independent of the visitor's browser timezone.
 function clinicNow(): { dateIso: string; hour: number } {
@@ -43,6 +37,8 @@ function addDaysIso(iso: string, days: number): string {
     return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
 }
 
+const DAYS_SHOWN = 7;
+
 export default function BookingForm({
     doctorId,
     availableWeekdays,
@@ -51,15 +47,20 @@ export default function BookingForm({
     availableWeekdays: number[];
 }) {
     const { t, lang } = useLanguage();
+    const locale = lang === 'ar' ? 'ar' : lang === 'ur' ? 'ur' : 'en';
     const clinic = useMemo(() => clinicNow(), []);
     const todayIso = clinic.dateIso;
     const tomorrowIso = useMemo(() => addDaysIso(todayIso, 1), [todayIso]);
     const nextDayClosed = clinic.hour >= NEXT_DAY_CUTOFF_HOUR;
-    const [month, setMonth] = useState(() => {
-        const [year, monthNumber] = todayIso.split('-').map(Number);
-
-        return new Date(year, monthNumber - 1, 1);
-    });
+    // The strip always starts on today; the arrows page it a week at a time.
+    const [weekOffset, setWeekOffset] = useState(0);
+    const weekDates = useMemo(
+        () =>
+            Array.from({ length: DAYS_SHOWN }, (_, i) =>
+                addDaysIso(todayIso, weekOffset * DAYS_SHOWN + i),
+            ),
+        [todayIso, weekOffset],
+    );
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -72,146 +73,100 @@ export default function BookingForm({
         setSelectedTime(null);
     }
 
-    // Bookable dates for the displayed month, driven by the doctor's schedule
-    // (falls back to the weekly template until the month's data has loaded).
-    const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+    // Bookable dates, driven by the doctor's schedule (falls back to the weekly
+    // template until the month's data has loaded). A week can span two months.
+    const monthKeys = useMemo(
+        () => [...new Set(weekDates.map((iso) => iso.slice(0, 7)))],
+        [weekDates],
+    );
     const [daysByMonth, setDaysByMonth] = useState<Record<string, string[]>>(
         {},
     );
 
     useEffect(() => {
-        if (daysByMonth[monthKey]) {
+        const missing = monthKeys.filter((key) => !daysByMonth[key]);
+
+        if (missing.length === 0) {
             return;
         }
 
         let cancelled = false;
 
-        fetch(
-            BookingController.days.url(doctorId, { query: { month: monthKey } }),
-            { headers: { Accept: 'application/json' } },
-        )
-            .then((response) => response.json())
-            .then((data) => {
-                if (!cancelled) {
-                    setDaysByMonth((prev) => ({
-                        ...prev,
-                        [monthKey]: data.days ?? [],
-                    }));
-                }
-            });
+        missing.forEach((monthKey) => {
+            fetch(
+                BookingController.days.url(doctorId, {
+                    query: { month: monthKey },
+                }),
+                { headers: { Accept: 'application/json' } },
+            )
+                .then((response) => response.json())
+                .then((data) => {
+                    if (!cancelled) {
+                        setDaysByMonth((prev) => ({
+                            ...prev,
+                            [monthKey]: data.days ?? [],
+                        }));
+                    }
+                });
+        });
 
         return () => {
             cancelled = true;
         };
-    }, [doctorId, monthKey, daysByMonth]);
+    }, [doctorId, monthKeys, daysByMonth]);
 
-    const bookableDays = daysByMonth[monthKey];
+    const isOpen = (iso: string): boolean => {
+        const bookableDays = daysByMonth[iso.slice(0, 7)];
+        const [year, month, day] = iso.split('-').map(Number);
+        const weekday = (new Date(year, month - 1, day).getDay() + 6) % 7;
 
-    const firstOfMonth = month;
-    const daysInMonth = new Date(
-        month.getFullYear(),
-        month.getMonth() + 1,
-        0,
-    ).getDate();
-    const leadingBlanks = (firstOfMonth.getDay() + 6) % 7;
-    const days = Array.from(
-        { length: daysInMonth },
-        (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1),
-    );
+        return bookableDays
+            ? bookableDays.includes(iso)
+            : availableWeekdays.includes(weekday);
+    };
+
+    const dayLabel = (iso: string): string => {
+        const [year, month, day] = iso.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+
+        return date.toLocaleDateString(locale, {
+            month: 'long',
+            weekday: 'long',
+        });
+    };
 
     return (
         <div>
             <div>
-                <div
-                    style={{
-                        marginBottom: 14,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                    }}
-                >
+                <div className="bk-week-head">
                     <button
                         type="button"
                         className="bk-back"
-                        style={{ marginBottom: 0 }}
-                        onClick={() =>
-                            setMonth(
-                                new Date(
-                                    month.getFullYear(),
-                                    month.getMonth() - 1,
-                                    1,
-                                ),
-                            )
-                        }
+                        disabled={weekOffset === 0}
+                        onClick={() => setWeekOffset(weekOffset - 1)}
                     >
                         {lang === 'ar' ? '→' : '←'}
                     </button>
                     <p className="bk-section-label" style={{ margin: 0 }}>
-                        {month.toLocaleDateString(lang === 'ar' ? 'ar' : 'en', {
-                            month: 'long',
-                            year: 'numeric',
-                        })}
+                        {t('booking.chooseDate')}
                     </p>
                     <button
                         type="button"
                         className="bk-back"
-                        style={{ marginBottom: 0 }}
-                        onClick={() =>
-                            setMonth(
-                                new Date(
-                                    month.getFullYear(),
-                                    month.getMonth() + 1,
-                                    1,
-                                ),
-                            )
-                        }
+                        onClick={() => setWeekOffset(weekOffset + 1)}
                     >
                         {lang === 'ar' ? '←' : '→'}
                     </button>
                 </div>
 
-                <div
-                    className="bk-grid"
-                    style={{
-                        gridTemplateColumns: 'repeat(7, 1fr)',
-                        marginBottom: 4,
-                    }}
-                >
-                    {t('booking.weekdays').map((label: string) => (
-                        <div
-                            key={label}
-                            style={{
-                                textAlign: 'center',
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: '#64748b',
-                            }}
-                        >
-                            {label}
-                        </div>
-                    ))}
-                </div>
-                <div
-                    className="bk-grid"
-                    style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}
-                >
-                    {Array.from({ length: leadingBlanks }).map((_, i) => (
-                        <div key={`blank-${i}`} />
-                    ))}
-                    {days.map((day) => {
-                        const weekday = (day.getDay() + 6) % 7;
-                        const iso = isoDate(day);
-                        // Prefer the schedule-driven day set; before it loads for
-                        // this month, fall back to the weekly template.
-                        const open = bookableDays
-                            ? bookableDays.includes(iso)
-                            : availableWeekdays.includes(weekday);
-                        // Public bookings start tomorrow: today and past are closed.
+                <div className="bk-grid bk-days">
+                    {weekDates.map((iso) => {
+                        const isToday = iso === todayIso;
+                        // Public bookings start tomorrow: today is shown but not bookable.
                         const disabled =
                             iso <= todayIso ||
-                            !open ||
+                            !isOpen(iso) ||
                             (nextDayClosed && iso === tomorrowIso);
-                        const isSelected = selectedDate === iso;
 
                         return (
                             <button
@@ -219,19 +174,21 @@ export default function BookingForm({
                                 type="button"
                                 disabled={disabled}
                                 onClick={() => setSelectedDate(iso)}
-                                className={
-                                    isSelected
-                                        ? 'bk-chip is-selected'
-                                        : 'bk-chip'
-                                }
-                                style={{ padding: '8px 4px' }}
+                                className={`bk-chip bk-day${isToday ? ' is-today' : ''}${selectedDate === iso ? ' is-selected' : ''}`}
                             >
-                                {day.getDate()}
+                                <span className="n">{Number(iso.slice(8))}</span>
+                                <span className="d">
+                                    {isToday
+                                        ? `${t('booking.today')} · ${t('booking.viewOnly')}`
+                                        : dayLabel(iso)}
+                                </span>
                             </button>
                         );
                     })}
                 </div>
             </div>
+
+            {!selectedDate && <CallbackBar doctorId={doctorId} />}
 
             {selectedDate && (
                 <div style={{ marginTop: 20 }}>
@@ -335,6 +292,82 @@ export default function BookingForm({
                             </button>
                         </>
                     )}
+                </Form>
+            )}
+        </div>
+    );
+}
+
+/** Escape hatch for visitors who can't find a slot: ask the clinic to call them. */
+function CallbackBar({ doctorId }: { doctorId: number }) {
+    const { t } = useLanguage();
+    const [open, setOpen] = useState(false);
+
+    return (
+        <div className="bk-callback">
+            <button
+                type="button"
+                className="bk-callback-bar"
+                onClick={() => setOpen(!open)}
+                aria-expanded={open}
+            >
+                {t('booking.callbackBar')}
+                <span className={open ? 'caret is-open' : 'caret'}>▾</span>
+            </button>
+
+            {open && (
+                <Form
+                    {...CallbackRequestController.store.form(doctorId)}
+                    resetOnSuccess
+                    options={{ preserveScroll: true }}
+                    className="bk-callback-form"
+                >
+                    {({ processing, errors, wasSuccessful }) =>
+                        wasSuccessful ? (
+                            <p className="bk-hint">
+                                {t('booking.callbackSuccess')}
+                            </p>
+                        ) : (
+                            <>
+                                {Object.keys(errors).length > 0 && (
+                                    <p className="bk-callback-error" role="alert">
+                                        {t('booking.callbackError')}
+                                    </p>
+                                )}
+                                <input
+                                    type="hidden"
+                                    name="preferred_contact"
+                                    value="phone"
+                                />
+                                <div className="bk-field">
+                                    <label htmlFor="cb-bar-name">
+                                        {t('booking.callbackName')}
+                                    </label>
+                                    <input id="cb-bar-name" name="name" required />
+                                </div>
+                                <div className="bk-field">
+                                    <label htmlFor="cb-bar-phone">
+                                        {t('booking.callbackPhone')}
+                                    </label>
+                                    <div className="bk-phone-wrap">
+                                        <span className="bk-cc">+966</span>
+                                        <input
+                                            id="cb-bar-phone"
+                                            name="phone"
+                                            {...saudiPhoneInputProps}
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="bk-confirm"
+                                    disabled={processing}
+                                >
+                                    {t('booking.callbackSubmit')}
+                                </button>
+                            </>
+                        )
+                    }
                 </Form>
             )}
         </div>

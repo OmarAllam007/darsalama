@@ -11,6 +11,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type Appointment = {
     id: number;
+    reference: string;
     date: string;
     time: string;
     first_name: string;
@@ -158,6 +159,7 @@ export default function AppointmentsIndex({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
+                                <th className="p-3 font-medium">Reference</th>
                                 <th className="p-3 font-medium">Patient</th>
                                 <th className="p-3 font-medium">Contact</th>
                                 <th className="p-3 font-medium">Doctor</th>
@@ -170,6 +172,9 @@ export default function AppointmentsIndex({
                         <tbody>
                             {appointments.data.map((appointment) => (
                                 <tr key={appointment.id} className="border-t">
+                                    <td className="p-3 font-mono text-xs">
+                                        {appointment.reference}
+                                    </td>
                                     <td className="p-3">
                                         {appointment.first_name}{' '}
                                         {appointment.last_name}
@@ -207,7 +212,7 @@ export default function AppointmentsIndex({
                                 <tr>
                                     <td
                                         className="p-3 text-muted-foreground"
-                                        colSpan={7}
+                                        colSpan={8}
                                     >
                                         No appointments match these filters.
                                     </td>

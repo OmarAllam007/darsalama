@@ -1,6 +1,7 @@
-import { Form, Head, Link } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { Form, Head } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import CallbackRequestController from '@/actions/App/Http/Controllers/CallbackRequestController';
+import BookingModal from '@/site/components/BookingModal';
 import {
     EMERGENCY_PHONE,
     EMERGENCY_TEL,
@@ -10,6 +11,7 @@ import {
 } from '@/site/i18n/constants';
 import { useLanguage } from '@/site/i18n/LanguageContext';
 import { translations } from '@/site/i18n/translations';
+import { saudiPhoneInputProps } from '@/site/saudiPhoneInput';
 import '@/site/obgyn.css';
 
 type Feature = {
@@ -90,6 +92,7 @@ type Doctor = {
     nationality: { name: string; name_ar: string; flag: string | null } | null;
     qualifications: NamePair[];
     services: NamePair[];
+    availabilities: { weekday: number }[];
 };
 
 type Department = {
@@ -111,6 +114,14 @@ function num(amount: string | number | null): string {
     return Number(amount).toLocaleString('en-US', { maximumFractionDigits: 0 });
 }
 
+/** A crossed-out "was" price is only worth showing when it differs from the price paid. */
+function hasDiscount(pkg: Pick<Package, 'price' | 'original_price'>): boolean {
+    return (
+        pkg.original_price !== null &&
+        Number(pkg.original_price) !== Number(pkg.price)
+    );
+}
+
 export default function ObgynDepartment({
     department,
 }: {
@@ -118,6 +129,7 @@ export default function ObgynDepartment({
 }) {
     const { t, lang, dir } = useLanguage();
     const isRtl = dir === 'rtl';
+    const [bookingDoctor, setBookingDoctor] = useState<Doctor | null>(null);
 
     // Arabic titles stay Arabic regardless of the active language (the design is
     // Arabic-first with a localized secondary line), so we read them directly.
@@ -296,7 +308,7 @@ export default function ObgynDepartment({
                             >
                                 <div className="label">PRICE</div>
                                 <div className="body">
-                                    {pkg.original_price && (
+                                    {hasDiscount(pkg) && (
                                         <div className="old">
                                             {RIYAL} {num(pkg.original_price)}
                                         </div>
@@ -560,7 +572,7 @@ export default function ObgynDepartment({
                                                     </div>
                                                 ) : (
                                                     <div className="pr">
-                                                        {pkg.original_price && (
+                                                        {hasDiscount(pkg) && (
                                                             <span className="old">
                                                                 {num(pkg.original_price)}
                                                             </span>
@@ -637,6 +649,8 @@ export default function ObgynDepartment({
                                                         <img
                                                             src={doctor.nationality.flag}
                                                             alt={doctor.nationality.name}
+                                                            width={27}
+                                                            height={18}
                                                             loading="lazy"
                                                         />
                                                     </span>
@@ -697,9 +711,12 @@ export default function ObgynDepartment({
                                                     </>
                                                 )}
                                                 <div className="doc-cta">
-                                                    <Link
+                                                    <button
+                                                        type="button"
                                                         className="book"
-                                                        href={`/book/${doctor.id}`}
+                                                        onClick={() =>
+                                                            setBookingDoctor(doctor)
+                                                        }
                                                     >
                                                         {t('obgyn.bookAppointment')}
                                                         <svg
@@ -712,7 +729,7 @@ export default function ObgynDepartment({
                                                         >
                                                             <path d="M5 12h14M13 5l7 7-7 7" />
                                                         </svg>
-                                                    </Link>
+                                                    </button>
                                                     <a
                                                         className="wa"
                                                         href={WHATSAPP_LINK}
@@ -900,6 +917,7 @@ export default function ObgynDepartment({
                                             department.slug,
                                         )}
                                         resetOnSuccess
+                                        options={{ preserveScroll: true }}
                                         className="form-card reveal d2"
                                     >
                                         {({ processing, errors, wasSuccessful }) =>
@@ -925,6 +943,16 @@ export default function ObgynDepartment({
                                                     <p className="form-sub">
                                                         {t('obgyn.callback.sub')}
                                                     </p>
+
+                                                    {Object.keys(errors).length > 0 && (
+                                                        <p className="error-box" role="alert">
+                                                            {t(
+                                                                errors.callback
+                                                                    ? 'obgyn.callback.mailErrorBody'
+                                                                    : 'obgyn.callback.errorBody',
+                                                            )}
+                                                        </p>
+                                                    )}
 
                                                     <div className="form-grid">
                                                         <div className="f">
@@ -956,10 +984,7 @@ export default function ObgynDepartment({
                                                                 <input
                                                                     id="og-phone"
                                                                     name="phone"
-                                                                    required
-                                                                    placeholder="5XXXXXXXX"
-                                                                    inputMode="numeric"
-                                                                    maxLength={9}
+                                                                    {...saudiPhoneInputProps}
                                                                 />
                                                             </div>
                                                             {errors.phone && (
@@ -1180,6 +1205,12 @@ export default function ObgynDepartment({
                     </div>
                 </footer>
             </div>
+
+            <BookingModal
+                doctor={bookingDoctor}
+                open={bookingDoctor !== null}
+                onOpenChange={(open) => !open && setBookingDoctor(null)}
+            />
         </>
     );
 }

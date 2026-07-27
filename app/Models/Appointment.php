@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +13,7 @@ use Illuminate\Support\Str;
 #[Fillable(['doctor_id', 'date', 'time', 'first_name', 'last_name', 'email', 'phone', 'status'])]
 class Appointment extends Model
 {
-    /** @use HasFactory<\Database\Factories\AppointmentFactory> */
+    /** @use HasFactory<AppointmentFactory> */
     use HasFactory;
 
     protected static function booted(): void
@@ -22,6 +24,11 @@ class Appointment extends Model
     }
 
     /**
+     * @var list<string>
+     */
+    protected $appends = ['reference'];
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -29,6 +36,21 @@ class Appointment extends Model
         return [
             'date' => 'date:Y-m-d',
         ];
+    }
+
+    /**
+     * Human-readable booking reference (e.g. APT-X7M9KD), derived from the uuid
+     * so it is stable and needs no extra column.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function reference(): Attribute
+    {
+        return Attribute::get(function (): string {
+            $number = hexdec(substr(str_replace('-', '', (string) $this->uuid), 0, 12)) % (36 ** 6);
+
+            return 'APT-'.str_pad(strtoupper(base_convert((string) $number, 10, 36)), 6, '0', STR_PAD_LEFT);
+        });
     }
 
     public function getRouteKeyName(): string

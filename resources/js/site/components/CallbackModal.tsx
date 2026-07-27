@@ -12,6 +12,7 @@ import {
     WHATSAPP_LINK,
 } from '@/site/i18n/constants';
 import { useLanguage } from '@/site/i18n/LanguageContext';
+import { saudiPhoneInputProps } from '@/site/saudiPhoneInput';
 
 type Doctor = {
     id: number;
@@ -84,8 +85,7 @@ export default function CallbackModal({
                                                     <input
                                                         id="cb-phone"
                                                         name="phone"
-                                                        required
-                                                        placeholder="5XXXXXXXX"
+                                                        {...saudiPhoneInputProps}
                                                     />
                                                 </div>
                                                 <InputError

@@ -67,5 +67,20 @@ test('a guest can submit a department callback request', function () {
         ->doctor_id->toBeNull()
         ->name->toBe('Sara');
 
-    Mail::assertSent(CallbackRequestReceived::class);
+    Mail::assertSent(CallbackRequestReceived::class, fn ($mail) => $mail->hasTo('norah.alawwad@as-salama.com')
+        && $mail->hasTo('abdulaziz.meshal@as-salama.com'));
+});
+
+test('a failed notification is reported back to the visitor', function () {
+    Mail::shouldReceive('to->send')->andThrow(new RuntimeException('smtp down'));
+
+    $department = gynecologyDepartment();
+
+    $this->post(route('departments.callback-requests.store', $department), [
+        'name' => 'Sara',
+        'phone' => '0500000000',
+        'preferred_contact' => 'phone',
+    ])->assertSessionHasErrors('callback');
+
+    expect(CallbackRequest::count())->toBe(1);
 });

@@ -9,6 +9,7 @@ use App\Models\Doctor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class CallbackRequestController extends Controller
 {
@@ -17,11 +18,7 @@ class CallbackRequestController extends Controller
      */
     public function store(Request $request, Doctor $doctor): RedirectResponse
     {
-        $callbackRequest = $doctor->callbackRequests()->create($this->validated($request));
-
-        $this->notify($callbackRequest);
-
-        return back()->with('callbackRequestSubmitted', true);
+        return $this->notify($doctor->callbackRequests()->create($this->validated($request)));
     }
 
     /**
@@ -34,9 +31,7 @@ class CallbackRequestController extends Controller
             'department_id' => $department->id,
         ]);
 
-        $this->notify($callbackRequest);
-
-        return back()->with('callbackRequestSubmitted', true);
+        return $this->notify($callbackRequest);
     }
 
     /**
@@ -45,17 +40,31 @@ class CallbackRequestController extends Controller
     private function validated(Request $request): array
     {
         return $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:32'],
+            'name' => ['required', 'string', 'min:2', 'max:255'],
+            // Saudi mobile as typed behind the +966 prefix, with a leading 0 tolerated.
+            'phone' => ['required', 'string', 'regex:/^0?5\d{8}$/'],
             'package_of_interest' => ['nullable', 'string', 'max:255'],
             'best_time' => ['nullable', 'string', 'max:255'],
             'preferred_contact' => ['required', 'string', 'in:phone,whatsapp'],
             'notes' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'phone.regex' => 'Enter a valid mobile number: 9 digits starting with 5.',
         ]);
     }
 
-    private function notify(CallbackRequest $callbackRequest): void
+    /**
+     * Mail the request to the coordinators, reporting back whether it went out.
+     */
+    private function notify(CallbackRequest $callbackRequest): RedirectResponse
     {
-        Mail::to(config('mail.admin_address'))->send(new CallbackRequestReceived($callbackRequest));
+        try {
+            Mail::to(config('mail.callback_recipients'))->send(new CallbackRequestReceived($callbackRequest));
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->withErrors(['callback' => 'We saved your request but could not notify our team. Please call us to confirm.']);
+        }
+
+        return back()->with('callbackRequestSubmitted', true);
     }
 }

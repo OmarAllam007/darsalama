@@ -4310,6 +4310,85 @@ button {
     cursor: not-allowed;
     text-decoration: line-through;
 }
+.bk-week-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+.bk-back {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    font: inherit;
+    color: #15265c;
+    cursor: pointer;
+}
+.bk-back:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+.bk-days {
+    grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 440px) {
+    .bk-days {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+.bk-day {
+    padding: 12px 6px;
+}
+.bk-day .n {
+    display: block;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+.bk-day.is-today:disabled {
+    text-decoration: none;
+    opacity: 0.55;
+    background: #f1f5f9;
+}
+.bk-callback {
+    margin-top: 18px;
+}
+.bk-callback-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: #15265c;
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.bk-callback-bar .caret {
+    transition: transform 0.15s;
+}
+.bk-callback-bar .caret.is-open {
+    transform: rotate(180deg);
+}
+.bk-callback-form {
+    margin-top: 14px;
+}
+.bk-callback-error {
+    color: #b91c1c;
+    background: rgba(185, 28, 28, 0.08);
+    border: 1px solid rgba(185, 28, 28, 0.25);
+    border-radius: 10px;
+    font-size: 13px;
+    padding: 10px 12px;
+    margin: 0 0 12px;
+}
 .bk-field {
     margin-bottom: 14px;
 }

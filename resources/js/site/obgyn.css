@@ -1011,19 +1011,24 @@
     gap: 8px;
     flex-wrap: wrap;
 }
-.doc-cta a {
+.doc-cta a,
+.doc-cta button {
     display: inline-flex;
     align-items: center;
     gap: 7px;
     padding: 10px 16px;
+    border: none;
     border-radius: 999px;
+    font: inherit;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-decoration: none;
+    cursor: pointer;
     transition: transform 0.2s;
 }
-.doc-cta a:hover {
+.doc-cta a:hover,
+.doc-cta button:hover {
     transform: translateY(-2px);
 }
 .doc-cta .book {
@@ -1404,6 +1409,15 @@
     color: var(--burgundy);
     font-size: 12px;
     margin-top: 2px;
+}
+.error-box {
+    color: var(--burgundy);
+    background: color-mix(in srgb, var(--burgundy) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--burgundy) 25%, transparent);
+    border-radius: 10px;
+    font-size: 13px;
+    padding: 10px 12px;
+    margin: 0 0 14px;
 }
 
 /* ---- floating actions ---- */

@@ -1,8 +1,11 @@
 import { Head } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/site/i18n/LanguageContext';
 
 type Appointment = {
     id: number;
+    reference: string;
     date: string;
     time: string;
     first_name: string;
@@ -10,7 +13,8 @@ type Appointment = {
     email: string | null;
     doctor: {
         name: string;
-        department: { name: string };
+        name_ar: string;
+        department: { name: string; name_ar: string };
     };
 };
 
@@ -32,8 +36,10 @@ export default function BookingConfirmation({
     qrCodeDataUri,
 }: {
     appointment: Appointment;
-    qrCodeDataUri: string;
+    qrCodeDataUri: string | null;
 }) {
+    const { t, lang } = useLanguage();
+    const locale = lang === 'ar' ? 'ar' : lang === 'ur' ? 'ur' : 'en';
     const start = new Date(`${appointment.date}T${appointment.time}`);
     const end = new Date(start.getTime() + EVENT_MINUTES * 60_000);
     const title = `Appointment with ${appointment.doctor.name}`;
@@ -54,7 +60,7 @@ export default function BookingConfirmation({
 
     return (
         <>
-            <Head title="Appointment confirmed" />
+            <Head title={t('booking.confirmed.title') as string} />
 
             <section className="py-16">
                 <div className="container">
@@ -62,51 +68,67 @@ export default function BookingConfirmation({
                         <div className="text-5xl">🎉</div>
                         <div>
                             <h1 className="text-xl font-semibold">
-                                Congratulations
+                                {t('booking.confirmed.title')}
                             </h1>
                             <p className="text-sm text-muted-foreground">
-                                Appointment ID #{appointment.id}
+                                {t('booking.confirmed.appointmentId')}{' '}
+                                <span className="font-mono font-medium tracking-wider">
+                                    {appointment.reference}
+                                </span>
                             </p>
                         </div>
 
-                        <dl className="divide-y rounded-lg border text-left text-sm">
+                        <dl className="divide-y rounded-lg border text-start text-sm">
                             <Row
-                                label="Date"
-                                value={start.toLocaleDateString(undefined, {
+                                label={t('booking.confirmed.date')}
+                                value={start.toLocaleDateString(locale, {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
                                 })}
                             />
                             <Row
-                                label="Time"
-                                value={start.toLocaleTimeString(undefined, {
+                                label={t('booking.confirmed.time')}
+                                value={start.toLocaleTimeString(locale, {
                                     hour: 'numeric',
                                     minute: '2-digit',
                                 })}
                             />
                             <Row
-                                label="Service"
-                                value={appointment.doctor.department.name}
+                                label={t('booking.confirmed.service')}
+                                value={
+                                    lang === 'ar'
+                                        ? appointment.doctor.department.name_ar
+                                        : appointment.doctor.department.name
+                                }
                             />
                             <Row
-                                label="Doctor"
-                                value={appointment.doctor.name}
+                                label={t('booking.confirmed.doctor')}
+                                value={
+                                    lang === 'ar'
+                                        ? appointment.doctor.name_ar
+                                        : appointment.doctor.name
+                                }
                             />
                             <Row
-                                label="Your name"
+                                label={t('booking.confirmed.yourName')}
                                 value={`${appointment.first_name} ${appointment.last_name}`}
                             />
                             {appointment.email && (
-                                <Row label="Email" value={appointment.email} />
+                                <Row
+                                    label={t('booking.confirmed.email')}
+                                    value={appointment.email}
+                                />
                             )}
                         </dl>
 
-                        <img
-                            src={qrCodeDataUri}
-                            alt="Appointment QR code"
-                            className="mx-auto size-40"
-                        />
+                        {/* {qrCodeDataUri && (
+                            <img
+                                src={qrCodeDataUri}
+                                alt={t('booking.confirmed.qrAlt') as string}
+                                className="mx-auto size-40"
+                            />
+                        )} */}
 
                         <div className="flex flex-col gap-2 sm:flex-row">
                             <Button
@@ -119,7 +141,7 @@ export default function BookingConfirmation({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    Add to Google Calendar
+                                    {t('booking.confirmed.addToGoogle')}
                                 </a>
                             </Button>
                             <Button
@@ -132,7 +154,7 @@ export default function BookingConfirmation({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    Add to Outlook
+                                    {t('booking.confirmed.addToOutlook')}
                                 </a>
                             </Button>
                         </div>
@@ -143,7 +165,7 @@ export default function BookingConfirmation({
     );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: ReactNode; value: string }) {
     return (
         <div className="flex items-center justify-between gap-4 p-3">
             <dt className="text-muted-foreground">{label}</dt>

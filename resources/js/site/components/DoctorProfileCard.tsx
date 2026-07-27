@@ -80,6 +80,8 @@ export default function DoctorProfileCard({
                                     <img
                                         src={doctor.nationality.flag}
                                         alt={doctor.nationality.name}
+                                        width={34}
+                                        height={23}
                                         loading="lazy"
                                     />
                                 </span>
