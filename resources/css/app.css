@@ -155,3 +155,111 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Admin workspace — derived from the public doctors design system. */
+.admin-shell {
+    --background: #f6f5ef;
+    --foreground: #1c2438;
+    --card: #ffffff;
+    --card-foreground: #1c2438;
+    --popover: #ffffff;
+    --popover-foreground: #1c2438;
+    --primary: #15265c;
+    --primary-foreground: #ffffff;
+    --secondary: #eeece4;
+    --secondary-foreground: #263154;
+    --muted: #efeee8;
+    --muted-foreground: #6f7688;
+    --accent: #e8e5da;
+    --accent-foreground: #15265c;
+    --border: #dfddd4;
+    --input: #d8d5ca;
+    --ring: #c9a94f;
+    --sidebar: #101735;
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: #c9a94f;
+    --sidebar-primary-foreground: #101735;
+    --sidebar-accent: rgb(255 255 255 / 10%);
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: rgb(255 255 255 / 9%);
+    --sidebar-ring: #c9a94f;
+    background: #f6f5ef;
+}
+
+.admin-workspace {
+    background-color: #f6f5ef;
+    background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0 32px,
+        rgb(21 38 92 / 1.6%) 32px 33px,
+        transparent 33px 66px
+    );
+}
+
+.admin-workspace table {
+    background: rgb(255 255 255 / 82%);
+}
+
+.admin-workspace thead {
+    color: #5e6578;
+}
+
+.admin-workspace thead th {
+    border-bottom-color: #dfddd4;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.admin-workspace tbody tr {
+    transition:
+        background-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.admin-workspace tbody tr:hover {
+    background: rgb(244 241 231 / 74%);
+}
+
+.admin-workspace input,
+.admin-workspace textarea,
+.admin-workspace button,
+.admin-workspace [role='combobox'] {
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        background-color 160ms ease,
+        transform 160ms ease;
+}
+
+.dark .admin-shell {
+    --background: #0d1229;
+    --foreground: #f8f7f2;
+    --card: #151c38;
+    --card-foreground: #f8f7f2;
+    --popover: #151c38;
+    --popover-foreground: #f8f7f2;
+    --secondary: #20294a;
+    --secondary-foreground: #f8f7f2;
+    --muted: #20294a;
+    --muted-foreground: #a8aec0;
+    --accent: #263154;
+    --accent-foreground: #ffffff;
+    --border: #2b3558;
+    --input: #303a5d;
+    --ring: #d2b66e;
+}
+
+.dark .admin-workspace {
+    background-color: #0d1229;
+    background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0 32px,
+        rgb(255 255 255 / 1.4%) 32px 33px,
+        transparent 33px 66px
+    );
+}
+
+.dark .admin-workspace table {
+    background: rgb(21 28 56 / 88%);
+}

@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import {
     CalendarClock,
     CalendarRange,
+    ExternalLink,
     Flag,
     LayoutGrid,
     MessageSquareHeart,
@@ -23,7 +24,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, home } from '@/routes';
 import { index as appointments } from '@/routes/admin/appointments';
 import { index as callbackRequests } from '@/routes/admin/callback-requests';
 import { index as departments } from '@/routes/admin/departments';
@@ -35,7 +36,7 @@ import { index as offers } from '@/routes/admin/offers';
 import { index as packages } from '@/routes/admin/packages';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const careNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -61,6 +62,9 @@ const mainNavItems: NavItem[] = [
         href: feedback(),
         icon: MessageSquareHeart,
     },
+];
+
+const directoryNavItems: NavItem[] = [
     {
         title: 'Doctors',
         href: doctors(),
@@ -90,11 +94,19 @@ const mainNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
+        <Sidebar
+            collapsible="icon"
+            variant="inset"
+            className="border-none [&_[data-sidebar=sidebar]]:bg-[linear-gradient(180deg,#17295f_0%,#101735_58%,#0b1028_100%)] [&_[data-sidebar=sidebar]]:shadow-[0_24px_70px_-24px_rgba(9,15,42,0.85)]"
+        >
+            <SidebarHeader className="border-b border-white/8 px-2 pt-2 pb-4">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton
+                            size="lg"
+                            asChild
+                            className="h-14 rounded-xl hover:bg-white/8 data-[state=open]:bg-white/8"
+                        >
                             <Link href={dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
@@ -103,11 +115,26 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
+            <SidebarContent className="py-3">
+                <NavMain items={careNavItems} label="Care operations" />
+                <NavMain items={directoryNavItems} label="Hospital directory" />
             </SidebarContent>
 
-            <SidebarFooter>
+            <SidebarFooter className="gap-2 border-t border-white/8 p-3">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            asChild
+                            className="h-10 rounded-xl border border-white/8 bg-white/5 px-3 text-white/60 hover:bg-white/10 hover:text-white"
+                            tooltip={{ children: 'View public website' }}
+                        >
+                            <Link href={home()} target="_blank">
+                                <ExternalLink />
+                                <span>Public website</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
