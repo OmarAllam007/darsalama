@@ -3,14 +3,9 @@
 use App\Enums\DoctorScheduleStatus;
 use App\Models\Department;
 use App\Models\Doctor;
-use App\Models\DoctorSchedule;
 use App\Models\User;
 use App\Support\BookingSlots;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
-use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 beforeEach(function () {
     Carbon::setTestNow(Carbon::parse('2026-07-15 09:00', config('booking.timezone')));
@@ -105,8 +100,10 @@ test('off, vacation and no-clinic days have no slots', function (DoctorScheduleS
     DoctorScheduleStatus::NoClinic,
 ]);
 
-test('days without a schedule fall back to the weekly availability template', function () {
+test('a day the schedule never covered has no slots', function () {
     $doctor = scheduledDoctor();
+
+    // A weekly availability row must not make the day bookable on its own.
     $doctor->availabilities()->create([
         'weekday' => Carbon::tomorrow()->dayOfWeekIso - 1,
         'start_time' => '09:00',
@@ -114,8 +111,7 @@ test('days without a schedule fall back to the weekly availability template', fu
         'slot_minutes' => 30,
     ]);
 
-    expect(slotsFor($doctor, Carbon::tomorrow()->toDateString()))
-        ->toBe(['09:00', '09:30']);
+    expect(slotsFor($doctor, Carbon::tomorrow()->toDateString()))->toBe([]);
 });
 
 test('the days endpoint lists only schedule-open dates', function () {
@@ -134,7 +130,7 @@ test('the days endpoint lists only schedule-open dates', function () {
         ->and($days)->not->toContain('2026-07-08');
 });
 
-test('the days endpoint falls back to the weekly template without schedule rows', function () {
+test('the days endpoint offers nothing for a month with no schedule rows', function () {
     $doctor = scheduledDoctor();
     $doctor->availabilities()->create([
         'weekday' => 0, // Monday
@@ -143,11 +139,8 @@ test('the days endpoint falls back to the weekly template without schedule rows'
         'slot_minutes' => 30,
     ]);
 
-    $days = $this->getJson(route('booking.days', $doctor).'?month=2026-07')->json('days');
-
-    expect($days)->toContain('2026-07-06')
-        ->and($days)->toContain('2026-07-13')
-        ->and($days)->not->toContain('2026-07-07');
+    expect($this->getJson(route('booking.days', $doctor).'?month=2026-07')->json('days'))
+        ->toBe([]);
 });
 
 test('the public site cannot book today', function () {
@@ -252,35 +245,4 @@ test('the schedule exports as an xlsx download', function () {
     $response->assertOk();
     expect($response->headers->get('content-type'))
         ->toContain('spreadsheetml');
-});
-
-test('importing a workbook upserts schedule rows and reports unknown codes', function () {
-    $this->actingAs(User::factory()->create());
-    $doctor = scheduledDoctor();
-
-    $path = tempnam(sys_get_temp_dir(), 'sched').'.xlsx';
-    $spreadsheet = new Spreadsheet;
-    $sheet = $spreadsheet->getActiveSheet();
-    $sheet->setTitle('General Surgery');
-    $sheet->setCellValue('A1', 'Date')->setCellValue('B1', 'Day')
-        ->setCellValue('C1', $doctor->name)->setCellValue('D1', 'Ghost');
-    $sheet->setCellValue('A2', '2026-07');
-    $sheet->setCellValueExplicit('C2', (string) $doctor->code, DataType::TYPE_STRING);
-    $sheet->setCellValueExplicit('D2', 'DOC-9999', DataType::TYPE_STRING);
-    $sheet->setCellValueExplicit('A3', '2026-07-20', DataType::TYPE_STRING);
-    $sheet->setCellValue('B3', 'Mon')
-        ->setCellValue('C3', '8:00-12:00; 16:00-20:00')
-        ->setCellValue('D3', 'OFF');
-    (new Xlsx($spreadsheet))->save($path);
-
-    $response = $this->post(route('admin.doctor-schedules.import'), [
-        'file' => new UploadedFile($path, 'schedule.xlsx', null, null, true),
-    ]);
-
-    $response->assertSessionHas('import');
-
-    $schedule = DoctorSchedule::where('doctor_id', $doctor->id)->whereDate('date', '2026-07-20')->sole();
-    expect($schedule->windows)->toHaveCount(2)
-        ->and($schedule->status)->toBe(DoctorScheduleStatus::Work)
-        ->and(session('import')['errors'])->not->toBeEmpty();
 });

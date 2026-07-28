@@ -1,0 +1,173 @@
+/*
+ * FullCalendar ships its own palette; these pull it back onto the admin theme
+ * and give the three states reception has to tell apart at a glance.
+ */
+.fc {
+    --fc-border-color: color-mix(
+        in oklab,
+        var(--color-slate-500) 50%,
+        transparent
+    );
+    --fc-page-bg-color: var(--background);
+    --fc-neutral-bg-color: color-mix(
+        in oklab,
+        var(--color-slate-200) 75%,
+        var(--background)
+    );
+    --fc-today-bg-color: color-mix(
+        in oklab,
+        var(--color-cyan-500) 12%,
+        transparent
+    );
+    --fc-now-indicator-color: var(--destructive);
+    font-size: 0.875rem;
+    min-width: 760px;
+}
+
+.fc .fc-toolbar-title {
+    color: var(--foreground);
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.fc .fc-button {
+    background: var(--background);
+    border-color: color-mix(in oklab, var(--color-slate-500) 55%, transparent);
+    color: var(--foreground);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.fc .fc-button:hover,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: var(--color-slate-900);
+    border-color: var(--color-slate-900);
+    color: white;
+}
+
+.fc .fc-button-primary:focus-visible {
+    box-shadow: 0 0 0 2px var(--ring);
+}
+
+/* The band behind an open window. */
+.fc .calendar-open {
+    background: color-mix(in oklab, var(--color-emerald-500) 17%, transparent);
+}
+
+/* A free slot: outlined rather than filled, so booked slots stay dominant. */
+.fc .calendar-slot {
+    background: color-mix(
+        in oklab,
+        var(--color-emerald-500) 22%,
+        var(--background)
+    );
+    border: 1px solid var(--color-emerald-700);
+    border-left-width: 3px;
+    color: color-mix(in oklab, var(--color-emerald-950) 88%, var(--foreground));
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.fc .calendar-slot:hover {
+    background: color-mix(
+        in oklab,
+        var(--color-emerald-500) 38%,
+        var(--background)
+    );
+}
+
+.fc .calendar-slot .fc-event-time {
+    display: none;
+}
+
+/* Closed — the title carries the hospital's reason (OR, LTC, Vacation…). */
+.fc .calendar-closed {
+    background: color-mix(in oklab, var(--color-rose-500) 28%, transparent);
+}
+
+.fc .fc-bg-event .fc-event-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 1;
+    padding: 2px 4px;
+    text-transform: uppercase;
+}
+
+.fc .calendar-appointment {
+    background: var(--color-blue-800);
+    border-color: var(--color-blue-950);
+    border-left-width: 3px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.fc .fc-timegrid-slot {
+    height: 1.9rem;
+}
+
+.fc .fc-col-header-cell {
+    background: color-mix(
+        in oklab,
+        var(--color-slate-200) 80%,
+        var(--background)
+    );
+    color: var(--foreground);
+    padding: 0.35rem 0;
+}
+
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+    color: color-mix(in oklab, var(--foreground) 76%, transparent);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.fc .fc-day-today .fc-col-header-cell-cushion {
+    color: var(--color-cyan-700);
+    font-weight: 800;
+}
+
+.fc .fc-now-indicator-line {
+    border-top-width: 2px;
+}
+
+.dark .fc {
+    --fc-border-color: color-mix(
+        in oklab,
+        var(--color-slate-500) 65%,
+        transparent
+    );
+    --fc-neutral-bg-color: color-mix(
+        in oklab,
+        var(--color-slate-800) 86%,
+        var(--background)
+    );
+}
+
+.dark .fc .calendar-slot {
+    color: var(--color-emerald-100);
+}
+
+.dark .fc .fc-col-header-cell {
+    background: color-mix(
+        in oklab,
+        var(--color-slate-800) 85%,
+        var(--background)
+    );
+}
+
+@media (max-width: 900px) {
+    .fc .fc-toolbar {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .fc .fc-toolbar-chunk:nth-child(2) {
+        order: -1;
+        width: 100%;
+    }
+}

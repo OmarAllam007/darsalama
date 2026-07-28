@@ -92,7 +92,6 @@ type Doctor = {
     nationality: { name: string; name_ar: string; flag: string | null } | null;
     qualifications: NamePair[];
     services: NamePair[];
-    availabilities: { weekday: number }[];
 };
 
 type Department = {

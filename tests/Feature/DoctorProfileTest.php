@@ -82,7 +82,7 @@ test('a schedule with differing hours reports no shared hours', function () {
         ->assertInertia(fn ($page) => $page->where('workingHours', null));
 });
 
-test('doctors without a schedule fall back to the weekly template days', function () {
+test('doctors without a schedule show no working days at all', function () {
     $doctor = Doctor::factory()->create();
     $doctor->availabilities()->create([
         'weekday' => 2, // Wednesday
@@ -93,6 +93,5 @@ test('doctors without a schedule fall back to the weekly template days', functio
 
     $this->get(route('doctors.show', $doctor))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->where('workingWeekdays', fn ($days) => collect($days)->contains(2)));
+        ->assertInertia(fn ($page) => $page->where('workingWeekdays', []));
 });

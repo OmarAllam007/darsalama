@@ -28,7 +28,6 @@ class BookingController extends Controller
 
         return Inertia::render('site/booking/show', [
             'doctor' => $doctor->load('offers', 'department'),
-            'availableWeekdays' => $doctor->availabilities()->distinct()->pluck('weekday'),
         ]);
     }
 

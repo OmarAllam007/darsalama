@@ -17,7 +17,6 @@ use Inertia\Response;
 use InvalidArgumentException;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -133,84 +132,6 @@ class DoctorScheduleController extends Controller
         ]);
     }
 
-    /**
-     * Import a filled-in workbook, upserting each doctor-day cell.
-     */
-    public function import(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls'],
-        ]);
-
-        $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
-        $doctorsByCode = Doctor::whereNotNull('code')->pluck('id', 'code');
-
-        $created = 0;
-        $updated = 0;
-        $errors = [];
-
-        foreach ($spreadsheet->getAllSheets() as $sheet) {
-            if ($sheet->getTitle() === 'Legend') {
-                continue;
-            }
-
-            $rows = $sheet->toArray(null, false, false, false);
-
-            if (count($rows) < 3) {
-                continue;
-            }
-
-            $codeRow = $rows[1];  // row 2: doctor codes per column
-
-            foreach (array_slice($rows, 2, preserve_keys: true) as $row) {
-                $date = $this->parseDate($row[0] ?? null);
-
-                if ($date === null) {
-                    continue;
-                }
-
-                for ($col = 2; $col < count($codeRow); $col++) {
-                    $code = trim((string) ($codeRow[$col] ?? ''));
-
-                    if ($code === '') {
-                        continue;
-                    }
-
-                    if (! isset($doctorsByCode[$code])) {
-                        $errors[] = "Unknown doctor code \"{$code}\" ({$sheet->getTitle()}).";
-
-                        continue;
-                    }
-
-                    try {
-                        $parsed = ScheduleHours::parse($row[$col] ?? null);
-                    } catch (InvalidArgumentException) {
-                        $errors[] = "Bad cell for {$code} on {$date}: \"{$row[$col]}\".";
-
-                        continue;
-                    }
-
-                    if ($parsed === null) {
-                        continue;
-                    }
-
-                    $result = DoctorSchedule::updateOrCreate(
-                        ['doctor_id' => $doctorsByCode[$code], 'date' => $date],
-                        ['status' => $parsed['status'], 'windows' => $parsed['windows']],
-                    );
-
-                    $result->wasRecentlyCreated ? $created++ : $updated++;
-                }
-            }
-        }
-
-        return back()->with('import', [
-            'created' => $created,
-            'updated' => $updated,
-            'errors' => array_slice($errors, 0, 50),
-        ]);
-    }
-
     private function buildDepartmentSheet(Spreadsheet $spreadsheet, Department $department, Collection $days, array $schedules, Carbon $month): void
     {
         $sheet = $spreadsheet->createSheet();
@@ -267,10 +188,15 @@ class DoctorScheduleController extends Controller
             ['Cell', 'Meaning', 'Bookable'],
             ['8:00-12:00; 16:00-20:00', 'Two shifts', 'Yes'],
             ['8:00-16:00', 'Single shift', 'Yes'],
+            ['8:00-12:00 (OPD)', 'Outpatient clinic', 'Yes'],
+            ['16:00-20:00 only', 'Sole shift of the day', 'Yes'],
             ['8:00-15:00 (OR)', 'In surgery — closed for booking', 'No'],
+            ['8:00-12:00 (OPD) 12:00-16:00 (LTC)', 'Clinic, then a closed period', 'Morning only'],
+            ['8:00-16:00 (OR) w/Neurosurgeon', 'Any note after the code is kept', 'No'],
             ['OFF', 'Weekly day off', 'No'],
             ['V', 'Vacation', 'No'],
             ['NO CLINIC', 'Present, no outpatient clinic', 'No'],
+            ['(blank)', 'Nothing scheduled', 'No'],
         ]);
         $sheet->getStyle('A1:C1')->getFont()->setBold(true);
         foreach (range('A', 'C') as $columnLetter) {
@@ -284,7 +210,7 @@ class DoctorScheduleController extends Controller
             return self::COLORS['red'];
         }
 
-        if (in_array($schedule->status, [DoctorScheduleStatus::Off, DoctorScheduleStatus::NoClinic], true)) {
+        if ($schedule->status !== DoctorScheduleStatus::Work) {
             return self::COLORS['grey'];
         }
 
@@ -352,21 +278,6 @@ class DoctorScheduleController extends Controller
 
         return collect(range(0, $start->daysInMonth - 1))
             ->map(fn (int $offset): Carbon => $start->copy()->addDays($offset));
-    }
-
-    private function parseDate(mixed $value): ?string
-    {
-        $value = trim((string) $value);
-
-        if ($value === '') {
-            return null;
-        }
-
-        try {
-            return Carbon::parse($value)->toDateString();
-        } catch (\Throwable) {
-            return null;
-        }
     }
 
     private function sheetTitle(string $name): string

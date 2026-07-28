@@ -8,9 +8,26 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-#[Fillable(['doctor_id', 'date', 'time', 'first_name', 'last_name', 'email', 'phone', 'status'])]
+/**
+ * @property int $id
+ * @property string $uuid
+ * @property int $doctor_id
+ * @property Carbon $date
+ * @property string $time
+ * @property string $first_name
+ * @property string $last_name
+ * @property string|null $email
+ * @property string|null $phone
+ * @property string $status
+ * @property string|null $note
+ * @property int|null $created_by
+ * @property-read string $reference
+ * @property-read User|null $createdBy
+ */
+#[Fillable(['doctor_id', 'date', 'time', 'first_name', 'last_name', 'email', 'phone', 'status', 'note', 'created_by'])]
 class Appointment extends Model
 {
     /** @use HasFactory<AppointmentFactory> */
@@ -64,5 +81,15 @@ class Appointment extends Model
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class);
+    }
+
+    /**
+     * The reception user who took the booking; null for public self-service.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

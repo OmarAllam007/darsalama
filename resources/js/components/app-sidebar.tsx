@@ -1,9 +1,12 @@
 import { Link } from '@inertiajs/react';
 import {
     CalendarClock,
+    CalendarDays,
     CalendarRange,
     ExternalLink,
     Flag,
+    FileSpreadsheet,
+    Grid3x3,
     LayoutGrid,
     MessageSquareHeart,
     Package as PackageIcon,
@@ -26,6 +29,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
 import { index as appointments } from '@/routes/admin/appointments';
+import { index as receptionCalendar } from '@/routes/admin/calendar';
 import { index as callbackRequests } from '@/routes/admin/callback-requests';
 import { index as departments } from '@/routes/admin/departments';
 import { index as doctorSchedules } from '@/routes/admin/doctor-schedules';
@@ -34,6 +38,8 @@ import { index as feedback } from '@/routes/admin/feedback';
 import { index as nationalities } from '@/routes/admin/nationalities';
 import { index as offers } from '@/routes/admin/offers';
 import { index as packages } from '@/routes/admin/packages';
+import { index as scheduleColumns } from '@/routes/admin/schedule-columns';
+import { index as scheduleImports } from '@/routes/admin/schedule-imports';
 import type { NavItem } from '@/types';
 
 const careNavItems: NavItem[] = [
@@ -41,6 +47,11 @@ const careNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Calendar',
+        href: receptionCalendar(),
+        icon: CalendarDays,
     },
     {
         title: 'Appointments',
@@ -51,6 +62,16 @@ const careNavItems: NavItem[] = [
         title: 'Doctor Schedules',
         href: doctorSchedules(),
         icon: CalendarRange,
+    },
+    {
+        title: 'Import Schedule',
+        href: scheduleImports(),
+        icon: FileSpreadsheet,
+    },
+    {
+        title: 'Column Mapping',
+        href: scheduleColumns(),
+        icon: Grid3x3,
     },
     {
         title: 'Callback Requests',

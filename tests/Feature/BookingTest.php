@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\DoctorScheduleStatus;
 use App\Models\Appointment;
+use App\Models\Department;
 use App\Models\Doctor;
 use Illuminate\Support\Carbon;
 
@@ -16,14 +18,19 @@ afterEach(function () {
 
 function bookableDoctor(): Doctor
 {
-    $doctor = Doctor::factory()->create();
-
-    $doctor->availabilities()->create([
-        'weekday' => Carbon::tomorrow()->dayOfWeekIso - 1,
-        'start_time' => '00:00',
-        'end_time' => '23:30',
-        'slot_minutes' => 30,
+    $doctor = Doctor::factory()->create([
+        'department_id' => Department::factory()->create(['slot_minutes' => 30]),
     ]);
+
+    // Booking reads the imported schedule and nothing else, so give the next few
+    // days an open all-day window.
+    foreach ([1, 2, 3] as $offset) {
+        $doctor->schedules()->create([
+            'date' => Carbon::today()->addDays($offset)->toDateString(),
+            'status' => DoctorScheduleStatus::Work,
+            'windows' => [['start' => '00:00', 'end' => '23:30', 'bookable' => true]],
+        ]);
+    }
 
     return $doctor;
 }
@@ -168,12 +175,13 @@ test('the day after next stays bookable after the evening cut-off', function () 
     Carbon::setTestNow(Carbon::parse('2026-07-15 20:30', config('booking.timezone')));
     $dayAfter = Carbon::now(config('booking.timezone'))->addDays(2);
 
-    $doctor = Doctor::factory()->create();
-    $doctor->availabilities()->create([
-        'weekday' => $dayAfter->dayOfWeekIso - 1,
-        'start_time' => '09:00',
-        'end_time' => '12:00',
-        'slot_minutes' => 30,
+    $doctor = Doctor::factory()->create([
+        'department_id' => Department::factory()->create(['slot_minutes' => 30]),
+    ]);
+    $doctor->schedules()->create([
+        'date' => $dayAfter->toDateString(),
+        'status' => DoctorScheduleStatus::Work,
+        'windows' => [['start' => '09:00', 'end' => '12:00', 'bookable' => true]],
     ]);
 
     $slots = $this->getJson(route('booking.slots', $doctor).'?date='.$dayAfter->toDateString());

@@ -7,7 +7,6 @@ type Doctor = {
     id: number;
     name: string;
     name_ar: string;
-    availabilities: { weekday: number }[];
 };
 
 export default function BookingModal({
@@ -47,16 +46,7 @@ export default function BookingModal({
                         </div>
 
                         <div className="bk-body">
-                            <BookingForm
-                                doctorId={doctor.id}
-                                availableWeekdays={[
-                                    ...new Set(
-                                        doctor.availabilities.map(
-                                            (a) => a.weekday,
-                                        ),
-                                    ),
-                                ]}
-                            />
+                            <BookingForm doctorId={doctor.id} />
                         </div>
                     </div>
                 )}

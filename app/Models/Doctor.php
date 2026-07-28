@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['department_id', 'nationality_id', 'name', 'name_ar', 'job', 'job_ar', 'image', 'is_active'])]
 class Doctor extends Model
@@ -73,6 +74,16 @@ class Doctor extends Model
     public function schedules(): HasMany
     {
         return $this->hasMany(DoctorSchedule::class);
+    }
+
+    /**
+     * The doctor's fixed column in the hospital's monthly OPD workbook.
+     *
+     * @return HasOne<DoctorScheduleColumn, $this>
+     */
+    public function scheduleColumn(): HasOne
+    {
+        return $this->hasOne(DoctorScheduleColumn::class);
     }
 
     /**

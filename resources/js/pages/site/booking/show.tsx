@@ -24,13 +24,7 @@ type Doctor = {
     offers: Offer[];
 };
 
-export default function BookingShow({
-    doctor,
-    availableWeekdays,
-}: {
-    doctor: Doctor;
-    availableWeekdays: number[];
-}) {
+export default function BookingShow({ doctor }: { doctor: Doctor }) {
     const { t, lang } = useLanguage();
     const [offersOpen, setOffersOpen] = useState(false);
     const doctorName = lang === 'ar' ? doctor.name_ar : doctor.name;
@@ -63,10 +57,7 @@ export default function BookingShow({
                             </div>
                         </div>
 
-                        <BookingForm
-                            doctorId={doctor.id}
-                            availableWeekdays={availableWeekdays}
-                        />
+                        <BookingForm doctorId={doctor.id} />
 
                         {offers.length > 0 && (
                             <div className="space-y-3 border-t pt-6">

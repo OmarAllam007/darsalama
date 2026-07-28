@@ -7,9 +7,11 @@ use App\Models\DoctorSchedule;
 use Illuminate\Support\Carbon;
 
 /**
- * Generates the bookable slot start times for a doctor on a given date, honouring
- * the date-specific schedule (OR/OFF/vacation days close booking) and each
- * department's slot length.
+ * Generates the bookable slot start times for a doctor on a given date.
+ *
+ * Availability comes from the imported schedule and nothing else: a doctor with
+ * no `doctor_schedules` row for a date is not bookable on it. The slot length is
+ * the doctor's department's (`departments.slot_minutes`).
  */
 class BookingSlots
 {
@@ -22,9 +24,6 @@ class BookingSlots
             return [];
         }
 
-        $timezone = $this->timezone();
-        $now = Carbon::now($timezone);
-
         $booked = $doctor->appointments()
             ->whereDate('date', $date)
             ->pluck('time')
@@ -34,8 +33,8 @@ class BookingSlots
         $schedule = $doctor->schedules()->whereDate('date', $date)->first();
 
         $slots = $schedule !== null
-            ? $this->fromSchedule($schedule, $doctor, $date, $timezone, $now)
-            : $this->fromAvailabilities($doctor, $date, $timezone, $now);
+            ? $this->fromSchedule($schedule, $doctor, $date)
+            : [];
 
         $slots = array_values(array_diff(array_unique($slots), $booked));
         sort($slots);
@@ -44,10 +43,9 @@ class BookingSlots
     }
 
     /**
-     * The dates in a month (`Y-m`) a doctor is open for booking — a schedule row
-     * that is working with at least one open window, or, where no row exists, a
-     * weekday covered by the legacy availability template. Past/cut-off filtering
-     * is left to the caller.
+     * The dates in a month (`Y-m`) a doctor is open for booking: a schedule row
+     * that is working with at least one open window. Past/cut-off filtering is
+     * left to the caller.
      *
      * @return array<int, string>
      */
@@ -61,8 +59,6 @@ class BookingSlots
             ->get()
             ->keyBy(fn (DoctorSchedule $s): string => $s->date->toDateString());
 
-        $weekdays = $doctor->availabilities()->distinct()->pluck('weekday')->all();
-
         $days = [];
 
         for ($day = $start->copy(); $day->lte($end); $day->addDay()) {
@@ -70,8 +66,8 @@ class BookingSlots
             $schedule = $schedules->get($iso);
 
             $open = $schedule !== null
-                ? $schedule->status->allowsBooking() && collect($schedule->windows ?? [])->contains(fn (array $w): bool => $w['bookable'] ?? true)
-                : in_array($day->dayOfWeekIso - 1, $weekdays, true);
+                && $schedule->status->allowsBooking()
+                && collect($schedule->windows)->contains(fn (array $w): bool => $w['bookable'] ?? true);
 
             if ($open) {
                 $days[] = $iso;
@@ -87,16 +83,29 @@ class BookingSlots
      *
      * @return array<int, string>
      */
-    private function fromSchedule(DoctorSchedule $schedule, Doctor $doctor, string $date, string $timezone, Carbon $now): array
+    private function fromSchedule(DoctorSchedule $schedule, Doctor $doctor, string $date): array
     {
         if (! $schedule->status->allowsBooking()) {
             return [];
         }
 
-        $slotMinutes = $doctor->loadMissing('department')->department?->slot_minutes ?? 15;
+        return $this->slotsIn($schedule->windows, $date, $doctor->loadMissing('department')->department->slot_minutes);
+    }
+
+    /**
+     * Slot start times inside a day's open windows, ignoring existing bookings.
+     * Shared with the reception calendar so both count slots the same way.
+     *
+     * @param  array<int, array<string, mixed>>  $windows
+     * @return array<int, string>
+     */
+    public function slotsIn(array $windows, string $date, int $slotMinutes): array
+    {
+        $timezone = $this->timezone();
+        $now = Carbon::now($timezone);
         $slots = [];
 
-        foreach ($schedule->windows ?? [] as $window) {
+        foreach ($windows as $window) {
             if (! ($window['bookable'] ?? true)) {
                 continue;
             }
@@ -105,29 +114,6 @@ class BookingSlots
                 Carbon::parse($date.' '.$window['start'], $timezone),
                 Carbon::parse($date.' '.$window['end'], $timezone),
                 $slotMinutes,
-                $now,
-            ));
-        }
-
-        return $slots;
-    }
-
-    /**
-     * Slots from the legacy weekly availability template (doctors without a
-     * date-specific schedule row for the day).
-     *
-     * @return array<int, string>
-     */
-    private function fromAvailabilities(Doctor $doctor, string $date, string $timezone, Carbon $now): array
-    {
-        $weekday = Carbon::parse($date, $timezone)->dayOfWeekIso - 1;
-        $slots = [];
-
-        foreach ($doctor->availabilities()->where('weekday', $weekday)->get() as $availability) {
-            $slots = array_merge($slots, $this->chunkWindow(
-                Carbon::parse($date.' '.$availability->start_time, $timezone),
-                Carbon::parse($date.' '.$availability->end_time, $timezone),
-                $availability->slot_minutes,
                 $now,
             ));
         }

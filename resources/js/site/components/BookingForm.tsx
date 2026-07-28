@@ -39,13 +39,7 @@ function addDaysIso(iso: string, days: number): string {
 
 const DAYS_SHOWN = 7;
 
-export default function BookingForm({
-    doctorId,
-    availableWeekdays,
-}: {
-    doctorId: number;
-    availableWeekdays: number[];
-}) {
+export default function BookingForm({ doctorId }: { doctorId: number }) {
     const { t, lang } = useLanguage();
     const locale = lang === 'ar' ? 'ar' : lang === 'ur' ? 'ur' : 'en';
     const clinic = useMemo(() => clinicNow(), []);
@@ -115,15 +109,10 @@ export default function BookingForm({
         };
     }, [doctorId, monthKeys, daysByMonth]);
 
-    const isOpen = (iso: string): boolean => {
-        const bookableDays = daysByMonth[iso.slice(0, 7)];
-        const [year, month, day] = iso.split('-').map(Number);
-        const weekday = (new Date(year, month - 1, day).getDay() + 6) % 7;
-
-        return bookableDays
-            ? bookableDays.includes(iso)
-            : availableWeekdays.includes(weekday);
-    };
+    // A day is open only if the doctor's uploaded schedule says so, so nothing
+    // is offered until the month's list of open days has arrived.
+    const isOpen = (iso: string): boolean =>
+        daysByMonth[iso.slice(0, 7)]?.includes(iso) ?? false;
 
     const dayLabel = (iso: string): string => {
         const [year, month, day] = iso.split('-').map(Number);

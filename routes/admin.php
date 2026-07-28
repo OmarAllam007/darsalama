@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\CalendarController;
 use App\Http\Controllers\Admin\CallbackRequestController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DoctorController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\NationalityController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\ScheduleColumnController;
+use App\Http\Controllers\Admin\ScheduleImportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -33,9 +36,17 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::patch('offers/{offer}/restore', [OfferController::class, 'restore'])->name('offers.restore');
     Route::resource('nationalities', NationalityController::class)->except('show');
     Route::get('doctor-schedules/export', [DoctorScheduleController::class, 'export'])->name('doctor-schedules.export');
-    Route::post('doctor-schedules/import', [DoctorScheduleController::class, 'import'])->name('doctor-schedules.import');
     Route::get('doctor-schedules', [DoctorScheduleController::class, 'index'])->name('doctor-schedules.index');
     Route::put('doctor-schedules', [DoctorScheduleController::class, 'update'])->name('doctor-schedules.update');
+    Route::get('schedule-columns', [ScheduleColumnController::class, 'index'])->name('schedule-columns.index');
+    Route::put('schedule-columns', [ScheduleColumnController::class, 'update'])->name('schedule-columns.update');
+    Route::get('schedule-imports', [ScheduleImportController::class, 'index'])->name('schedule-imports.index');
+    Route::post('schedule-imports/preview', [ScheduleImportController::class, 'preview'])->name('schedule-imports.preview');
+    Route::post('schedule-imports', [ScheduleImportController::class, 'store'])->name('schedule-imports.store');
+    Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('calendar/{doctor}/events', [CalendarController::class, 'events'])->name('calendar.events');
+    Route::get('calendar/patients', [CalendarController::class, 'patients'])->name('calendar.patients');
+    Route::post('calendar/{doctor}/appointments', [CalendarController::class, 'store'])->name('calendar.appointments.store');
     Route::get('appointments', [AppointmentController::class, 'index'])->name('appointments.index');
     Route::get('appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
     Route::post('appointments', [AppointmentController::class, 'store'])->name('appointments.store');

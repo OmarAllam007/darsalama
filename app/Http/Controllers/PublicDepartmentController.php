@@ -23,7 +23,7 @@ class PublicDepartmentController extends Controller
                     ->with(['features', 'priceTiers', 'stages.tests']),
                 'doctors' => fn ($query) => $query
                     ->where('is_active', true)
-                    ->with(['nationality', 'qualifications', 'services', 'availabilities:id,doctor_id,weekday']),
+                    ->with(['nationality', 'qualifications', 'services']),
             ])
             ->firstOrFail();
 

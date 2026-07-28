@@ -53,7 +53,6 @@ type Doctor = {
     image: string | null;
     nationality: { name: string; name_ar: string; flag: string | null } | null;
     services: Service[];
-    availabilities: { weekday: number }[];
     offers: Offer[];
     offers_count: number;
 };
