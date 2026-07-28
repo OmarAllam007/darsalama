@@ -28,6 +28,9 @@ class BookingController extends Controller
 
         return Inertia::render('site/booking/show', [
             'doctor' => $doctor->load('offers', 'department'),
+            'hasOnlineBooking' => $this->slots->hasFutureAvailability($doctor),
+            // The doctor's own profile is the page worth ranking; this one is a form.
+            'seo' => ['title' => "Book {$doctor->name}", 'noindex' => true],
         ]);
     }
 
@@ -106,6 +109,7 @@ class BookingController extends Controller
         ) : null;
 
         return Inertia::render('site/booking/confirmation', [
+            'seo' => ['title' => 'Appointment Confirmed', 'noindex' => true],
             'appointment' => $appointment,
             'qrCodeDataUri' => $qrCode?->build()->getDataUri(),
         ]);

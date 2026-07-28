@@ -6,25 +6,45 @@ use App\Enums\DoctorScheduleStatus;
 use App\Models\Department;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
+use App\Support\BookingSlots;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PublicDoctorController extends Controller
 {
+    public function __construct(private BookingSlots $slots) {}
+
     /**
      * Display the public list of active doctors, grouped by department.
      */
     public function index(): Response
     {
-        return Inertia::render('site/doctors', [
-            'departments' => Department::with([
-                'doctors' => fn ($query) => $query->where('is_active', true)
-                    ->withCount('offers')
-                    ->with(['nationality', 'services', 'offers']),
-            ])
+        $departments = Department::with([
+            'doctors' => fn ($query) => $query->where('is_active', true)
                 ->withCount('offers')
-                ->get(),
+                ->with(['department', 'nationality', 'services', 'offers']),
+        ])
+            ->withCount('offers')
+            ->get();
+
+        $doctors = $departments->flatMap->doctors;
+        $availability = $this->slots->futureAvailabilityFor($doctors);
+
+        $doctors->each(
+            fn (Doctor $doctor) => $doctor->setAttribute(
+                'has_online_booking',
+                $availability[$doctor->id],
+            ),
+        );
+
+        return Inertia::render('site/doctors', [
+            'departments' => $departments,
+            'seo' => [
+                'title' => 'Our Doctors',
+                'description' => 'Meet the consultants and specialists at Dar As Salama Medical Hospital in '
+                    .'Al Khobar. Browse by department and book an appointment online.',
+            ],
         ]);
     }
 
@@ -48,7 +68,44 @@ class PublicDoctorController extends Controller
             'doctor' => $doctor,
             'workingWeekdays' => $summary['weekdays'],
             'workingHours' => $summary['hours'],
+            'hasOnlineBooking' => $this->slots->hasFutureAvailability($doctor),
+            'seo' => $this->seoFor($doctor),
         ]);
+    }
+
+    /**
+     * Head tags and Physician structured data for a doctor's profile — the pages
+     * most likely to be found by someone searching the doctor's name.
+     *
+     * @return array<string, mixed>
+     */
+    private function seoFor(Doctor $doctor): array
+    {
+        $department = $doctor->department?->name;
+        $role = trim((string) $doctor->job) ?: 'Consultant';
+
+        return [
+            'title' => $doctor->name,
+            'description' => trim("{$doctor->name} — {$role}"
+                .($department ? ", {$department}" : '')
+                .' at Dar As Salama Medical Hospital, Al Khobar. View working hours and book an appointment online.'),
+            'image' => $doctor->image ? "/storage/{$doctor->image}" : config('seo.image'),
+            'schema' => [
+                '@context' => 'https://schema.org',
+                '@type' => 'Physician',
+                'name' => $doctor->name,
+                'alternateName' => $doctor->name_ar,
+                'jobTitle' => $role,
+                'medicalSpecialty' => $department,
+                'url' => route('doctors.show', $doctor),
+                'image' => $doctor->image ? url("/storage/{$doctor->image}") : null,
+                'worksFor' => [
+                    '@type' => 'Hospital',
+                    'name' => config('seo.organisation.name'),
+                    'url' => config('app.url'),
+                ],
+            ],
+        ];
     }
 
     /**

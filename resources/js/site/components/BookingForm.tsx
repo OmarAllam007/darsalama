@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import BookingController from '@/actions/App/Http/Controllers/BookingController';
 import CallbackRequestController from '@/actions/App/Http/Controllers/CallbackRequestController';
 import InputError from '@/components/input-error';
+import { PHONE, PHONE_TEL } from '@/site/i18n/constants';
 import { useLanguage } from '@/site/i18n/LanguageContext';
 import { saudiPhoneInputProps } from '@/site/saudiPhoneInput';
 
@@ -39,7 +40,59 @@ function addDaysIso(iso: string, days: number): string {
 
 const DAYS_SHOWN = 7;
 
-export default function BookingForm({ doctorId }: { doctorId: number }) {
+export default function BookingForm({
+    doctorId,
+    doctorName,
+    departmentName,
+    hasOnlineBooking,
+}: {
+    doctorId: number;
+    doctorName: string;
+    departmentName: string;
+    hasOnlineBooking: boolean;
+}) {
+    const { t } = useLanguage();
+
+    if (!hasOnlineBooking) {
+        return (
+            <div>
+                <div className="bk-online-unavailable" role="status">
+                    <p>
+                        {t('booking.onlineUnavailable')}{' '}
+                        <a href={PHONE_TEL} dir="ltr">
+                            {PHONE}
+                        </a>{' '}
+                        {t('booking.onlineUnavailableAction')}
+                    </p>
+                </div>
+
+                <CallbackBar
+                    doctorId={doctorId}
+                    doctorName={doctorName}
+                    departmentName={departmentName}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <BookableBookingForm
+            doctorId={doctorId}
+            doctorName={doctorName}
+            departmentName={departmentName}
+        />
+    );
+}
+
+function BookableBookingForm({
+    doctorId,
+    doctorName,
+    departmentName,
+}: {
+    doctorId: number;
+    doctorName: string;
+    departmentName: string;
+}) {
     const { t, lang } = useLanguage();
     const locale = lang === 'ar' ? 'ar' : lang === 'ur' ? 'ur' : 'en';
     const clinic = useMemo(() => clinicNow(), []);
@@ -163,9 +216,18 @@ export default function BookingForm({ doctorId }: { doctorId: number }) {
                                 type="button"
                                 disabled={disabled}
                                 onClick={() => setSelectedDate(iso)}
-                                className={`bk-chip bk-day${isToday ? ' is-today' : ''}${selectedDate === iso ? ' is-selected' : ''}`}
+                                className={[
+                                    'bk-chip',
+                                    'bk-day',
+                                    isToday ? 'is-today' : null,
+                                    selectedDate === iso ? 'is-selected' : null,
+                                ]
+                                    .filter(Boolean)
+                                    .join(' ')}
                             >
-                                <span className="n">{Number(iso.slice(8))}</span>
+                                <span className="n">
+                                    {Number(iso.slice(8))}
+                                </span>
                                 <span className="d">
                                     {isToday
                                         ? `${t('booking.today')} · ${t('booking.viewOnly')}`
@@ -177,7 +239,13 @@ export default function BookingForm({ doctorId }: { doctorId: number }) {
                 </div>
             </div>
 
-            {!selectedDate && <CallbackBar doctorId={doctorId} />}
+            {!selectedDate && (
+                <CallbackBar
+                    doctorId={doctorId}
+                    doctorName={doctorName}
+                    departmentName={departmentName}
+                />
+            )}
 
             {selectedDate && (
                 <div style={{ marginTop: 20 }}>
@@ -288,7 +356,15 @@ export default function BookingForm({ doctorId }: { doctorId: number }) {
 }
 
 /** Escape hatch for visitors who can't find a slot: ask the clinic to call them. */
-function CallbackBar({ doctorId }: { doctorId: number }) {
+function CallbackBar({
+    doctorId,
+    doctorName,
+    departmentName,
+}: {
+    doctorId: number;
+    doctorName: string;
+    departmentName: string;
+}) {
     const { t } = useLanguage();
     const [open, setOpen] = useState(false);
 
@@ -319,20 +395,29 @@ function CallbackBar({ doctorId }: { doctorId: number }) {
                         ) : (
                             <>
                                 {Object.keys(errors).length > 0 && (
-                                    <p className="bk-callback-error" role="alert">
+                                    <p
+                                        className="bk-callback-error"
+                                        role="alert"
+                                    >
                                         {t('booking.callbackError')}
                                     </p>
                                 )}
-                                <input
-                                    type="hidden"
-                                    name="preferred_contact"
-                                    value="phone"
-                                />
+                                <p className="bk-callback-context">
+                                    {doctorName}
+                                    <span aria-hidden="true"> — </span>
+                                    {departmentName}
+                                </p>
                                 <div className="bk-field">
                                     <label htmlFor="cb-bar-name">
                                         {t('booking.callbackName')}
                                     </label>
-                                    <input id="cb-bar-name" name="name" required />
+                                    <input
+                                        id="cb-bar-name"
+                                        name="name"
+                                        autoComplete="name"
+                                        required
+                                    />
+                                    <InputError message={errors.name} />
                                 </div>
                                 <div className="bk-field">
                                     <label htmlFor="cb-bar-phone">
@@ -346,13 +431,84 @@ function CallbackBar({ doctorId }: { doctorId: number }) {
                                             {...saudiPhoneInputProps}
                                         />
                                     </div>
+                                    <p className="bk-callback-help">
+                                        {t('booking.callbackPhoneHint')}
+                                    </p>
+                                    <InputError message={errors.phone} />
+                                </div>
+                                <div className="bk-field">
+                                    <label htmlFor="cb-bar-contact">
+                                        {t('booking.callbackPreferredContact')}
+                                    </label>
+                                    <select
+                                        id="cb-bar-contact"
+                                        name="preferred_contact"
+                                        defaultValue="phone"
+                                    >
+                                        <option value="phone">
+                                            {t('booking.callbackPhoneCall')}
+                                        </option>
+                                        <option value="whatsapp">
+                                            {t('booking.callbackWhatsapp')}
+                                        </option>
+                                    </select>
+                                    <InputError
+                                        message={errors.preferred_contact}
+                                    />
+                                </div>
+                                <div className="bk-field">
+                                    <label htmlFor="cb-bar-time">
+                                        {t('booking.callbackBestTime')}
+                                    </label>
+                                    <select
+                                        id="cb-bar-time"
+                                        name="best_time"
+                                        defaultValue={t(
+                                            'booking.callbackMorning',
+                                        )}
+                                    >
+                                        <option
+                                            value={t('booking.callbackMorning')}
+                                        >
+                                            {t('booking.callbackMorning')}
+                                        </option>
+                                        <option
+                                            value={t(
+                                                'booking.callbackAfternoon',
+                                            )}
+                                        >
+                                            {t('booking.callbackAfternoon')}
+                                        </option>
+                                        <option
+                                            value={t('booking.callbackEvening')}
+                                        >
+                                            {t('booking.callbackEvening')}
+                                        </option>
+                                    </select>
+                                    <InputError message={errors.best_time} />
+                                </div>
+                                <div className="bk-field">
+                                    <label htmlFor="cb-bar-notes">
+                                        {t('booking.callbackNeeds')}
+                                    </label>
+                                    <textarea
+                                        id="cb-bar-notes"
+                                        name="notes"
+                                        rows={3}
+                                        placeholder={t(
+                                            'booking.callbackNeedsPlaceholder',
+                                        )}
+                                    />
+                                    <InputError message={errors.notes} />
                                 </div>
                                 <button
                                     type="submit"
                                     className="bk-confirm"
                                     disabled={processing}
                                 >
-                                    {t('booking.callbackSubmit')}
+                                    {processing
+                                        ? t('booking.callbackSending')
+                                        : t('booking.callbackSubmit')}
                                 </button>
                             </>
                         )

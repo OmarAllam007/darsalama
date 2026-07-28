@@ -1,2 +1,10 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Staff-only and per-patient pages. These also send noindex in the page head.
+Disallow: /admin
+Disallow: /settings
+Disallow: /dashboard
+Disallow: /login
+Disallow: /book/
+Disallow: /appointments/

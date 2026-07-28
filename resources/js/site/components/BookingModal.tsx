@@ -7,14 +7,21 @@ type Doctor = {
     id: number;
     name: string;
     name_ar: string;
+    has_online_booking?: boolean;
+    department: {
+        name: string;
+        name_ar: string;
+    };
 };
 
 export default function BookingModal({
     doctor,
+    hasOnlineBooking,
     open,
     onOpenChange,
 }: {
     doctor: Doctor | null;
+    hasOnlineBooking?: boolean;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
@@ -46,7 +53,22 @@ export default function BookingModal({
                         </div>
 
                         <div className="bk-body">
-                            <BookingForm doctorId={doctor.id} />
+                            <BookingForm
+                                doctorId={doctor.id}
+                                doctorName={
+                                    lang === 'ar' ? doctor.name_ar : doctor.name
+                                }
+                                departmentName={
+                                    lang === 'ar'
+                                        ? doctor.department.name_ar
+                                        : doctor.department.name
+                                }
+                                hasOnlineBooking={
+                                    hasOnlineBooking ??
+                                    doctor.has_online_booking ??
+                                    false
+                                }
+                            />
                         </div>
                     </div>
                 )}

@@ -40,7 +40,29 @@ test('guests can view a bookable doctor page', function () {
 
     $response = $this->get(route('booking.show', $doctor));
 
-    $response->assertOk();
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page->where('hasOnlineBooking', true));
+});
+
+test('a doctor without a future bookable schedule is marked unavailable online', function () {
+    $doctor = Doctor::factory()->create();
+
+    $doctor->schedules()->createMany([
+        [
+            'date' => Carbon::yesterday(config('booking.timezone'))->toDateString(),
+            'status' => DoctorScheduleStatus::Work,
+            'windows' => [['start' => '09:00', 'end' => '12:00', 'bookable' => true]],
+        ],
+        [
+            'date' => Carbon::today(config('booking.timezone'))->addDays(2)->toDateString(),
+            'status' => DoctorScheduleStatus::Work,
+            'windows' => [['start' => '09:00', 'end' => '12:00', 'bookable' => false]],
+        ],
+    ]);
+
+    $this->get(route('booking.show', $doctor))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('hasOnlineBooking', false));
 });
 
 test('inactive doctors cannot be booked', function () {

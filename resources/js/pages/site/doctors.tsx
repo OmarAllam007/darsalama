@@ -48,6 +48,11 @@ type Doctor = {
     id: number;
     name: string;
     name_ar: string;
+    has_online_booking: boolean;
+    department: {
+        name: string;
+        name_ar: string;
+    };
     job: string;
     job_ar: string;
     image: string | null;

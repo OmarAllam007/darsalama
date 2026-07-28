@@ -134,10 +134,12 @@ export default function DoctorProfile({
     doctor,
     workingWeekdays,
     workingHours,
+    hasOnlineBooking,
 }: {
     doctor: Doctor;
     workingWeekdays: number[];
     workingHours: { start: string; end: string }[] | null;
+    hasOnlineBooking: boolean;
 }) {
     const { t, lang, isRtl } = useLanguage();
     const pickField = (row: Package, base: string): string => {
@@ -385,6 +387,7 @@ export default function DoctorProfile({
 
             <BookingModal
                 doctor={bookingOpen ? doctor : null}
+                hasOnlineBooking={hasOnlineBooking}
                 open={bookingOpen}
                 onOpenChange={setBookingOpen}
             />

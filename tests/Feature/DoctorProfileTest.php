@@ -93,5 +93,7 @@ test('doctors without a schedule show no working days at all', function () {
 
     $this->get(route('doctors.show', $doctor))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->where('workingWeekdays', []));
+        ->assertInertia(fn ($page) => $page
+            ->where('workingWeekdays', [])
+            ->where('hasOnlineBooking', false));
 });

@@ -2,9 +2,11 @@
 
 namespace App\Support;
 
+use App\Enums\DoctorScheduleStatus;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * Generates the bookable slot start times for a doctor on a given date.
@@ -15,6 +17,53 @@ use Illuminate\Support\Carbon;
  */
 class BookingSlots
 {
+    /**
+     * Whether the doctor has any future schedule that can support online booking.
+     */
+    public function hasFutureAvailability(Doctor $doctor): bool
+    {
+        $earliestDate = $this->earliestPublicDate();
+
+        return $doctor->schedules()
+            ->whereDate('date', '>=', $earliestDate->toDateString())
+            ->where('status', DoctorScheduleStatus::Work->value)
+            ->get(['windows'])
+            ->contains(
+                fn (DoctorSchedule $schedule): bool => collect($schedule->windows)
+                    ->contains(fn (array $window): bool => $window['bookable'] ?? true),
+            );
+    }
+
+    /**
+     * @param  Collection<int, Doctor>  $doctors
+     * @return array<int, bool>
+     */
+    public function futureAvailabilityFor(Collection $doctors): array
+    {
+        $availability = $doctors
+            ->mapWithKeys(fn (Doctor $doctor): array => [$doctor->id => false])
+            ->all();
+
+        if ($doctors->isEmpty()) {
+            return $availability;
+        }
+
+        DoctorSchedule::query()
+            ->whereIn('doctor_id', $doctors->pluck('id'))
+            ->whereDate('date', '>=', $this->earliestPublicDate()->toDateString())
+            ->where('status', DoctorScheduleStatus::Work->value)
+            ->get(['doctor_id', 'windows'])
+            ->each(function (DoctorSchedule $schedule) use (&$availability): void {
+                if (collect($schedule->windows)->contains(
+                    fn (array $window): bool => $window['bookable'] ?? true,
+                )) {
+                    $availability[$schedule->doctor_id] = true;
+                }
+            });
+
+        return $availability;
+    }
+
     /**
      * @return array<int, string>
      */
@@ -149,17 +198,21 @@ class BookingSlots
      */
     private function isBeforeEarliestPublicDate(string $date): bool
     {
-        $timezone = $this->timezone();
-        $now = Carbon::now($timezone);
-        $target = Carbon::parse($date, $timezone)->startOfDay();
-        $tomorrow = $now->copy()->addDay()->startOfDay();
+        return Carbon::parse($date, $this->timezone())
+            ->startOfDay()
+            ->lt($this->earliestPublicDate());
+    }
 
-        if ($target->lt($tomorrow)) {
-            return true;
+    private function earliestPublicDate(): Carbon
+    {
+        $now = Carbon::now($this->timezone());
+        $earliestDate = $now->copy()->addDay()->startOfDay();
+
+        if ($now->hour >= (int) config('booking.next_day_cutoff_hour')) {
+            $earliestDate->addDay();
         }
 
-        return $target->equalTo($tomorrow)
-            && $now->hour >= (int) config('booking.next_day_cutoff_hour');
+        return $earliestDate;
     }
 
     private function timezone(): string

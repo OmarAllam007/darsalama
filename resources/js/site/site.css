@@ -4694,6 +4694,26 @@ button {
     color: #15265c;
     margin: 4px 0 12px;
 }
+.bk-online-unavailable {
+    padding: 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.65;
+    text-align: center;
+}
+.bk-online-unavailable p {
+    margin: 0;
+}
+.bk-online-unavailable a {
+    color: #15265c;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
 .bk-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
@@ -4804,6 +4824,22 @@ button {
 .bk-callback-form {
     margin-top: 14px;
 }
+.bk-callback-context {
+    margin: 0 0 16px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #15265c;
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.4;
+}
+.bk-callback-help {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
 .bk-callback-error {
     color: #b91c1c;
     background: rgba(185, 28, 28, 0.08);
@@ -4848,7 +4884,9 @@ button {
     color: #334155;
     margin-bottom: 6px;
 }
-.bk-field input {
+.bk-field input,
+.bk-field select,
+.bk-field textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid #cbd5e1;
@@ -4858,9 +4896,20 @@ button {
     background: #fff;
     color: #0f172a;
 }
-.bk-field input:focus {
+.bk-field select {
+    min-height: 45px;
+    cursor: pointer;
+}
+.bk-field textarea {
+    min-height: 92px;
+    resize: vertical;
+}
+.bk-field input:focus,
+.bk-field select:focus,
+.bk-field textarea:focus {
     outline: 0;
     border-color: #15265c;
+    box-shadow: 0 0 0 3px rgba(21, 38, 92, 0.1);
 }
 .bk-confirm {
     width: 100%;

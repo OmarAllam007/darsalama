@@ -18,8 +18,10 @@ it('scopes offers to each doctor rather than the whole department', function () 
         ->assertInertia(fn ($page) => $page
             ->where('departments.0.doctors.0.offers_count', 1)
             ->has('departments.0.doctors.0.offers', 1)
+            ->where('departments.0.doctors.0.has_online_booking', false)
             ->where('departments.1.doctors.0.offers_count', 0)
             ->has('departments.1.doctors.0.offers', 0)
+            ->where('departments.1.doctors.0.has_online_booking', false)
         );
 
     expect($withoutOffer->offers()->count())->toBe(0);

@@ -86,6 +86,8 @@ type Doctor = {
     id: number;
     name: string;
     name_ar: string;
+    has_online_booking: boolean;
+    department: NamePair;
     job: string;
     job_ar: string;
     image: string | null;
@@ -151,9 +153,12 @@ export default function ObgynDepartment({
             return;
         }
 
-        const reveals = Array.from(root.querySelectorAll<HTMLElement>('.reveal'));
+        const reveals = Array.from(
+            root.querySelectorAll<HTMLElement>('.reveal'),
+        );
         const revealIn = () => {
-            const vh = window.innerHeight || document.documentElement.clientHeight;
+            const vh =
+                window.innerHeight || document.documentElement.clientHeight;
             reveals.forEach((el) => {
                 const r = el.getBoundingClientRect();
                 if (r.top < vh * 1.1 && r.bottom > 0) {
@@ -186,11 +191,15 @@ export default function ObgynDepartment({
         const secObs = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    if (entry.isIntersecting && entry.intersectionRatio >= 0.4) {
+                    if (
+                        entry.isIntersecting &&
+                        entry.intersectionRatio >= 0.4
+                    ) {
                         dots.forEach((d) =>
                             d.classList.toggle(
                                 'active',
-                                d.getAttribute('href') === `#${entry.target.id}`,
+                                d.getAttribute('href') ===
+                                    `#${entry.target.id}`,
                             ),
                         );
                     }
@@ -211,13 +220,19 @@ export default function ObgynDepartment({
 
     const dots = [
         { id: 'hero', label: t('obgyn.kicker') },
-        ...packages.map((p) => ({ id: `pkg-${p.slug}`, label: pick(p, 'name') })),
+        ...packages.map((p) => ({
+            id: `pkg-${p.slug}`,
+            label: pick(p, 'name'),
+        })),
         { id: 'doctors', label: t('obgyn.doctorsTitle') },
         { id: 'rooms', label: t('obgyn.roomsTitle') },
         { id: 'contact', label: t('obgyn.contactTitle') },
     ];
 
-    const roomsStats = t('obgyn.roomsStats') as { value: string; label: string }[];
+    const roomsStats = t('obgyn.roomsStats') as {
+        value: string;
+        label: string;
+    }[];
     const roomImages = ['room-deluxe.jpg', 'room-waiting.jpg', 'room-door.jpg'];
     const roomCaptions = t('obgyn.rooms') as string[];
     const roomCaptionsAr = AR.rooms as unknown as string[];
@@ -260,7 +275,7 @@ export default function ObgynDepartment({
                 className={`snap ${bg}`}
             >
                 <div className="wrap">
-                    <div className={`pkg-grid${reverse ? ' reverse' : ''}`}>
+                    <div className={`pkg-grid${reverse ? 'reverse' : ''}`}>
                         <div className="pkg-media reveal">
                             <div className="pkg-index">
                                 <span className="num">
@@ -268,17 +283,27 @@ export default function ObgynDepartment({
                                 </span>{' '}
                                 · {pick(pkg, 'name')}
                             </div>
-                            {img && <img loading="lazy" src={img} alt={pick(pkg, 'name')} />}
+                            {img && (
+                                <img
+                                    loading="lazy"
+                                    src={img}
+                                    alt={pick(pkg, 'name')}
+                                />
+                            )}
                         </div>
                         <div>
                             <div className="pkg-meta reveal">
-                                <span className="ar">{pkg.category_label_ar}</span>
+                                <span className="ar">
+                                    {pkg.category_label_ar}
+                                </span>
                                 <span className="sep" />
                                 <span>{pkg.category_label_en}</span>
                             </div>
                             <h2 className="h2-ar reveal d1">{pkg.name_ar}</h2>
                             {lang !== 'ar' && (
-                                <div className="h2-en reveal d2">{pick(pkg, 'name')}</div>
+                                <div className="h2-en reveal d2">
+                                    {pick(pkg, 'name')}
+                                </div>
                             )}
                             <span className="h2-rule reveal d2" />
                             {(pkg.name_tl || pkg.name_ur) && (
@@ -294,16 +319,18 @@ export default function ObgynDepartment({
                                 {pkg.features.map((feature) => (
                                     <span
                                         key={feature.id}
-                                        className={`chip${feature.is_highlighted ? ' gold' : ''}`}
+                                        className={`chip${feature.is_highlighted ? 'gold' : ''}`}
                                     >
-                                        <span className={isRtl ? 'ar' : undefined}>
+                                        <span
+                                            className={isRtl ? 'ar' : undefined}
+                                        >
                                             {pick(feature, 'label')}
                                         </span>
                                     </span>
                                 ))}
                             </div>
                             <div
-                                className={`price-card reveal d4${isTransport ? ' slim' : ''}`}
+                                className={`price-card reveal d4${isTransport ? 'slim' : ''}`}
                             >
                                 <div className="label">PRICE</div>
                                 <div className="body">
@@ -349,17 +376,27 @@ export default function ObgynDepartment({
                                 </span>{' '}
                                 · {pick(pkg, 'name')}
                             </div>
-                            {img && <img loading="lazy" src={img} alt={pick(pkg, 'name')} />}
+                            {img && (
+                                <img
+                                    loading="lazy"
+                                    src={img}
+                                    alt={pick(pkg, 'name')}
+                                />
+                            )}
                         </div>
                         <div>
                             <div className="pkg-meta reveal">
-                                <span className="ar">{pkg.category_label_ar}</span>
+                                <span className="ar">
+                                    {pkg.category_label_ar}
+                                </span>
                                 <span className="sep" />
                                 <span>{pkg.category_label_en}</span>
                             </div>
                             <h2 className="h2-ar reveal d1">{pkg.name_ar}</h2>
                             {lang !== 'ar' && (
-                                <div className="h2-en reveal d2">{pick(pkg, 'name')}</div>
+                                <div className="h2-en reveal d2">
+                                    {pick(pkg, 'name')}
+                                </div>
                             )}
                             <span className="h2-rule reveal d2" />
                             {pick(pkg, 'description') && (
@@ -383,9 +420,11 @@ export default function ObgynDepartment({
                                 {pkg.features.map((feature) => (
                                     <span
                                         key={feature.id}
-                                        className={`chip${feature.is_highlighted ? ' gold' : ''}`}
+                                        className={`chip${feature.is_highlighted ? 'gold' : ''}`}
                                     >
-                                        <span className={isRtl ? 'ar' : undefined}>
+                                        <span
+                                            className={isRtl ? 'ar' : undefined}
+                                        >
                                             {pick(feature, 'label')}
                                         </span>
                                     </span>
@@ -404,7 +443,9 @@ export default function ObgynDepartment({
                                                     {pick(tier, 'label')}
                                                 </span>
                                                 <span className="amt">
-                                                    <span className="cur">{RIYAL}</span>{' '}
+                                                    <span className="cur">
+                                                        {RIYAL}
+                                                    </span>{' '}
                                                     {num(tier.amount)}
                                                 </span>
                                             </div>
@@ -428,7 +469,9 @@ export default function ObgynDepartment({
                                     </div>
                                     <h3>{pick(stage, 'name')}</h3>
                                     {pick(stage, 'subtitle') && (
-                                        <div className={isRtl ? 'ar' : undefined}>
+                                        <div
+                                            className={isRtl ? 'ar' : undefined}
+                                        >
                                             {pick(stage, 'subtitle')}
                                         </div>
                                     )}
@@ -437,9 +480,13 @@ export default function ObgynDepartment({
                                     {stage.tests.map((test, ti) => (
                                         <div key={test.id} className="tri-row">
                                             <span className="n">{ti + 1}</span>
-                                            <span className="nm">{test.name}</span>
+                                            <span className="nm">
+                                                {test.name}
+                                            </span>
                                             {test.code && (
-                                                <span className="cd">{test.code}</span>
+                                                <span className="cd">
+                                                    {test.code}
+                                                </span>
                                             )}
                                         </div>
                                     ))}
@@ -516,13 +563,20 @@ export default function ObgynDepartment({
                                         <span className="ar">{AR.kicker}</span>
                                         <span>{EN.kicker}</span>
                                     </div>
-                                    <h1 className="h2-ar reveal d1">{AR.heroTitle}</h1>
-                                    <div className="h2-en reveal d2">{EN.heroTitle}</div>
+                                    <h1 className="h2-ar reveal d1">
+                                        {AR.heroTitle}
+                                    </h1>
+                                    <div className="h2-en reveal d2">
+                                        {EN.heroTitle}
+                                    </div>
                                     <p className="lead-text reveal d3">
                                         {t('obgyn.heroLead')}
                                     </p>
                                     <div className="hero-ctas reveal d4">
-                                        <a className="btn btn-primary" href="#pkg-normal-delivery">
+                                        <a
+                                            className="btn btn-primary"
+                                            href="#pkg-normal-delivery"
+                                        >
                                             {t('obgyn.explorePackages')}
                                             <svg
                                                 width="14"
@@ -535,49 +589,74 @@ export default function ObgynDepartment({
                                                 <path d="M5 12h14M13 5l7 7-7 7" />
                                             </svg>
                                         </a>
-                                        <a className="btn btn-ghost" href="#doctors">
+                                        <a
+                                            className="btn btn-ghost"
+                                            href="#doctors"
+                                        >
                                             {t('obgyn.meetDoctors')}
                                         </a>
-                                        <a className="btn btn-ghost" href="#contact">
+                                        <a
+                                            className="btn btn-ghost"
+                                            href="#contact"
+                                        >
                                             {t('obgyn.bookConsultation')}
                                         </a>
                                     </div>
                                 </div>
 
                                 <div className="hero-panel reveal d2">
-                                    <div className="hp-title">{t('obgyn.atAGlance')}</div>
+                                    <div className="hp-title">
+                                        {t('obgyn.atAGlance')}
+                                    </div>
                                     <ul className="hp-list">
                                         {packages.map((pkg) => (
                                             <li key={pkg.id} className="hp-row">
                                                 <div className="nm">
                                                     {pick(pkg, 'name')}
                                                     {lang !== 'en' && (
-                                                        <small>{pkg.name_en}</small>
+                                                        <small>
+                                                            {pkg.name_en}
+                                                        </small>
                                                     )}
                                                 </div>
                                                 {pkg.type === 'care' ? (
                                                     <div className="pr stacked">
-                                                        {pkg.price_tiers.map((tier) => (
-                                                            <span key={tier.id}>
-                                                                {num(tier.amount)}{' '}
-                                                                <span className="rs">
-                                                                    SR
-                                                                </span>{' '}
-                                                                <small>
-                                                                    {pick(tier, 'label')}
-                                                                </small>
-                                                            </span>
-                                                        ))}
+                                                        {pkg.price_tiers.map(
+                                                            (tier) => (
+                                                                <span
+                                                                    key={
+                                                                        tier.id
+                                                                    }
+                                                                >
+                                                                    {num(
+                                                                        tier.amount,
+                                                                    )}{' '}
+                                                                    <span className="rs">
+                                                                        SR
+                                                                    </span>{' '}
+                                                                    <small>
+                                                                        {pick(
+                                                                            tier,
+                                                                            'label',
+                                                                        )}
+                                                                    </small>
+                                                                </span>
+                                                            ),
+                                                        )}
                                                     </div>
                                                 ) : (
                                                     <div className="pr">
                                                         {hasDiscount(pkg) && (
                                                             <span className="old">
-                                                                {num(pkg.original_price)}
+                                                                {num(
+                                                                    pkg.original_price,
+                                                                )}
                                                             </span>
                                                         )}
                                                         {num(pkg.price)}{' '}
-                                                        <span className="rs">SR</span>
+                                                        <span className="rs">
+                                                            SR
+                                                        </span>
                                                     </div>
                                                 )}
                                             </li>
@@ -609,7 +688,9 @@ export default function ObgynDepartment({
                                         <span className="sep" />
                                         <span>{EN.ourSpecialists}</span>
                                     </div>
-                                    <h2 className="h2-ar reveal d1">{AR.doctorsTitle}</h2>
+                                    <h2 className="h2-ar reveal d1">
+                                        {AR.doctorsTitle}
+                                    </h2>
                                     {lang !== 'ar' && (
                                         <div className="h2-en reveal d2">
                                             {t('obgyn.doctorsTitle')}
@@ -637,17 +718,27 @@ export default function ObgynDepartment({
                                                 </div>
                                             ) : (
                                                 <div className="doc-portrait empty">
-                                                    <span className="empty-icon">🌸</span>
+                                                    <span className="empty-icon">
+                                                        🌸
+                                                    </span>
                                                 </div>
                                             )}
                                             <div
-                                                className={`doc-nameplate${i === 0 ? '' : ' pink'}`}
+                                                className={`doc-nameplate${i === 0 ? '' : 'pink'}`}
                                             >
                                                 {doctor.nationality?.flag && (
                                                     <span className="doc-flag">
                                                         <img
-                                                            src={doctor.nationality.flag}
-                                                            alt={doctor.nationality.name}
+                                                            src={
+                                                                doctor
+                                                                    .nationality
+                                                                    .flag
+                                                            }
+                                                            alt={
+                                                                doctor
+                                                                    .nationality
+                                                                    .name
+                                                            }
                                                             width={27}
                                                             height={18}
                                                             loading="lazy"
@@ -657,7 +748,9 @@ export default function ObgynDepartment({
                                                 <div className="ar-name">
                                                     {doctor.name_ar}
                                                 </div>
-                                                <div className="en-name">{doctor.name}</div>
+                                                <div className="en-name">
+                                                    {doctor.name}
+                                                </div>
                                                 <div className="role">
                                                     {doctor.job_ar}
                                                     <span className="role-en">
@@ -666,18 +759,21 @@ export default function ObgynDepartment({
                                                 </div>
                                             </div>
                                             <div className="doc-body">
-                                                {doctor.qualifications.length > 0 && (
+                                                {doctor.qualifications.length >
+                                                    0 && (
                                                     <>
                                                         <h4>
                                                             {EN.credentials} ·{' '}
                                                             {AR.credentials}
                                                         </h4>
                                                         <ul
-                                                            className={`doc-list${isRtl ? ' ar-list' : ''}`}
+                                                            className={`doc-list${isRtl ? 'ar-list' : ''}`}
                                                         >
                                                             {doctor.qualifications.map(
                                                                 (q, qi) => (
-                                                                    <li key={qi}>
+                                                                    <li
+                                                                        key={qi}
+                                                                    >
                                                                         {isRtl
                                                                             ? q.name_ar ||
                                                                               q.name
@@ -691,14 +787,17 @@ export default function ObgynDepartment({
                                                 {doctor.services.length > 0 && (
                                                     <>
                                                         <h4>
-                                                            {EN.services} · {AR.services}
+                                                            {EN.services} ·{' '}
+                                                            {AR.services}
                                                         </h4>
                                                         <ul
-                                                            className={`doc-list${isRtl ? ' ar-list' : ''}`}
+                                                            className={`doc-list${isRtl ? 'ar-list' : ''}`}
                                                         >
                                                             {doctor.services.map(
                                                                 (s, si) => (
-                                                                    <li key={si}>
+                                                                    <li
+                                                                        key={si}
+                                                                    >
                                                                         {isRtl
                                                                             ? s.name_ar ||
                                                                               s.name
@@ -714,10 +813,14 @@ export default function ObgynDepartment({
                                                         type="button"
                                                         className="book"
                                                         onClick={() =>
-                                                            setBookingDoctor(doctor)
+                                                            setBookingDoctor(
+                                                                doctor,
+                                                            )
                                                         }
                                                     >
-                                                        {t('obgyn.bookAppointment')}
+                                                        {t(
+                                                            'obgyn.bookAppointment',
+                                                        )}
                                                         <svg
                                                             viewBox="0 0 24 24"
                                                             fill="none"
@@ -756,11 +859,15 @@ export default function ObgynDepartment({
                             <div className="rooms-wrap">
                                 <div>
                                     <div className="pkg-meta reveal">
-                                        <span className="ar">{AR.roomsEyebrow}</span>
+                                        <span className="ar">
+                                            {AR.roomsEyebrow}
+                                        </span>
                                         <span className="sep" />
                                         <span>{EN.roomsEyebrow}</span>
                                     </div>
-                                    <h2 className="h2-ar reveal d1">{AR.roomsTitle}</h2>
+                                    <h2 className="h2-ar reveal d1">
+                                        {AR.roomsTitle}
+                                    </h2>
                                     {lang !== 'ar' && (
                                         <div className="h2-en reveal d2">
                                             {t('obgyn.roomsTitle')}
@@ -781,9 +888,16 @@ export default function ObgynDepartment({
                                     </p>
                                     <div className="rooms-stats reveal d4">
                                         {roomsStats.map((stat) => (
-                                            <div key={stat.label} className="stat">
-                                                <div className="v">{stat.value}</div>
-                                                <div className="l">{stat.label}</div>
+                                            <div
+                                                key={stat.label}
+                                                className="stat"
+                                            >
+                                                <div className="v">
+                                                    {stat.value}
+                                                </div>
+                                                <div className="l">
+                                                    {stat.label}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -792,7 +906,7 @@ export default function ObgynDepartment({
                                     {roomImages.map((file, i) => (
                                         <div
                                             key={file}
-                                            className={`room${i === 0 ? ' big' : ''}`}
+                                            className={`room${i === 0 ? 'big' : ''}`}
                                         >
                                             <img
                                                 loading="lazy"
@@ -821,12 +935,15 @@ export default function ObgynDepartment({
                         <div className="wrap">
                             <div className="contact-grid">
                                 <div>
-                                    <h2 className="h2-ar reveal">{AR.contactTitle}</h2>
+                                    <h2 className="h2-ar reveal">
+                                        {AR.contactTitle}
+                                    </h2>
                                     {lang !== 'ar' && (
                                         <div
                                             className="h2-en reveal"
                                             style={{
-                                                fontSize: 'clamp(28px,3.5vw,48px)',
+                                                fontSize:
+                                                    'clamp(28px,3.5vw,48px)',
                                                 margin: '0 0 4px',
                                                 direction: 'ltr',
                                             }}
@@ -848,9 +965,17 @@ export default function ObgynDepartment({
                                         {t('obgyn.contactLead')}
                                     </p>
                                     <div className="contact-quick reveal d3">
-                                        <a className="qrow" href={EMERGENCY_TEL}>
+                                        <a
+                                            className="qrow"
+                                            href={EMERGENCY_TEL}
+                                        >
                                             <div className="qicon">
-                                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    width="20"
+                                                    height="20"
+                                                    fill="currentColor"
+                                                >
                                                     <path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.4-1.1-.6-2.3-.6-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z" />
                                                 </svg>
                                             </div>
@@ -859,7 +984,9 @@ export default function ObgynDepartment({
                                                     {t('obgyn.forInquiries')}
                                                 </div>
                                                 <div className="v">
-                                                    <bdi dir="ltr">{EMERGENCY_PHONE}</bdi>
+                                                    <bdi dir="ltr">
+                                                        {EMERGENCY_PHONE}
+                                                    </bdi>
                                                 </div>
                                             </div>
                                         </a>
@@ -870,7 +997,12 @@ export default function ObgynDepartment({
                                             rel="noreferrer"
                                         >
                                             <div className="qicon wa">
-                                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    width="20"
+                                                    height="20"
+                                                    fill="currentColor"
+                                                >
                                                     <path d="M17.5 14.4c-.3-.1-1.8-.9-2.1-1s-.5-.1-.7.2-.8 1-.9 1.1-.3.2-.6.1c-.9-.4-1.8-1-2.5-1.7-.7-.7-1.3-1.5-1.8-2.4-.2-.3 0-.4.1-.6l.5-.6c.1-.2.2-.3.2-.5 0-.2 0-.3-.1-.4l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.4 1 2.8 1.1 3 2 3 4.8 4.2c1.8.7 2.5.8 3.4.6.5-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.4M12 22h-.1c-1.9 0-3.8-.5-5.4-1.5l-.4-.2-4 1 1.1-3.9-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.7 0-5.9 4.8-10.7 10.7-10.7 2.9 0 5.5 1.1 7.6 3.1 2 2 3.1 4.7 3.1 7.6 0 5.9-4.8 10.7-10.6 10.7M20.5 3.5C18.2 1.2 15.2 0 12 0 5.4 0 .1 5.3.1 11.9c0 2.1.6 4.2 1.6 6L0 24l6.3-1.6c1.7.9 3.7 1.4 5.7 1.4 6.6 0 12-5.4 12-12 0-3.2-1.3-6.2-3.5-8.4" />
                                                 </svg>
                                             </div>
@@ -919,32 +1051,53 @@ export default function ObgynDepartment({
                                         options={{ preserveScroll: true }}
                                         className="form-card reveal d2"
                                     >
-                                        {({ processing, errors, wasSuccessful }) =>
+                                        {({
+                                            processing,
+                                            errors,
+                                            wasSuccessful,
+                                        }) =>
                                             wasSuccessful ? (
                                                 <div className="success-box">
                                                     <div className="check">
-                                                        <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            width="30"
+                                                            height="30"
+                                                            fill="currentColor"
+                                                        >
                                                             <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
                                                         </svg>
                                                     </div>
                                                     <h3>
-                                                        {t('obgyn.callback.thankYouTitle')}
+                                                        {t(
+                                                            'obgyn.callback.thankYouTitle',
+                                                        )}
                                                     </h3>
                                                     <p>
-                                                        {t('obgyn.callback.thankYouBody')}
+                                                        {t(
+                                                            'obgyn.callback.thankYouBody',
+                                                        )}
                                                     </p>
                                                 </div>
                                             ) : (
                                                 <>
                                                     <h3 className="form-title">
-                                                        {t('obgyn.callback.title')}
+                                                        {t(
+                                                            'obgyn.callback.title',
+                                                        )}
                                                     </h3>
                                                     <p className="form-sub">
-                                                        {t('obgyn.callback.sub')}
+                                                        {t(
+                                                            'obgyn.callback.sub',
+                                                        )}
                                                     </p>
 
-                                                    {Object.keys(errors).length > 0 && (
-                                                        <p className="error-box" role="alert">
+                                                    {Object.keys(errors)
+                                                        .length > 0 && (
+                                                        <p
+                                                            className="error-box"
+                                                            role="alert"
+                                                        >
                                                             {t(
                                                                 errors.callback
                                                                     ? 'obgyn.callback.mailErrorBody'
@@ -956,7 +1109,9 @@ export default function ObgynDepartment({
                                                     <div className="form-grid">
                                                         <div className="f">
                                                             <label htmlFor="og-name">
-                                                                {t('obgyn.callback.fullName')}{' '}
+                                                                {t(
+                                                                    'obgyn.callback.fullName',
+                                                                )}{' '}
                                                                 *
                                                             </label>
                                                             <input
@@ -967,13 +1122,17 @@ export default function ObgynDepartment({
                                                             />
                                                             {errors.name && (
                                                                 <span className="field-error">
-                                                                    {errors.name}
+                                                                    {
+                                                                        errors.name
+                                                                    }
                                                                 </span>
                                                             )}
                                                         </div>
                                                         <div className="f">
                                                             <label htmlFor="og-phone">
-                                                                {t('obgyn.callback.phone')}{' '}
+                                                                {t(
+                                                                    'obgyn.callback.phone',
+                                                                )}{' '}
                                                                 *
                                                             </label>
                                                             <div className="phone-row">
@@ -988,7 +1147,9 @@ export default function ObgynDepartment({
                                                             </div>
                                                             {errors.phone && (
                                                                 <span className="field-error">
-                                                                    {errors.phone}
+                                                                    {
+                                                                        errors.phone
+                                                                    }
                                                                 </span>
                                                             )}
                                                         </div>
@@ -1011,10 +1172,16 @@ export default function ObgynDepartment({
                                                                 {packageOptions.map(
                                                                     (label) => (
                                                                         <option
-                                                                            key={label}
-                                                                            value={label}
+                                                                            key={
+                                                                                label
+                                                                            }
+                                                                            value={
+                                                                                label
+                                                                            }
                                                                         >
-                                                                            {label}
+                                                                            {
+                                                                                label
+                                                                            }
                                                                         </option>
                                                                     ),
                                                                 )}
@@ -1106,7 +1273,9 @@ export default function ObgynDepartment({
                                                         </div>
                                                         <div className="f full">
                                                             <label htmlFor="og-notes">
-                                                                {t('obgyn.callback.notes')}
+                                                                {t(
+                                                                    'obgyn.callback.notes',
+                                                                )}
                                                             </label>
                                                             <textarea
                                                                 id="og-notes"
@@ -1122,16 +1291,24 @@ export default function ObgynDepartment({
 
                                                     <div className="form-foot">
                                                         <div className="consent">
-                                                            {t('obgyn.callback.consent')}
+                                                            {t(
+                                                                'obgyn.callback.consent',
+                                                            )}
                                                         </div>
                                                         <button
                                                             className="submit-btn"
                                                             type="submit"
-                                                            disabled={processing}
+                                                            disabled={
+                                                                processing
+                                                            }
                                                         >
                                                             {processing
-                                                                ? t('obgyn.callback.sending')
-                                                                : t('obgyn.callback.submit')}
+                                                                ? t(
+                                                                      'obgyn.callback.sending',
+                                                                  )
+                                                                : t(
+                                                                      'obgyn.callback.submit',
+                                                                  )}
                                                             <svg
                                                                 viewBox="0 0 24 24"
                                                                 fill="none"
@@ -1164,7 +1341,12 @@ export default function ObgynDepartment({
                         data-label={t('floatActions.whatsapp') as string}
                         aria-label={t('floatActions.whatsapp') as string}
                     >
-                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="26"
+                            height="26"
+                            fill="currentColor"
+                        >
                             <path d="M17.5 14.4c-.3-.1-1.8-.9-2.1-1s-.5-.1-.7.2-.8 1-.9 1.1-.3.2-.6.1c-.9-.4-1.8-1-2.5-1.7-.7-.7-1.3-1.5-1.8-2.4-.2-.3 0-.4.1-.6l.5-.6c.1-.2.2-.3.2-.5 0-.2 0-.3-.1-.4l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.4 1 2.8 1.1 3 2 3 4.8 4.2c1.8.7 2.5.8 3.4.6.5-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.4M12 22h-.1c-1.9 0-3.8-.5-5.4-1.5l-.4-.2-4 1 1.1-3.9-.3-.4c-1.1-1.7-1.7-3.7-1.7-5.7 0-5.9 4.8-10.7 10.7-10.7 2.9 0 5.5 1.1 7.6 3.1 2 2 3.1 4.7 3.1 7.6 0 5.9-4.8 10.7-10.6 10.7M20.5 3.5C18.2 1.2 15.2 0 12 0 5.4 0 .1 5.3.1 11.9c0 2.1.6 4.2 1.6 6L0 24l6.3-1.6c1.7.9 3.7 1.4 5.7 1.4 6.6 0 12-5.4 12-12 0-3.2-1.3-6.2-3.5-8.4" />
                         </svg>
                     </a>
@@ -1174,7 +1356,12 @@ export default function ObgynDepartment({
                         data-label={t('floatActions.call') as string}
                         aria-label={t('floatActions.call') as string}
                     >
-                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="26"
+                            height="26"
+                            fill="currentColor"
+                        >
                             <path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.4-1.1-.6-2.3-.6-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z" />
                         </svg>
                     </a>
@@ -1199,8 +1386,14 @@ export default function ObgynDepartment({
                         </div>
                     </div>
                     <div className="bf-bottom">
-                        <span>© 2026 Dar As Salama Medical Hospital · All rights reserved</span>
-                        <span>Prices exclude VAT · T&amp;C apply · Transport within Khobar area</span>
+                        <span>
+                            © 2026 Dar As Salama Medical Hospital · All rights
+                            reserved
+                        </span>
+                        <span>
+                            Prices exclude VAT · T&amp;C apply · Transport
+                            within Khobar area
+                        </span>
                     </div>
                 </footer>
             </div>

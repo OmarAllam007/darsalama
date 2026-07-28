@@ -42,7 +42,8 @@ test('the obgyn page renders with active packages and doctors', function () {
             ->has('department.packages', 1)
             ->where('department.packages.0.name_en', 'Normal Delivery')
             ->has('department.packages.0.features', 1)
-            ->has('department.doctors', 1));
+            ->has('department.doctors', 1)
+            ->where('department.doctors.0.has_online_booking', false));
 });
 
 test('the obgyn page 404s when the department is missing', function () {

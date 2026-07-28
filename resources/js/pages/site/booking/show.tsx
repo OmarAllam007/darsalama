@@ -24,7 +24,13 @@ type Doctor = {
     offers: Offer[];
 };
 
-export default function BookingShow({ doctor }: { doctor: Doctor }) {
+export default function BookingShow({
+    doctor,
+    hasOnlineBooking,
+}: {
+    doctor: Doctor;
+    hasOnlineBooking: boolean;
+}) {
     const { t, lang } = useLanguage();
     const [offersOpen, setOffersOpen] = useState(false);
     const doctorName = lang === 'ar' ? doctor.name_ar : doctor.name;
@@ -57,7 +63,16 @@ export default function BookingShow({ doctor }: { doctor: Doctor }) {
                             </div>
                         </div>
 
-                        <BookingForm doctorId={doctor.id} />
+                        <BookingForm
+                            doctorId={doctor.id}
+                            doctorName={doctorName}
+                            departmentName={
+                                lang === 'ar'
+                                    ? doctor.department.name_ar
+                                    : doctor.department.name
+                            }
+                            hasOnlineBooking={hasOnlineBooking}
+                        />
 
                         {offers.length > 0 && (
                             <div className="space-y-3 border-t pt-6">
