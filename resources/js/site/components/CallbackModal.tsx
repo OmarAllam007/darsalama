@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, Phone, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, LoaderCircle, Phone, X } from 'lucide-react';
 import CallbackRequestController from '@/actions/App/Http/Controllers/CallbackRequestController';
 import InputError from '@/components/input-error';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -18,6 +18,10 @@ type Doctor = {
     id: number;
     name: string;
     name_ar: string;
+    department: {
+        name: string;
+        name_ar: string;
+    };
 };
 
 export default function CallbackModal({
@@ -25,18 +29,23 @@ export default function CallbackModal({
     open,
     onOpenChange,
     packageOptions,
+    showPackageSelector,
 }: {
     doctor: Doctor | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     packageOptions: string[];
+    showPackageSelector: boolean;
 }) {
     const { t, lang } = useLanguage();
     const SubmitArrow = lang === 'ar' ? ArrowLeft : ArrowRight;
+    const doctorName = lang === 'ar' ? doctor?.name_ar : doctor?.name;
+    const departmentName =
+        lang === 'ar' ? doctor?.department.name_ar : doctor?.department.name;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[92vh] overflow-y-auto border-none bg-transparent p-0 shadow-none sm:max-w-4xl [&>button:last-child]:hidden">
+            <DialogContent className="max-h-[94vh] w-[calc(100vw-1.5rem)] overflow-y-auto border-none bg-transparent p-0 shadow-none sm:max-w-6xl [&>button:last-child]:hidden">
                 {doctor && (
                     <div
                         className="dsm callback-modal"
@@ -58,6 +67,9 @@ export default function CallbackModal({
                             {({ processing, errors, wasSuccessful }) =>
                                 wasSuccessful ? (
                                     <div className="callback-modal__success">
+                                        <span className="callback-modal__success-icon">
+                                            ✓
+                                        </span>
                                         <h3>{t('callback.successTitle')}</h3>
                                         <p>{t('callback.successBody')}</p>
                                         <button
@@ -71,11 +83,63 @@ export default function CallbackModal({
                                 ) : (
                                     <>
                                         <div className="callback-modal__head">
-                                            <h3>{t('callback.formTitle')}</h3>
-                                            <p>{t('callback.formSubtitle')}</p>
+                                            <div>
+                                                <span className="callback-modal__kicker">
+                                                    <Phone size={13} />
+                                                    {t('callback.formSubtitle')}
+                                                </span>
+                                                <h3>
+                                                    {t('callback.formTitle')}
+                                                </h3>
+                                            </div>
+
+                                            <div className="callback-modal__doctor">
+                                                <span aria-hidden="true">
+                                                    {doctorName?.charAt(0)}
+                                                </span>
+                                                <div>
+                                                    <strong>
+                                                        {doctorName}
+                                                    </strong>
+                                                    <small>
+                                                        {departmentName}
+                                                    </small>
+                                                </div>
+                                            </div>
                                         </div>
 
+                                        {Object.keys(errors).length > 0 && (
+                                            <p
+                                                className="callback-modal__error"
+                                                role="alert"
+                                            >
+                                                {t('booking.callbackError')}
+                                            </p>
+                                        )}
+
                                         <div className="callback-modal__row">
+                                            <div className="callback-modal__field">
+                                                <label htmlFor="cb-name">
+                                                    {t('callback.nameLabel')}
+                                                </label>
+                                                <input
+                                                    id="cb-name"
+                                                    name="name"
+                                                    required
+                                                    autoComplete="name"
+                                                    aria-invalid={
+                                                        errors.name
+                                                            ? true
+                                                            : undefined
+                                                    }
+                                                    placeholder={t(
+                                                        'callback.namePlaceholder',
+                                                    )}
+                                                />
+                                                <InputError
+                                                    message={errors.name}
+                                                />
+                                            </div>
                                             <div className="callback-modal__field">
                                                 <label htmlFor="cb-phone">
                                                     {t('callback.phoneLabel')}
@@ -85,6 +149,11 @@ export default function CallbackModal({
                                                     <input
                                                         id="cb-phone"
                                                         name="phone"
+                                                        aria-invalid={
+                                                            errors.phone
+                                                                ? true
+                                                                : undefined
+                                                        }
                                                         {...saudiPhoneInputProps}
                                                     />
                                                 </div>
@@ -92,26 +161,10 @@ export default function CallbackModal({
                                                     message={errors.phone}
                                                 />
                                             </div>
-                                            <div className="callback-modal__field">
-                                                <label htmlFor="cb-name">
-                                                    {t('callback.nameLabel')}
-                                                </label>
-                                                <input
-                                                    id="cb-name"
-                                                    name="name"
-                                                    required
-                                                    placeholder={t(
-                                                        'callback.namePlaceholder',
-                                                    )}
-                                                />
-                                                <InputError
-                                                    message={errors.name}
-                                                />
-                                            </div>
                                         </div>
 
-                                        {packageOptions.length > 0 && (
-                                            <div className="callback-modal__field">
+                                        {showPackageSelector && (
+                                            <div className="callback-modal__field callback-modal__field--package">
                                                 <label htmlFor="cb-package">
                                                     {t('callback.packageLabel')}
                                                 </label>
@@ -135,7 +188,21 @@ export default function CallbackModal({
                                                             </option>
                                                         ),
                                                     )}
+                                                    <option
+                                                        value={t(
+                                                            'obgyn.callback.notSure',
+                                                        )}
+                                                    >
+                                                        {t(
+                                                            'obgyn.callback.notSure',
+                                                        )}
+                                                    </option>
                                                 </select>
+                                                <InputError
+                                                    message={
+                                                        errors.package_of_interest
+                                                    }
+                                                />
                                             </div>
                                         )}
 
@@ -177,6 +244,9 @@ export default function CallbackModal({
                                                         {t('callback.evening')}
                                                     </option>
                                                 </select>
+                                                <InputError
+                                                    message={errors.best_time}
+                                                />
                                             </div>
                                             <div className="callback-modal__field">
                                                 <label htmlFor="cb-contact">
@@ -200,6 +270,11 @@ export default function CallbackModal({
                                                         )}
                                                     </option>
                                                 </select>
+                                                <InputError
+                                                    message={
+                                                        errors.preferred_contact
+                                                    }
+                                                />
                                             </div>
                                         </div>
 
@@ -215,15 +290,35 @@ export default function CallbackModal({
                                                     'callback.notesPlaceholder',
                                                 )}
                                             />
+                                            <InputError
+                                                message={errors.notes}
+                                            />
                                         </div>
 
                                         <button
                                             type="submit"
                                             className="btn btn--ink callback-modal__submit"
                                             disabled={processing}
+                                            aria-busy={processing}
+                                            aria-live="polite"
                                         >
-                                            <SubmitArrow size={16} />
-                                            {t('callback.submit')}
+                                            {processing ? (
+                                                <LoaderCircle
+                                                    className="callback-modal__spinner motion-safe:animate-spin"
+                                                    size={18}
+                                                    aria-hidden="true"
+                                                />
+                                            ) : (
+                                                <SubmitArrow
+                                                    size={16}
+                                                    aria-hidden="true"
+                                                />
+                                            )}
+                                            <span>
+                                                {processing
+                                                    ? t('callback.sending')
+                                                    : t('callback.submit')}
+                                            </span>
                                         </button>
 
                                         <p className="callback-modal__consent">

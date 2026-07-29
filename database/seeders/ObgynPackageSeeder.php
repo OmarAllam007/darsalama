@@ -5,9 +5,24 @@ namespace Database\Seeders;
 use App\Models\Department;
 use App\Models\Package;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 class ObgynPackageSeeder extends Seeder
 {
+    /**
+     * Shipped poster images, copied into public storage on first seed so the
+     * admin can replace them per package without touching the code.
+     *
+     * @var array<string, string>
+     */
+    private const DEFAULT_IMAGES = [
+        'normal-delivery' => 'post-normal.jpg',
+        'cesarean-first' => 'post-c-first.jpg',
+        'cesarean-repeat' => 'post-c-repeat.jpg',
+        'maternity-care' => 'post-followup.jpg',
+        'transport-after-delivery' => 'post-transport.jpg',
+    ];
+
     public function run(): void
     {
         $department = Department::firstOrCreate(
@@ -29,6 +44,10 @@ class ObgynPackageSeeder extends Seeder
                 ['department_id' => $department->id, 'slug' => $data['slug']],
                 [...$data, 'department_id' => $department->id],
             );
+
+            if (! $package->image && $default = $this->publishDefaultImage($package->slug)) {
+                $package->update(['image' => $default]);
+            }
 
             $package->features()->delete();
             $package->priceTiers()->delete();
@@ -53,6 +72,26 @@ class ObgynPackageSeeder extends Seeder
                 }
             }
         }
+    }
+
+    /**
+     * Copy the shipped poster for a slug into public storage and return its path.
+     */
+    private function publishDefaultImage(?string $slug): ?string
+    {
+        $file = self::DEFAULT_IMAGES[$slug] ?? null;
+
+        if (! $file || ! is_file($source = public_path("obgyn-media/packages/{$file}"))) {
+            return null;
+        }
+
+        $path = "packages/{$file}";
+
+        if (! Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->put($path, file_get_contents($source));
+        }
+
+        return $path;
     }
 
     /**

@@ -58,6 +58,7 @@ type Doctor = {
     services: NamePair[];
     department: {
         id: number;
+        slug: string;
         name: string;
         name_ar: string;
         packages: Package[];
@@ -160,6 +161,7 @@ export default function DoctorProfile({
     const doctorName = lang === 'ar' ? doctor.name_ar : doctor.name;
     const departmentName =
         lang === 'ar' ? doctor.department.name_ar : doctor.department.name;
+    const isObgynDepartment = doctor.department.slug === 'gynecology';
 
     useEffect(() => {
         if (!expandOpen) {
@@ -397,6 +399,7 @@ export default function DoctorProfile({
                 open={callbackOpen}
                 onOpenChange={setCallbackOpen}
                 packageOptions={offerCards.map((offer) => offer.title)}
+                showPackageSelector={isObgynDepartment}
             />
         </>
     );

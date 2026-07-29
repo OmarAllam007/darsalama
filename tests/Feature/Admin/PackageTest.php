@@ -3,6 +3,9 @@
 use App\Models\Department;
 use App\Models\Package;
 use App\Models\User;
+use Database\Seeders\ObgynPackageSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 test('guests are redirected to login', function () {
     $this->get(route('admin.packages.index'))->assertRedirect(route('admin.login'));
@@ -101,6 +104,43 @@ test('an authenticated user can delete a package', function () {
         ->assertRedirect(route('admin.packages.index'));
 
     $this->assertDatabaseMissing('packages', ['id' => $package->id]);
+});
+
+test('an authenticated user can replace a package poster image', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('packages/old.jpg', 'old');
+
+    $this->actingAs(User::factory()->create());
+    $package = Package::factory()->create(['type' => 'delivery', 'image' => 'packages/old.jpg']);
+
+    $this->put(route('admin.packages.update', $package), [
+        'department_id' => $package->department_id,
+        'type' => 'delivery',
+        'name_en' => $package->name_en,
+        'name_ar' => $package->name_ar,
+        'is_active' => '1',
+        'image' => UploadedFile::fake()->image('poster.jpg'),
+    ])->assertRedirect(route('admin.packages.index'));
+
+    $package->refresh();
+    expect($package->image)->not->toBe('packages/old.jpg');
+    Storage::disk('public')->assertExists($package->image);
+    Storage::disk('public')->assertMissing('packages/old.jpg');
+});
+
+test('the seeder publishes a default poster image without overwriting a custom one', function () {
+    Storage::fake('public');
+
+    $this->seed(ObgynPackageSeeder::class);
+
+    $package = Package::firstWhere('slug', 'normal-delivery');
+    expect($package->image)->toBe('packages/post-normal.jpg');
+    Storage::disk('public')->assertExists('packages/post-normal.jpg');
+
+    $package->update(['image' => 'packages/custom.jpg']);
+    $this->seed(ObgynPackageSeeder::class);
+
+    expect($package->refresh()->image)->toBe('packages/custom.jpg');
 });
 
 test('creating a package requires a type and english name', function () {

@@ -32,6 +32,10 @@ it('builds the doctor profile offers section from department packages, not offer
     $doctor = Doctor::factory()->for($department)->create();
 
     Package::factory()->for($department)->create(['name_en' => 'Normal Delivery']);
+    Package::factory()->for($department)->create([
+        'name_en' => 'Hidden Package',
+        'is_active' => false,
+    ]);
     Offer::factory()->for($doctor)->create(['title' => 'Stale Offer']);
 
     get(route('doctors.show', $doctor))

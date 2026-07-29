@@ -299,6 +299,7 @@ export const translations = {
             notesPlaceholder:
                 'Estimated due date, language preference, anything else we should know',
             submit: 'Submit Request',
+            sending: 'Sending…',
             consent:
                 'By submitting you agree to be contacted by Dar As Salama Medical Hospital. We never share your details.',
             asideTitle: 'Book Your Consultation',
@@ -965,6 +966,7 @@ export const translations = {
             notesPlaceholder:
                 'تاريخ الولادة المتوقع، اللغة المفضلة، أي معلومات أخرى تودين إخبارنا بها',
             submit: 'إرسال الطلب',
+            sending: 'جارٍ الإرسال…',
             consent:
                 'بإرسال الطلب أنت توافقين على أن يتواصل معك مستشفى دار السلامة الطبية. لن نشارك بياناتك مع أي جهة.',
             asideTitle: 'احجزي استشارتك',
@@ -1637,6 +1639,7 @@ export const translations = {
             notesPlaceholder:
                 'متوقع تاریخ پیدائش، زبان کی ترجیح، یا کوئی اور بات جو ہمیں معلوم ہونی چاہیے',
             submit: 'درخواست جمع کریں',
+            sending: 'بھیجا جا رہا ہے…',
             consent:
                 'جمع کروانے سے آپ مستشفى دار السلامہ الطبی کے رابطے پر رضامند ہوتے ہیں۔ ہم آپ کی تفصیلات کبھی شیئر نہیں کرتے۔',
             asideTitle: 'اپنی مشاورت بک کریں',
@@ -2312,6 +2315,7 @@ export const translations = {
             notesPlaceholder:
                 'Tinatayang petsa ng panganganak, gustong wika, o iba pang dapat naming malaman',
             submit: 'I-submit ang Kahilingan',
+            sending: 'Ipinapadala…',
             consent:
                 'Sa pag-submit, sumasang-ayon kayong makipag-ugnayan ang Dar As Salama Medical Hospital. Hindi namin ibinabahagi ang inyong mga detalye.',
             asideTitle: 'Mag-Book ng Inyong Konsultasyon',

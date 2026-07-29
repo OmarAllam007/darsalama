@@ -49,3 +49,46 @@ it('keeps the shared page headers responsive in arabic', function () {
         ->assertNoJavaScriptErrors()
         ->screenshotElement('.page-banner', filename: 'header-contact-mobile-ar');
 });
+
+it('keeps the contact feedback heading clear of the hero divider', function () {
+    $page = visit('/contact')->resize(1440, 900);
+
+    $page->assertScript(
+        <<<'JS'
+        (() => {
+            const hero = document.querySelector('.page-banner').getBoundingClientRect();
+            const card = document.querySelector('.contact-feedback__card').getBoundingClientRect();
+            const intro = document.querySelector('.contact-feedback__card .section-intro').getBoundingClientRect();
+            const cardLayer = Number(getComputedStyle(document.querySelector('.contact-feedback__card')).zIndex);
+
+            return card.top < hero.bottom
+                && intro.top > hero.bottom
+                && cardLayer > 3;
+        })()
+        JS,
+        true,
+    )
+        ->assertNoJavaScriptErrors()
+        ->screenshotElement(
+            '.contact-feedback__card',
+            filename: 'contact-feedback-card-desktop',
+        );
+
+    $page->resize(390, 844)
+        ->assertScript(
+            <<<'JS'
+            (() => {
+                const hero = document.querySelector('.page-banner').getBoundingClientRect();
+                const card = document.querySelector('.contact-feedback__card').getBoundingClientRect();
+
+                return card.top > hero.bottom;
+            })()
+            JS,
+            true,
+        )
+        ->assertScript(
+            'document.documentElement.scrollWidth <= document.documentElement.clientWidth',
+            true,
+        )
+        ->assertNoJavaScriptErrors();
+});

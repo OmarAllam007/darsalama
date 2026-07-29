@@ -237,19 +237,8 @@ export default function ObgynDepartment({
     const roomCaptions = t('obgyn.rooms') as string[];
     const roomCaptionsAr = AR.rooms as unknown as string[];
 
-    const packageImage = (pkg: Package): string | null => {
-        if (pkg.image) {
-            return `/storage/${pkg.image}`;
-        }
-        const map: Record<string, string> = {
-            'normal-delivery': 'post-normal.jpg',
-            'cesarean-first': 'post-c-first.jpg',
-            'cesarean-repeat': 'post-c-repeat.jpg',
-            'maternity-care': 'post-followup.jpg',
-            'transport-after-delivery': 'post-transport.jpg',
-        };
-        return map[pkg.slug] ? `/obgyn-media/packages/${map[pkg.slug]}` : null;
-    };
+    const packageImage = (pkg: Package): string | null =>
+        pkg.image ? `/storage/${pkg.image}` : null;
 
     const packageOptions = packages.map((pkg) =>
         pkg.type === 'care'

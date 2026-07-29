@@ -56,7 +56,10 @@ class PublicDoctorController extends Controller
         abort_unless($doctor->is_active, 404);
 
         $doctor->load([
-            'department.packages',
+            'department.packages' => fn ($query) => $query
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('id'),
             'nationality',
             'qualifications',
             'services',

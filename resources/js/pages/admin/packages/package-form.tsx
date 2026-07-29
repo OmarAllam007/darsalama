@@ -66,6 +66,7 @@ type Package = {
     tagline_ar: string | null;
     tagline_ur: string | null;
     tagline_tl: string | null;
+    image: string | null;
     price: string | null;
     original_price: string | null;
     sort_order: number;
@@ -320,6 +321,18 @@ export default function PackageForm({
 
                         <div className="grid gap-2">
                             <Label htmlFor="image">Poster image</Label>
+                            {pkg?.image ? (
+                                <img
+                                    src={`/storage/${pkg.image}`}
+                                    alt="Current poster"
+                                    className="h-32 w-auto rounded-md border object-cover"
+                                />
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    No image yet — this package renders without
+                                    a poster on the public page.
+                                </p>
+                            )}
                             <Input
                                 id="image"
                                 name="image"
