@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['department_id', 'nationality_id', 'name', 'name_ar', 'job', 'job_ar', 'image', 'is_active'])]
+#[Fillable(['department_id', 'nationality_id', 'name', 'name_ar', 'job', 'job_ar', 'image', 'is_active', 'sort_order'])]
 class Doctor extends Model
 {
     /** @use HasFactory<DoctorFactory> */

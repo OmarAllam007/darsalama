@@ -45,6 +45,7 @@ class DoctorController extends Controller
         $doctor = Doctor::create([
             ...$validated,
             'image' => $this->storeImage($request),
+            'sort_order' => (int) Doctor::max('sort_order') + 1,
         ]);
 
         $doctor->availabilities()->createMany($validated['availabilities']);
