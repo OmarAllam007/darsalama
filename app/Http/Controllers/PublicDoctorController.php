@@ -23,9 +23,13 @@ class PublicDoctorController extends Controller
         $departments = Department::with([
             'doctors' => fn ($query) => $query->where('is_active', true)
                 ->withCount('offers')
-                ->with(['department', 'nationality', 'services', 'offers']),
+                ->with(['department', 'nationality', 'services', 'offers'])
+                ->orderBy('sort_order')
+                ->orderBy('id'),
         ])
             ->withCount('offers')
+            ->orderBy('sort_order')
+            ->orderBy('id')
             ->get();
 
         $doctors = $departments->flatMap->doctors;
