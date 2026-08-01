@@ -45,7 +45,7 @@ beforeEach(function () {
 it('seeds every doctor listed on the public departments page', function () {
     $this->seed(DoctorSeeder::class);
 
-    expect(Doctor::where('is_active', true)->count())->toBe(38);
+    expect(Doctor::where('is_active', true)->count())->toBe(39);
     expect(Doctor::where('name', 'Dr. Asmaa Manzoor Uddin Sheikh')->sole()->job)
         ->toBe('Senior Registrar in Psychiatry');
     expect(Doctor::where('name', 'Dr. Hassan Hamza Almir')->sole()->department->name)
@@ -88,7 +88,7 @@ it('groups doctors into the departments the public page groups them under', func
         'Gynecology' => 6,
         'Pediatrics' => 4,
         'Internal Medicine' => 5,
-        'General Surgery' => 3,
+        'General Surgery' => 4,
         'Orthopedics' => 2,
         'Dermatology' => 1,
         'Cardiology' => 2,

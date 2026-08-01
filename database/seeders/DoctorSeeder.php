@@ -411,6 +411,23 @@ class DoctorSeeder extends Seeder
                     ['name' => 'Pilonidal Sinus', 'name_ar' => 'الناسور العصعصي (كيس الشعر)'],
                 ],
             ],
+            /*
+             * Not in the departments page markup — the site keeps him in its
+             * Firestore custom_doctors collection, where the card's name field
+             * reads "Sameh Barayan - Vascular & Bariatric ) PT". Only the name
+             * and specialty are salvageable from that; the Arabic name is a
+             * transliteration and the rest is waiting on the admin.
+             */
+            [
+                'name' => 'Dr. Sameh Barayan',
+                'name_ar' => 'د. سامح بريان',
+                'job' => 'Vascular & Bariatric Surgeon',
+                'job_ar' => 'جراح الأوعية الدموية والسمنة',
+                'department' => 'General Surgery',
+                'nationality' => null,
+                'qualifications' => [],
+                'services' => [],
+            ],
             [
                 'name' => 'Dr. Safwan Abdulrahman Jamal',
                 'name_ar' => 'د. صفوان عبدالرحمن جمال',
