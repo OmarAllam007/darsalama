@@ -143,14 +143,12 @@ function DoctorCard({
     doctor,
     lang,
     t,
-    matchedService,
     onBook,
     onOffers,
 }: {
     doctor: Doctor;
     lang: 'en' | 'ar';
     t: (key: string) => string;
-    matchedService: string | null;
     onBook: () => void;
     onOffers: () => void;
 }) {
@@ -213,20 +211,6 @@ function DoctorCard({
                 </div>
             </div>
             <div className="doc-body">
-                <div className="svc-tags">
-                    {doctor.services.slice(0, 4).map((service) => (
-                        <span
-                            className={
-                                service.name === matchedService
-                                    ? 'svc-tag match'
-                                    : 'svc-tag'
-                            }
-                            key={service.name}
-                        >
-                            {lang === 'ar' ? service.name_ar : service.name}
-                        </span>
-                    ))}
-                </div>
                 <div className="doc-cta">
                     <button
                         type="button"
@@ -719,11 +703,6 @@ export default function Doctors({
                                                     doctor={doctor}
                                                     lang={lang}
                                                     t={t}
-                                                    matchedService={
-                                                        [
-                                                            ...selectedServices,
-                                                        ][0] ?? null
-                                                    }
                                                     onBook={() =>
                                                         setBookingDoctor(doctor)
                                                     }
@@ -1006,7 +985,6 @@ export default function Doctors({
                                                         doctor={doctor}
                                                         lang={lang}
                                                         t={t}
-                                                        matchedService={null}
                                                         onBook={() =>
                                                             setBookingDoctor(
                                                                 doctor,

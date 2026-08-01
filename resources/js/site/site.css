@@ -3230,7 +3230,20 @@ button {
     font-weight: 600;
     font-size: 54px;
     color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.02em;
     margin-bottom: 64px;
+}
+/* Faint diagonal weave over the initials, so a doctor with no portrait still
+   reads as a designed card rather than a flat blue panel. */
+.doc-portrait.mono::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        135deg,
+        transparent 0 18px,
+        rgba(255, 255, 255, 0.035) 18px 19px
+    );
 }
 .d2-scrim {
     position: absolute;
@@ -3248,6 +3261,9 @@ button {
     top: 14px;
     inset-inline-end: 14px;
     z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 .d2-flag img {
     width: 30px;
@@ -3279,6 +3295,10 @@ button {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.88);
     margin-top: 3px;
+    /* Arabic shown under an English name: keep it RTL but hang it off the same
+       edge as the line above, so the two names stack flush. */
+    direction: rtl;
+    text-align: start;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
 .d2-id .rule {
@@ -3302,25 +3322,6 @@ button {
     display: flex;
     flex-direction: column;
     gap: 12px;
-}
-.svc-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-.svc-tag {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--slate);
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 7px;
-    padding: 4px 9px;
-}
-.svc-tag.match {
-    background: rgba(184, 146, 58, 0.13);
-    border-color: rgba(184, 146, 58, 0.4);
-    color: #7a5e1d;
 }
 .doc-cta {
     margin-top: auto;
