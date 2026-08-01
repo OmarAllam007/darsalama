@@ -854,9 +854,11 @@ class DoctorSeeder extends Seeder
             $doctor->services()->createMany($data['services']);
         }
 
-        // A doctor dropped from this list has left the hospital: hide them without
-        // deleting the appointment history that points at them.
-        Doctor::whereNotIn('name', array_column($doctors, 'name'))->update(['is_active' => false]);
+        // Superseded by Dr. Asmaa Manzoor Uddin Sheikh. Hidden rather than deleted,
+        // so the appointment history pointing at the placeholder survives. Named
+        // explicitly: doctors also arrive through the admin, and deactivating
+        // everything missing from this list would switch those off.
+        Doctor::where('name', 'Psychiatry Consultant')->update(['is_active' => false]);
     }
 
     /**

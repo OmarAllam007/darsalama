@@ -133,7 +133,7 @@ it('keeps a photo uploaded through the admin', function () {
         ->toBe('doctors/uploaded.jpg');
 });
 
-it('deactivates a doctor who is no longer on the list', function () {
+it('deactivates the placeholder its psychiatrist supersedes', function () {
     $stale = Doctor::factory()->create([
         'name' => 'Psychiatry Consultant',
         'department_id' => Department::where('slug', 'psychiatry')->sole()->id,
@@ -143,4 +143,16 @@ it('deactivates a doctor who is no longer on the list', function () {
     $this->seed(DoctorSeeder::class);
 
     expect($stale->fresh()->is_active)->toBeFalse();
+});
+
+it('leaves a doctor added through the admin alone', function () {
+    $added = Doctor::factory()->create([
+        'name' => 'Dr. Someone The Seeder Never Heard Of',
+        'department_id' => Department::where('slug', 'general-surgery')->sole()->id,
+        'is_active' => true,
+    ]);
+
+    $this->seed(DoctorSeeder::class);
+
+    expect($added->fresh()->is_active)->toBeTrue();
 });
