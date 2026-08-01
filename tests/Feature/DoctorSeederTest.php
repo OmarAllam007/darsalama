@@ -15,8 +15,6 @@ const SEEDED_DEPARTMENTS = [
     ['gynecology', 'Gynecology'],
     ['pediatrics', 'Pediatrics'],
     ['internal-medicine', 'Internal Medicine'],
-    ['endocrinology', 'Endocrinology'],
-    ['pulmonology', 'Pulmonology'],
     ['general-surgery', 'General Surgery'],
     ['orthopedics', 'Orthopedics'],
     ['dermatology', 'Dermatology'],
@@ -25,10 +23,9 @@ const SEEDED_DEPARTMENTS = [
     ['ophthalmology', 'Ophthalmology'],
     ['urology', 'Urology'],
     ['dental', 'Dental'],
-    ['spine-surgery-neurology', 'Spine Surgery & Neurology'],
+    ['spine-surgery-neurology', 'Neuroscience'],
     ['rheumatology', 'Rheumatology'],
     ['psychiatry', 'Psychiatry'],
-    ['family-medicine', 'Family Medicine'],
     ['general-practice', 'General Practice'],
 ];
 
@@ -80,6 +77,40 @@ it('orders doctors to match the public departments page', function () {
         'Dr. Reham Wahba Abdraboh Elbohy',
         'Dr. Mohammad Sami Montaser',
     ]);
+});
+
+it('groups doctors into the departments the public page groups them under', function () {
+    $this->seed(DoctorSeeder::class);
+
+    $counts = Department::withCount('doctors')->pluck('doctors_count', 'name');
+
+    expect($counts->all())->toBe([
+        'Gynecology' => 6,
+        'Pediatrics' => 4,
+        'Internal Medicine' => 5,
+        'General Surgery' => 3,
+        'Orthopedics' => 2,
+        'Dermatology' => 1,
+        'Cardiology' => 2,
+        'ENT' => 1,
+        'Ophthalmology' => 1,
+        'Urology' => 2,
+        'Dental' => 2,
+        'Neuroscience' => 3,
+        'Rheumatology' => 2,
+        'Psychiatry' => 1,
+        'General Practice' => 3,
+    ]);
+});
+
+it('leaves a doctor the site shows without a photo without one', function () {
+    $this->seed(DoctorSeeder::class);
+
+    expect(Doctor::whereIn('name', [
+        'Dr. Manal Matar Al-Anazi',
+        'Dr. Hassan Hamza Almir',
+        'Dr. Hashim Taher Bin Baqer Al-Salman',
+    ])->pluck('image')->all())->toBe([null, null, null]);
 });
 
 it('stores the bundled photo for a doctor who has none', function () {
