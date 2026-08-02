@@ -27,13 +27,18 @@ const offerModules = import.meta.glob<string>(
 
 const slides = Object.entries(offerModules)
     .sort(([pathA], [pathB]) => offerNumber(pathA) - offerNumber(pathB))
-    .map(([, source]) => source);
+    .map(([path, source]) => ({
+        key: path.match(/(\d+)\.\w+$/)?.[1] ?? path,
+        source,
+    }));
 
 export default function Offers() {
     const { t, isRtl } = useLanguage();
     const { index, setIndex, goPrev, goNext } = useSlider(slides.length);
     const activeNumber = String(index + 1).padStart(2, '0');
     const total = String(slides.length).padStart(2, '0');
+    const offerNames = t('offers.names');
+    const activeOfferName = offerNames[slides[index]?.key] ?? t('offers.title');
 
     return (
         <>
@@ -78,20 +83,18 @@ export default function Offers() {
                                 <div className="offers-dsm__showcase">
                                     <div className="offers-dsm__stage">
                                         <div className="offers-dsm__frame">
-                                            {slides.map(
-                                                (source, slideIndex) => (
-                                                    <img
-                                                        key={source}
-                                                        src={source}
-                                                        alt={`${t('offers.offerLabel')} ${slideIndex + 1}`}
-                                                        className={
-                                                            slideIndex === index
-                                                                ? 'is-active'
-                                                                : undefined
-                                                        }
-                                                    />
-                                                ),
-                                            )}
+                                            {slides.map((slide, slideIndex) => (
+                                                <img
+                                                    key={slide.source}
+                                                    src={slide.source}
+                                                    alt={offerNames[slide.key]}
+                                                    className={
+                                                        slideIndex === index
+                                                            ? 'is-active'
+                                                            : undefined
+                                                    }
+                                                />
+                                            ))}
                                             <span className="offers-dsm__image-badge">
                                                 <BadgeCheck size={15} />
                                                 {t('offers.current')}
@@ -155,10 +158,7 @@ export default function Offers() {
                                         <p className="offers-dsm__detail-kicker">
                                             {t('offers.featured')}
                                         </p>
-                                        <h2>
-                                            {t('offers.offerLabel')}{' '}
-                                            {activeNumber}
-                                        </h2>
+                                        <h2>{activeOfferName}</h2>
                                         <p>{t('offers.detailBody')}</p>
 
                                         <div className="offers-dsm__assurance">
@@ -201,9 +201,9 @@ export default function Offers() {
                                         role="tablist"
                                         aria-label={t('offers.thumbnailLabel')}
                                     >
-                                        {slides.map((source, slideIndex) => (
+                                        {slides.map((slide, slideIndex) => (
                                             <button
-                                                key={source}
+                                                key={slide.source}
                                                 type="button"
                                                 role="tab"
                                                 aria-selected={
@@ -219,7 +219,7 @@ export default function Offers() {
                                                 }
                                             >
                                                 <img
-                                                    src={source}
+                                                    src={slide.source}
                                                     alt=""
                                                     loading="lazy"
                                                 />

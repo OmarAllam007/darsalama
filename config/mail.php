@@ -152,4 +152,15 @@ return [
 
     'feedback_address' => env('MAIL_FEEDBACK_ADDRESS', 'nasscrg@as-salama.com'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contact Message Address
+    |--------------------------------------------------------------------------
+    |
+    | Where messages submitted through the public contact form are delivered.
+    |
+    */
+
+    'contact_address' => env('MAIL_CONTACT_ADDRESS', 'info@as-salama.com'),
+
 ];

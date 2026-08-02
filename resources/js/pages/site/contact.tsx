@@ -1,7 +1,9 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import type { CSSProperties, FormEvent } from 'react';
+import ContactMessageController from '@/actions/App/Http/Controllers/ContactMessageController';
 import { store as storeFeedback } from '@/actions/App/Http/Controllers/FeedbackController';
+import InputError from '@/components/input-error';
 import bannerPhoto from '@/site/assets/slider/slider1.jpg';
 import PageBanner from '@/site/components/PageBanner';
 import Pearls from '@/site/components/Pearls';
@@ -112,16 +114,27 @@ export default function Contact({
     const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
     const [feedbackFailed, setFeedbackFailed] = useState(false);
     const [redirectingToReview, setRedirectingToReview] = useState(false);
+    const messageForm = useForm(ContactMessageController(), {
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: '',
+    });
 
     const ratingLabels = t('feedback.ratings');
     const mobileRequired = rating === 'terrible' || rating === 'bad';
 
     function handleMessageSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const data = Object.fromEntries(new FormData(e.currentTarget));
-        // ponytail: static form for now — POST `data` to the real endpoint when the API is ready.
-        console.log('contact form submit', data);
-        setSent(true);
+
+        messageForm.submit({
+            preserveScroll: true,
+            onSuccess: () => {
+                setSent(true);
+                messageForm.reset();
+            },
+        });
     }
 
     function handleFeedbackSubmit(e: FormEvent<HTMLFormElement>) {
@@ -174,6 +187,14 @@ export default function Contact({
             <section className="contact-feedback">
                 <div className="container">
                     <div className="contact-feedback__card">
+                        <div
+                            className="contact-feedback__signal"
+                            aria-hidden="true"
+                        >
+                            <span />
+                            <span />
+                            <span />
+                        </div>
                         <div className="section-intro">
                             <p className="eyebrow">
                                 <Pearls /> {t('feedback.eyebrow')}
@@ -203,19 +224,26 @@ export default function Contact({
                                 )}
                             </div>
                         ) : (
-                            <>
-                                <div className="rating-picker">
-                                    {RATINGS.map((r) => (
+                            <div className="feedback-controls">
+                                <div
+                                    className="rating-picker"
+                                    role="group"
+                                    aria-label={t('feedback.title')}
+                                >
+                                    {RATINGS.map((r, ratingIndex) => (
                                         <button
                                             key={r.key}
                                             type="button"
                                             style={
                                                 {
                                                     '--rating-tone': r.tone,
+                                                    '--rating-index':
+                                                        ratingIndex,
                                                 } as CSSProperties
                                             }
                                             className={`rating-card${rating === r.key ? 'is-selected' : ''}`}
                                             onClick={() => setRating(r.key)}
+                                            aria-pressed={rating === r.key}
                                         >
                                             <span className="rating-card__emoji">
                                                 {r.emoji}
@@ -302,7 +330,7 @@ export default function Contact({
                                         </button>
                                     </form>
                                 )}
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -310,181 +338,283 @@ export default function Contact({
 
             <section className="contact-body">
                 <div className="container">
-                    <div className="contact-info__grid">
-                        <div className="info-tile">
-                            <span className="info-tile__icon">{PIN_ICON}</span>
-                            <h3>{t('contact.addressLabel')}</h3>
-                            <p>{t('contact.addressValue')}</p>
-                        </div>
-                        <div className="info-tile">
-                            <span className="info-tile__icon">
-                                {PHONE_ICON}
-                            </span>
-                            <h3>{t('contact.phoneLabel')}</h3>
-                            <p>
-                                <a href={PHONE_TEL}>
-                                    <bdi dir="ltr">{PHONE}</bdi>
-                                </a>
-                            </p>
-                        </div>
-                        <div className="info-tile">
-                            <span className="info-tile__icon">{MAIL_ICON}</span>
-                            <h3>{t('contact.mailLabel')}</h3>
-                            <p>
-                                <a href={`mailto:${t('contact.mailValue')}`}>
-                                    <bdi dir="ltr">
-                                        {t('contact.mailValue')}
-                                    </bdi>
-                                </a>
-                            </p>
-                        </div>
-                        <div className="info-tile">
-                            <span className="info-tile__icon">
-                                {CLOCK_ICON}
-                            </span>
-                            <h3>{t('contact.hoursLabel')}</h3>
-                            <ul className="info-tile__hours">
-                                <li>
-                                    <span>
-                                        {t('contact.hoursEmergencyLabel')}
-                                    </span>
-                                    <bdi dir="ltr">
-                                        {t('contact.hoursEmergencyValue')}
-                                    </bdi>
-                                </li>
-                                <li className="info-tile__hours-group">
-                                    <span>
-                                        {t('contact.hoursOutpatientLabel')}
-                                    </span>
-                                    {t('contact.hoursOutpatientLines').map(
-                                        (line: string) => (
-                                            <bdi dir="ltr" key={line}>
-                                                {line}
-                                            </bdi>
-                                        ),
-                                    )}
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="contact-form-card">
-                        {sent ? (
-                            <div className="contact-form__sent">
-                                <span className="contact-form__check">
-                                    <svg
-                                        viewBox="0 0 24 24"
-                                        width="30"
-                                        height="30"
-                                        fill="currentColor"
-                                    >
-                                        <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
-                                    </svg>
-                                </span>
-                                <h2>{t('contact.form.sentHeading')}</h2>
-                                <p>{t('contact.form.sentBody')}</p>
+                    <div className="contact-connect__shell">
+                        <aside className="contact-connect__aside">
+                            <div
+                                className="contact-connect__orbit"
+                                aria-hidden="true"
+                            >
+                                <span />
+                                <span />
                             </div>
-                        ) : (
-                            <>
-                                <h2>{t('contact.form.heading')}</h2>
-                                <p className="contact-form-card__sub">
-                                    {t('contact.form.sub')}
+                            <div className="contact-connect__intro">
+                                <p className="contact-connect__eyebrow">
+                                    <span /> {t('contact.connectEyebrow')}
                                 </p>
-                                <form
-                                    className="contact-form"
-                                    onSubmit={handleMessageSubmit}
+                                <h2>{t('contact.connectHeading')}</h2>
+                                <p>{t('contact.connectBody')}</p>
+                            </div>
+
+                            <div className="contact-info__grid">
+                                <a
+                                    className="info-tile info-tile--phone"
+                                    href={PHONE_TEL}
+                                    aria-label={`${t('contact.phoneLabel')}: ${PHONE}`}
                                 >
-                                    <div className="contact-form__grid">
-                                        <div className="contact-form__field">
-                                            <label htmlFor="cf-name">
-                                                {t('contact.form.name')} *
-                                            </label>
-                                            <input
-                                                id="cf-name"
-                                                name="name"
-                                                required
-                                                minLength={2}
-                                                placeholder="Jane Doe"
-                                            />
-                                        </div>
-                                        <div className="contact-form__field">
-                                            <label htmlFor="cf-email">
-                                                {t('contact.form.email')} *
-                                            </label>
-                                            <input
-                                                id="cf-email"
-                                                name="email"
-                                                type="email"
-                                                required
-                                                placeholder="name@example.com"
-                                            />
-                                        </div>
-                                        <div className="contact-form__field">
-                                            <label htmlFor="cf-phone">
-                                                {t('contact.form.phone')} *
-                                            </label>
-                                            <div className="contact-form__phone">
-                                                <span className="cc">+966</span>
+                                    <span className="info-tile__icon">
+                                        {PHONE_ICON}
+                                    </span>
+                                    <h3>{t('contact.phoneLabel')}</h3>
+                                    <p>
+                                        <bdi dir="ltr">{PHONE}</bdi>
+                                    </p>
+                                </a>
+                                <div className="info-tile">
+                                    <span className="info-tile__icon">
+                                        {MAIL_ICON}
+                                    </span>
+                                    <h3>{t('contact.mailLabel')}</h3>
+                                    <p>
+                                        <a
+                                            href={`mailto:${t('contact.mailValue')}`}
+                                        >
+                                            <bdi dir="ltr">
+                                                {t('contact.mailValue')}
+                                            </bdi>
+                                        </a>
+                                    </p>
+                                </div>
+                                <div className="info-tile">
+                                    <span className="info-tile__icon">
+                                        {CLOCK_ICON}
+                                    </span>
+                                    <h3>{t('contact.hoursLabel')}</h3>
+                                    <div className="info-tile__hours-all">
+                                        <span>
+                                            {t('contact.hoursAllServicesLabel')}
+                                        </span>
+                                        <bdi dir="ltr">24/7</bdi>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a
+                                className="contact-connect__urgent"
+                                href={EMERGENCY_TEL}
+                            >
+                                <span className="contact-connect__urgent-dot" />
+                                <span>
+                                    <small>
+                                        {t('contact.emergencyLabel')} ·{' '}
+                                        {t('contact.hoursEmergencyValue')}
+                                    </small>
+                                    <bdi dir="ltr">{EMERGENCY_PHONE}</bdi>
+                                </span>
+                                {PHONE_ICON}
+                            </a>
+                        </aside>
+
+                        <div className="contact-form-card">
+                            {sent ? (
+                                <div className="contact-form__sent">
+                                    <span className="contact-form__check">
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            width="30"
+                                            height="30"
+                                            fill="currentColor"
+                                        >
+                                            <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                                        </svg>
+                                    </span>
+                                    <h2>{t('contact.form.sentHeading')}</h2>
+                                    <p>{t('contact.form.sentBody')}</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <h2>{t('contact.form.heading')}</h2>
+                                    <p className="contact-form-card__sub">
+                                        {t('contact.form.sub')}
+                                    </p>
+                                    <form
+                                        className="contact-form"
+                                        onSubmit={handleMessageSubmit}
+                                    >
+                                        <div className="contact-form__grid">
+                                            <div className="contact-form__field">
+                                                <label htmlFor="cf-name">
+                                                    {t('contact.form.name')} *
+                                                </label>
                                                 <input
-                                                    id="cf-phone"
-                                                    name="phone"
-                                                    {...saudiPhoneInputProps}
+                                                    id="cf-name"
+                                                    name="name"
+                                                    value={
+                                                        messageForm.data.name
+                                                    }
+                                                    onChange={(event) =>
+                                                        messageForm.setData(
+                                                            'name',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                    minLength={2}
+                                                    placeholder="Jane Doe"
+                                                />
+                                                <InputError
+                                                    message={
+                                                        messageForm.errors.name
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="contact-form__field">
+                                                <label htmlFor="cf-email">
+                                                    {t('contact.form.email')} *
+                                                </label>
+                                                <input
+                                                    id="cf-email"
+                                                    name="email"
+                                                    type="email"
+                                                    value={
+                                                        messageForm.data.email
+                                                    }
+                                                    onChange={(event) =>
+                                                        messageForm.setData(
+                                                            'email',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                    placeholder="name@example.com"
+                                                />
+                                                <InputError
+                                                    message={
+                                                        messageForm.errors.email
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="contact-form__field">
+                                                <label htmlFor="cf-phone">
+                                                    {t('contact.form.phone')} *
+                                                </label>
+                                                <div className="contact-form__phone">
+                                                    <span className="cc">
+                                                        +966
+                                                    </span>
+                                                    <input
+                                                        id="cf-phone"
+                                                        name="phone"
+                                                        {...saudiPhoneInputProps}
+                                                        value={
+                                                            messageForm.data
+                                                                .phone
+                                                        }
+                                                        onChange={(event) =>
+                                                            messageForm.setData(
+                                                                'phone',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <InputError
+                                                    message={
+                                                        messageForm.errors.phone
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="contact-form__field">
+                                                <label htmlFor="cf-subject">
+                                                    {t('contact.form.subject')}{' '}
+                                                    *
+                                                </label>
+                                                <input
+                                                    id="cf-subject"
+                                                    name="subject"
+                                                    value={
+                                                        messageForm.data.subject
+                                                    }
+                                                    onChange={(event) =>
+                                                        messageForm.setData(
+                                                            'subject',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    required
+                                                    placeholder={t(
+                                                        'contact.form.subject',
+                                                    )}
+                                                />
+                                                <InputError
+                                                    message={
+                                                        messageForm.errors
+                                                            .subject
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="contact-form__field is-full">
+                                                <label htmlFor="cf-message">
+                                                    {t('contact.form.message')}{' '}
+                                                    *
+                                                </label>
+                                                <textarea
+                                                    id="cf-message"
+                                                    name="message"
+                                                    value={
+                                                        messageForm.data.message
+                                                    }
+                                                    onChange={(event) =>
+                                                        messageForm.setData(
+                                                            'message',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    rows={5}
+                                                    required
+                                                    placeholder={t(
+                                                        'contact.form.message',
+                                                    )}
+                                                />
+                                                <InputError
+                                                    message={
+                                                        messageForm.errors
+                                                            .message
+                                                    }
                                                 />
                                             </div>
                                         </div>
-                                        <div className="contact-form__field">
-                                            <label htmlFor="cf-subject">
-                                                {t('contact.form.subject')} *
-                                            </label>
-                                            <input
-                                                id="cf-subject"
-                                                name="subject"
-                                                required
-                                                placeholder={t(
-                                                    'contact.form.subject',
-                                                )}
-                                            />
-                                        </div>
-                                        <div className="contact-form__field is-full">
-                                            <label htmlFor="cf-message">
-                                                {t('contact.form.message')} *
-                                            </label>
-                                            <textarea
-                                                id="cf-message"
-                                                name="message"
-                                                rows={5}
-                                                required
-                                                placeholder={t(
-                                                    'contact.form.message',
-                                                )}
-                                            />
-                                        </div>
-                                    </div>
 
-                                    <div className="contact-form__foot">
-                                        <p className="contact-form__consent">
-                                            {t('contact.form.consent')}
-                                        </p>
-                                        <button
-                                            type="submit"
-                                            className="contact-form__submit"
-                                        >
-                                            {t('contact.form.submit')}
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2.4"
-                                                width="15"
-                                                height="15"
+                                        <div className="contact-form__foot">
+                                            <p className="contact-form__consent">
+                                                {t('contact.form.consent')}
+                                            </p>
+                                            <button
+                                                type="submit"
+                                                className="contact-form__submit"
+                                                disabled={
+                                                    messageForm.processing
+                                                }
                                             >
-                                                <path d="M5 12h14M13 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </form>
-                            </>
-                        )}
+                                                {messageForm.processing
+                                                    ? t('contact.form.sending')
+                                                    : t('contact.form.submit')}
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2.4"
+                                                    width="15"
+                                                    height="15"
+                                                >
+                                                    <path d="M5 12h14M13 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </section>

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\ScheduleColumnController;
 use App\Http\Controllers\Admin\ScheduleImportController;
+use App\Http\Controllers\Admin\SitePageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -53,4 +54,6 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('appointments/{doctor}/slots', [AppointmentController::class, 'slots'])->name('appointments.slots');
     Route::get('callback-requests', [CallbackRequestController::class, 'index'])->name('callback-requests.index');
     Route::get('feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+    Route::get('site-pages', [SitePageController::class, 'index'])->name('site-pages.index');
+    Route::put('site-pages', [SitePageController::class, 'update'])->name('site-pages.update');
 });

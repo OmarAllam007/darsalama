@@ -92,3 +92,53 @@ it('keeps the contact feedback heading clear of the hero divider', function () {
         )
         ->assertNoJavaScriptErrors();
 });
+
+it('renders the patient contact desk across desktop and mobile', function () {
+    $page = visit('/contact')->resize(1440, 1000);
+
+    $page->assertSee('A direct line to your care team')
+        ->assertSee('Send Us A Message')
+        ->assertSee('All services')
+        ->assertScript(
+            "getComputedStyle(document.querySelector('.contact-connect__shell')).gridTemplateColumns.split(' ').length > 1",
+            true,
+        )
+        ->assertScript(
+            'document.documentElement.scrollWidth <= document.documentElement.clientWidth',
+            true,
+        )
+        ->click('.rating-card:last-child')
+        ->wait(0.1)
+        ->assertScript(
+            "document.querySelector('.feedback-form') !== null",
+            true,
+        )
+        ->assertScript(
+            <<<'JS'
+            (() => {
+                const picker = document.querySelector('.rating-picker').getBoundingClientRect();
+                const form = document.querySelector('.feedback-form').getBoundingClientRect();
+
+                return form.top >= picker.bottom
+                    && Math.abs(form.left - picker.left) <= 2
+                    && Math.abs(form.width - picker.width) <= 2;
+            })()
+            JS,
+            true,
+        )
+        ->assertNoJavaScriptErrors()
+        ->screenshotElement('.contact-feedback__card', filename: 'contact-feedback-form-desktop')
+        ->screenshotElement('.contact-body', filename: 'contact-desk-desktop');
+
+    $page->resize(390, 844)
+        ->assertScript(
+            "getComputedStyle(document.querySelector('.contact-connect__shell')).gridTemplateColumns.split(' ').length === 1",
+            true,
+        )
+        ->assertScript(
+            'document.documentElement.scrollWidth <= document.documentElement.clientWidth',
+            true,
+        )
+        ->assertNoJavaScriptErrors()
+        ->screenshotElement('.contact-body', filename: 'contact-desk-mobile');
+});

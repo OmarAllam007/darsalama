@@ -7,6 +7,7 @@ import {
     Flag,
     FileSpreadsheet,
     Grid3x3,
+    Globe2,
     LayoutGrid,
     MessageSquareHeart,
     Package as PackageIcon,
@@ -40,6 +41,7 @@ import { index as offers } from '@/routes/admin/offers';
 import { index as packages } from '@/routes/admin/packages';
 import { index as scheduleColumns } from '@/routes/admin/schedule-columns';
 import { index as scheduleImports } from '@/routes/admin/schedule-imports';
+import { index as sitePages } from '@/routes/admin/site-pages';
 import type { NavItem } from '@/types';
 
 const careNavItems: NavItem[] = [
@@ -86,6 +88,11 @@ const careNavItems: NavItem[] = [
 ];
 
 const directoryNavItems: NavItem[] = [
+    {
+        title: 'Site pages',
+        href: sitePages(),
+        icon: Globe2,
+    },
     {
         title: 'Doctors',
         href: doctors(),
