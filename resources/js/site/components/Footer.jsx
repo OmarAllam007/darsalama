@@ -14,6 +14,7 @@ import androidBadge from '../assets/images/app_download/android_download.png';
 import appleBadge from '../assets/images/app_download/apple_download.png';
 import logo from '../assets/images/logo.png';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useVisibleSitePages } from '../hooks/useVisibleSitePages';
 
 const SOCIAL = [
     {
@@ -34,14 +35,15 @@ export default function Footer() {
     const { t } = useLanguage();
     const linkLabels = t('footer.exploreLinks');
     const email = t('footer.email');
+    const visiblePages = useVisibleSitePages();
     const links = [
         { href: home(), label: linkLabels[0].label },
-        { href: about(), label: linkLabels[1].label },
-        { href: services(), label: linkLabels[2].label },
-        { href: offers(), label: linkLabels[3].label },
-        { href: contact(), label: linkLabels[4].label },
+        { href: about(), slug: 'about', label: linkLabels[1].label },
+        { href: services(), slug: 'services', label: linkLabels[2].label },
+        { href: offers(), slug: 'offers', label: linkLabels[3].label },
+        { href: contact(), slug: 'contact', label: linkLabels[4].label },
         { href: `${home.url()}#book`, label: linkLabels[5].label },
-    ];
+    ].filter((link) => !link.slug || visiblePages.has(link.slug));
 
     return (
         <footer className="footer" id="footer">

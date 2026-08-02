@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureSitePageIsVisible;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -18,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('admin/*') ? route('admin.login') : route('login'));
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        $middleware->alias([
+            'site-page' => EnsureSitePageIsVisible::class,
+        ]);
 
         $middleware->web(append: [
             HandleAppearance::class,

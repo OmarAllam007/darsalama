@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SitePage;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,6 +36,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $hiddenSitePages = SitePage::query()
+            ->where('is_visible', false)
+            ->pluck('slug');
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -42,6 +47,9 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'visibleSitePages' => collect(array_keys(SitePage::definitions()))
+                ->reject(fn (string $slug): bool => $hiddenSitePages->contains($slug))
+                ->values(),
             'flash' => [
                 'import' => $request->session()->get('import'),
             ],
