@@ -34,3 +34,24 @@ it('keeps the redesigned footer readable in arabic', function () {
         ->assertNoJavaScriptErrors()
         ->screenshot(filename: 'footer-mobile-ar');
 });
+
+it('links to the hospital social media profiles', function () {
+    visit('/')
+        ->assertAttribute(
+            'a[aria-label="Instagram"]',
+            'href',
+            'https://www.instagram.com/daras_salamahospital?igsh=MTJkaGFiazNteXpsdA=='
+        )
+        ->assertAttribute(
+            'a[aria-label="LinkedIn"]',
+            'href',
+            'https://www.linkedin.com/company/dar-as-salama-medical-hospital/'
+        )
+        ->assertAttribute(
+            'a[aria-label="Facebook"]',
+            'href',
+            'https://www.facebook.com/dar.assalamahos?mibextid=wwXIfr'
+        )
+        ->assertAttribute('a[aria-label="Instagram"]', 'target', '_blank')
+        ->assertNoJavaScriptErrors();
+});
