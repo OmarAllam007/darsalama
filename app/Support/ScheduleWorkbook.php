@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -12,8 +13,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
  *
  * The sheet lays departments out side by side, each block being its own
  * `Days | Date | doctor | doctor …` group, so a doctor's day number comes from
- * the nearest `Date` column to their left. Doctors are located purely by the
- * column they occupy — the name printed above them is never matched on.
+ * the nearest `Date` column to their left. Doctors are matched by the doctor
+ * name shown in the sheet header (upload name), not by fixed column position.
  *
  * @phpstan-type ParsedCell array{doctor_id: int, date: string, value: string|null}
  */
@@ -22,13 +23,13 @@ class ScheduleWorkbook
     /**
      * Read every mapped doctor's cell for the selected month.
      *
-     * @param  array<int, string>  $columnsByDoctor  doctor_id => column letter
+     * @param  array<int, string>  $uploadNamesByDoctor  doctor_id => expected sheet doctor column title
      * @return array{cells: list<ParsedCell>, warnings: list<string>}
      *
      * @throws InvalidArgumentException when the file is unreadable or the template
      *                                  does not look like a schedule at all.
      */
-    public function read(string $path, Carbon $month, array $columnsByDoctor): array
+    public function read(string $path, Carbon $month, array $uploadNamesByDoctor): array
     {
         try {
             $sheet = IOFactory::load($path)->getSheet(0);
@@ -46,6 +47,7 @@ class ScheduleWorkbook
             throw new InvalidArgumentException('No "Date" column found — this does not look like the OPD schedule template.');
         }
 
+        $doctorColumns = $this->doctorColumns($rows, $headerRow, $dateColumns);
         $daysByDateColumn = [];
 
         foreach ($dateColumns as $column) {
@@ -54,9 +56,27 @@ class ScheduleWorkbook
 
         $cells = [];
         $warnings = [];
+        $matchedColumns = [];
 
-        foreach ($columnsByDoctor as $doctorId => $column) {
-            $dateColumn = $this->dateColumnFor($column, $dateColumns);
+        foreach ($uploadNamesByDoctor as $doctorId => $uploadName) {
+            $uploadName = trim((string) $uploadName);
+
+            if ($uploadName === '') {
+                continue;
+            }
+
+            $normalized = $this->normalizeName($uploadName);
+
+            if ($normalized === '' || ! isset($doctorColumns[$normalized])) {
+                $warnings[] = "No workbook column named '{$uploadName}' was found.";
+
+                continue;
+            }
+
+            $match = $doctorColumns[$normalized];
+            $column = $match['column'];
+            $dateColumn = $match['date_column'];
+            $matchedColumns[] = $column;
 
             if ($dateColumn === null) {
                 $warnings[] = "Column {$column} sits before the first Date column, so its dates cannot be resolved.";
@@ -81,7 +101,51 @@ class ScheduleWorkbook
             }
         }
 
+        foreach ($doctorColumns as $doctorColumn) {
+            if (! in_array($doctorColumn['column'], $matchedColumns, true)) {
+                $warnings[] = "Workbook doctor '{$doctorColumn['upload_name']}' is not mapped to a doctor and was skipped.";
+            }
+        }
+
         return ['cells' => $cells, 'warnings' => array_values(array_unique($warnings))];
+    }
+
+    /**
+     * @param  array<int, array<string, string|null>>  $rows
+     * @param  list<string>  $dateColumns
+     * @return array<string, array{upload_name: string, column: string, date_column: string|null}>
+     */
+    private function doctorColumns(array $rows, int $headerRow, array $dateColumns): array
+    {
+        $map = [];
+
+        foreach (array_keys($rows[$headerRow] ?? []) as $column) {
+            $label = $this->doctorLabelForColumn($rows[$headerRow] ?? [], $column);
+
+            if ($label === null) {
+                continue;
+            }
+
+            $normalized = $this->normalizeName($label);
+
+            if ($normalized === '') {
+                continue;
+            }
+
+            if (isset($map[$normalized])) {
+                throw new InvalidArgumentException(
+                    "The workbook contains duplicate doctor column names ('{$label}'). Please make each sheet doctor header unique.",
+                );
+            }
+
+            $map[$normalized] = [
+                'upload_name' => $label,
+                'column' => $column,
+                'date_column' => $this->dateColumnFor($column, $dateColumns),
+            ];
+        }
+
+        return $map;
     }
 
     /**
@@ -117,6 +181,30 @@ class ScheduleWorkbook
         }
 
         return $columns;
+    }
+
+    /**
+     * Doctor labels are taken strictly from the header row. Looking above the
+     * header picks up department titles (e.g. "General Surgery - August 2026"),
+     * which are not doctors and should never appear as import targets.
+     *
+     * @param  array<string, string|null>  $headerRow
+     */
+    private function doctorLabelForColumn(array $headerRow, string $column): ?string
+    {
+        $value = trim((string) ($headerRow[$column] ?? ''));
+
+        if ($value === '') {
+            return null;
+        }
+
+        $normalized = mb_strtolower($value);
+
+        if ($normalized === 'date' || $normalized === 'days') {
+            return null;
+        }
+
+        return preg_replace('/\s+/u', ' ', $value) ?: $value;
     }
 
     /**
@@ -183,5 +271,18 @@ class ScheduleWorkbook
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function normalizeName(string $name): string
+    {
+        $baseName = preg_split('/\s*[-–—]\s*|\s*\(/u', $name, 2)[0] ?? $name;
+
+        return (string) Str::of($baseName)
+            ->lower()
+            ->replaceMatches('/\b(dr|doctor)\b\.?/u', '')
+            ->replace('د.', '')
+            ->replace('دكتور', '')
+            ->replaceMatches('/[^[:alnum:]\x{0600}-\x{06FF}]+/u', '')
+            ->trim();
     }
 }

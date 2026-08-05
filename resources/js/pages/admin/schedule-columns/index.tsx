@@ -10,7 +10,7 @@ import {
 } from '@/routes/admin/schedule-columns';
 import type { BreadcrumbItem } from '@/types';
 
-type Doctor = { id: number; name: string; column: string | null };
+type Doctor = { id: number; name: string; upload_name: string | null };
 type Department = { id: number; name: string; doctors: Doctor[] };
 
 export default function ScheduleColumnsIndex({
@@ -22,12 +22,12 @@ export default function ScheduleColumnsIndex({
 
     for (const department of departments) {
         for (const doctor of department.doctors) {
-            initial[doctor.id] = doctor.column ?? '';
+            initial[doctor.id] = doctor.upload_name ?? '';
         }
     }
 
     const { data, setData, put, processing, errors, isDirty } = useForm({
-        columns: initial,
+        upload_names: initial,
     });
 
     const submit = (event: React.FormEvent) => {
@@ -35,26 +35,26 @@ export default function ScheduleColumnsIndex({
 
         put(update().url, {
             preserveScroll: true,
-            onSuccess: () => toast.success('Column mapping saved.'),
+            onSuccess: () => toast.success('Upload-name mapping saved.'),
         });
     };
 
     return (
         <>
-            <Head title="Excel column mapping" />
+            <Head title="Schedule upload names" />
 
             <form onSubmit={submit} className="space-y-6 p-4">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <Heading
-                        title="Excel column mapping"
-                        description="Which column of the hospital's monthly OPD workbook belongs to each doctor. The import matches on position only — the name printed in the sheet is ignored."
+                        title="Schedule upload names"
+                        description="Set the exact doctor title used in the OPD sheet header for each doctor. Import now matches by sheet name, not by fixed column position."
                     />
                     <Button type="submit" disabled={processing || !isDirty}>
                         {processing ? 'Saving…' : 'Save mapping'}
                     </Button>
                 </div>
 
-                <InputError message={errors.columns} />
+                <InputError message={errors.upload_names} />
 
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     {departments.map((department) => (
@@ -75,22 +75,22 @@ export default function ScheduleColumnsIndex({
                                             <td className="p-2">
                                                 {doctor.name}
                                             </td>
-                                            <td className="w-24 p-2">
+                                            <td className="w-56 p-2">
                                                 <Input
-                                                    aria-label={`Excel column for ${doctor.name}`}
+                                                    aria-label={`Sheet upload name for ${doctor.name}`}
                                                     value={
-                                                        data.columns[
+                                                        data.upload_names[
                                                             doctor.id
                                                         ] ?? ''
                                                     }
-                                                    maxLength={3}
-                                                    placeholder="—"
-                                                    className="h-8 text-center uppercase"
+                                                    maxLength={120}
+                                                    placeholder="e.g. Dr. Ehab"
+                                                    className="h-8"
                                                     onChange={(event) =>
-                                                        setData('columns', {
-                                                            ...data.columns,
+                                                        setData('upload_names', {
+                                                            ...data.upload_names,
                                                             [doctor.id]:
-                                                                event.target.value.toUpperCase(),
+                                                                event.target.value,
                                                         })
                                                     }
                                                 />
@@ -109,6 +109,6 @@ export default function ScheduleColumnsIndex({
 
 ScheduleColumnsIndex.layout = {
     breadcrumbs: [
-        { title: 'Excel column mapping', href: scheduleColumns() },
+        { title: 'Schedule upload names', href: scheduleColumns() },
     ] satisfies BreadcrumbItem[],
 };

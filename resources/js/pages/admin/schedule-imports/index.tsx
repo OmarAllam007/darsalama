@@ -129,7 +129,7 @@ export default function ScheduleImportsIndex({
                         description="Upload the hospital's monthly OPD workbook. Nothing is saved until you confirm the preview."
                     />
                     <Button variant="outline" asChild>
-                        <Link href={scheduleColumns()}>Column mapping</Link>
+                        <Link href={scheduleColumns()}>Upload-name mapping</Link>
                     </Button>
                 </div>
 

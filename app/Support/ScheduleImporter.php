@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 /**
@@ -50,13 +51,13 @@ class ScheduleImporter
         $doctors = $this->mappedDoctors();
 
         if ($doctors->isEmpty()) {
-            throw new InvalidArgumentException('No doctors are mapped to workbook columns yet. Set up the column mapping first.');
+            throw new InvalidArgumentException('No doctors are mapped to sheet upload names yet. Set up upload-name mapping first.');
         }
 
         $read = $this->workbook->read(
             $path,
             $month,
-            $doctors->pluck('scheduleColumn.column', 'id')->all(),
+            $doctors->pluck('scheduleColumn.upload_name', 'id')->all(),
         );
 
         $doctorIds = $doctors->modelKeys();
@@ -283,10 +284,48 @@ class ScheduleImporter
      */
     private function mappedDoctors(): EloquentCollection
     {
-        return Doctor::query()
-            ->whereHas('scheduleColumn')
+        $doctors = Doctor::query()
+            ->whereHas(
+                'scheduleColumn',
+                fn ($query) => $query->whereNotNull('upload_name'),
+            )
             ->with(['scheduleColumn', 'department:id,name,slot_minutes'])
             ->get();
+
+        $duplicates = $doctors
+            ->filter(fn (Doctor $doctor): bool => filled($doctor->scheduleColumn?->upload_name))
+            ->groupBy(
+                fn (Doctor $doctor): string => (string) Str::of(
+                    preg_split(
+                        '/\s*[-–—]\s*|\s*\(/u',
+                        $doctor->scheduleColumn?->upload_name ?? '',
+                        2,
+                    )[0] ?? ($doctor->scheduleColumn?->upload_name ?? ''),
+                )
+                    ->lower()
+                    ->replaceMatches('/\b(dr|doctor)\b\.?/u', '')
+                    ->replace('د.', '')
+                    ->replace('دكتور', '')
+                    ->replaceMatches('/[^[:alnum:]\x{0600}-\x{06FF}]+/u', '')
+                    ->trim(),
+            )
+            ->filter(fn (Collection $group): bool => $group->count() > 1);
+
+        if ($duplicates->isNotEmpty()) {
+            $labels = $duplicates
+                ->map(function (Collection $group, string $name): string {
+                    $options = $group->pluck('name')->implode(', ');
+
+                    return "'{$name}' ({$options})";
+                })
+                ->implode('; ');
+
+            throw new InvalidArgumentException(
+                'Duplicate upload names detected: '.$labels.'. Please choose which doctor each sheet name belongs to in Schedule Columns.',
+            );
+        }
+
+        return $doctors;
     }
 
     /**

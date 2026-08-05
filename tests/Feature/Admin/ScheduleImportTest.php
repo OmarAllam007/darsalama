@@ -23,15 +23,18 @@ afterEach(function () {
 });
 
 /**
- * A doctor mapped to a fixed workbook column.
+ * A doctor mapped to a sheet doctor title used in OPD uploads.
  */
-function mappedDoctor(string $column, int $slotMinutes = 15): Doctor
+function mappedDoctor(string $uploadName, int $slotMinutes = 15): Doctor
 {
     $doctor = Doctor::factory()->create([
         'department_id' => Department::factory()->create(['slot_minutes' => $slotMinutes]),
     ]);
 
-    $doctor->scheduleColumn()->create(['column' => $column]);
+    $doctor->scheduleColumn()->create([
+        'column' => 'C',
+        'upload_name' => $uploadName,
+    ]);
 
     return $doctor;
 }
@@ -41,8 +44,9 @@ function mappedDoctor(string $column, int $slotMinutes = 15): Doctor
  * doctor…` header, then one row per day of the month.
  *
  * @param  array<string, array<int, string>>  $cells  column letter => [day => value]
+ * @param  array<string, string>  $headers  column letter => doctor title shown in sheet
  */
-function workbook(array $cells, int $days = 31): UploadedFile
+function workbook(array $cells, array $headers = [], int $days = 31): UploadedFile
 {
     $spreadsheet = new Spreadsheet;
     $sheet = $spreadsheet->getActiveSheet();
@@ -51,6 +55,10 @@ function workbook(array $cells, int $days = 31): UploadedFile
     $sheet->setCellValue('A5', 'General Surgery - July 2026');
     $sheet->setCellValue('A6', 'Days')->setCellValue('B6', 'Date');
     $sheet->setCellValue('G6', 'Days')->setCellValue('H6', 'Date');
+
+    foreach ($headers as $column => $label) {
+        $sheet->setCellValue("{$column}6", $label);
+    }
 
     for ($day = 1; $day <= $days; $day++) {
         $row = $day + 6;
@@ -76,9 +84,12 @@ function preview(UploadedFile $file, string $month = '2026-07'): TestResponse
 }
 
 test('uploading previews the changes without writing anything', function () {
-    $doctor = mappedDoctor('C');
+    $doctor = mappedDoctor('Dr. Rabab Salem');
 
-    $response = preview(workbook(['C' => [1 => '8:00-12:00; 16:00-20:00']]));
+    $response = preview(workbook(
+        ['C' => [1 => '8:00-12:00; 16:00-20:00']],
+        ['C' => 'Dr. Rabab Salem'],
+    ));
 
     $response->assertOk();
     expect(DoctorSchedule::count())->toBe(0);
@@ -97,11 +108,11 @@ test('uploading previews the changes without writing anything', function () {
 });
 
 test('confirming applies the schedule and logs the import', function () {
-    $doctor = mappedDoctor('C');
+    $doctor = mappedDoctor('Dr. Muhannad Hamarsha');
 
     $token = preview(workbook([
         'C' => [1 => '8:00-12:00 (OPD) 12:00-16:00 (LTC)', 2 => 'OFF'],
-    ]))->viewData('page')['props']['preview']['token'];
+    ], ['C' => 'Dr. Muhannad Hamarsha']))->viewData('page')['props']['preview']['token'];
 
     $this->post(route('admin.schedule-imports.store'), ['token' => $token])
         ->assertRedirect(route('admin.schedule-imports.index'));
@@ -124,9 +135,12 @@ test('confirming applies the schedule and logs the import', function () {
 });
 
 test('a blank cell closes the day rather than leaving it bookable', function () {
-    $doctor = mappedDoctor('C');
+    $doctor = mappedDoctor('Dr. Reham Elbohy');
 
-    $token = preview(workbook(['C' => [1 => '8:00-16:00']]))
+    $token = preview(workbook(
+        ['C' => [1 => '8:00-16:00']],
+        ['C' => 'Dr. Reham Elbohy'],
+    ))
         ->viewData('page')['props']['preview']['token'];
 
     $this->post(route('admin.schedule-imports.store'), ['token' => $token]);
@@ -139,15 +153,16 @@ test('a blank cell closes the day rather than leaving it bookable', function () 
 });
 
 test('importing the same workbook twice changes nothing the second time', function () {
-    mappedDoctor('C');
+    mappedDoctor('Dr. Nagwa Habiba');
     $cells = ['C' => [1 => '8:00-12:00; 16:00-20:00', 2 => 'V']];
+    $headers = ['C' => 'Dr. Nagwa Habiba'];
 
-    $token = preview(workbook($cells))->viewData('page')['props']['preview']['token'];
+    $token = preview(workbook($cells, $headers))->viewData('page')['props']['preview']['token'];
     $this->post(route('admin.schedule-imports.store'), ['token' => $token]);
 
     $before = DoctorSchedule::orderBy('id')->pluck('updated_at', 'id');
 
-    $summary = preview(workbook($cells))->viewData('page')['props']['preview']['summary'];
+    $summary = preview(workbook($cells, $headers))->viewData('page')['props']['preview']['summary'];
 
     expect($summary['created'])->toBe(0)
         ->and($summary['updated'])->toBe(0)
@@ -156,9 +171,12 @@ test('importing the same workbook twice changes nothing the second time', functi
 });
 
 test('a cell that cannot be parsed is reported and skipped', function () {
-    mappedDoctor('C');
+    mappedDoctor('Dr. Ehab Mohamed Abdulwahab');
 
-    $preview = preview(workbook(['C' => [1 => 'She is no longer with us.']]))
+    $preview = preview(workbook(
+        ['C' => [1 => 'She is no longer with us.']],
+        ['C' => 'Dr. Ehab Mohamed Abdulwahab'],
+    ))
         ->viewData('page')['props']['preview'];
 
     $row = collect($preview['rows'])->firstWhere('date', '2026-07-01');
@@ -173,7 +191,7 @@ test('a cell that cannot be parsed is reported and skipped', function () {
 });
 
 test('an import never strands an already booked appointment', function () {
-    $doctor = mappedDoctor('C');
+    $doctor = mappedDoctor('Dr. Saad Alharthi');
 
     $doctor->schedules()->create([
         'date' => '2026-07-01',
@@ -188,7 +206,10 @@ test('an import never strands an already booked appointment', function () {
     ]);
 
     // The workbook would close the whole morning for surgery.
-    $preview = preview(workbook(['C' => [1 => '8:00-12:00 (OR)']]))
+    $preview = preview(workbook(
+        ['C' => [1 => '8:00-12:00 (OR)']],
+        ['C' => 'Dr. Saad Alharthi'],
+    ))
         ->viewData('page')['props']['preview'];
 
     $row = collect($preview['rows'])->firstWhere('date', '2026-07-01');
@@ -204,7 +225,7 @@ test('an import never strands an already booked appointment', function () {
 });
 
 test('a change that keeps the appointment bookable still applies', function () {
-    $doctor = mappedDoctor('C');
+    $doctor = mappedDoctor('Dr. Lamia Alshehri');
 
     $doctor->schedules()->create([
         'date' => '2026-07-01',
@@ -218,7 +239,10 @@ test('a change that keeps the appointment bookable still applies', function () {
         'time' => '09:00',
     ]);
 
-    $token = preview(workbook(['C' => [1 => '8:00-12:00; 16:00-20:00']]))
+    $token = preview(workbook(
+        ['C' => [1 => '8:00-12:00; 16:00-20:00']],
+        ['C' => 'Dr. Lamia Alshehri'],
+    ))
         ->viewData('page')['props']['preview']['token'];
 
     $this->post(route('admin.schedule-imports.store'), ['token' => $token]);
@@ -226,8 +250,8 @@ test('a change that keeps the appointment bookable still applies', function () {
     expect($doctor->schedules()->whereDate('date', '2026-07-01')->sole()->windows)->toHaveCount(2);
 });
 
-test('doctors without a column mapping and months outside the selection are untouched', function () {
-    $mapped = mappedDoctor('C');
+test('doctors without an upload-name mapping and months outside the selection are untouched', function () {
+    $mapped = mappedDoctor('Dr. Mona Ghazi');
     $unmapped = Doctor::factory()->create();
 
     $august = $mapped->schedules()->create([
@@ -236,7 +260,10 @@ test('doctors without a column mapping and months outside the selection are unto
         'windows' => [],
     ]);
 
-    $token = preview(workbook(['C' => [1 => '8:00-16:00'], 'D' => [1 => 'OFF']]))
+    $token = preview(workbook(
+        ['C' => [1 => '8:00-16:00'], 'D' => [1 => 'OFF']],
+        ['C' => 'Dr. Mona Ghazi', 'D' => 'Dr. Unknown'],
+    ))
         ->viewData('page')['props']['preview']['token'];
 
     $this->post(route('admin.schedule-imports.store'), ['token' => $token]);
@@ -246,11 +273,14 @@ test('doctors without a column mapping and months outside the selection are unto
         ->and($mapped->schedules()->whereBetween('date', ['2026-07-01', '2026-07-31'])->count())->toBe(31);
 });
 
-test('the doctor name printed in the workbook is irrelevant', function () {
-    $doctor = mappedDoctor('C');
+test('the sheet doctor title controls matching instead of fixed column location', function () {
+    $doctor = mappedDoctor('Dr. Abdullah Al-Taha');
     $doctor->update(['name' => 'Dr. Abdullah Al-Taha']);
 
-    $file = workbook(['C' => [1 => '8:00-16:00']]);
+    $file = workbook(
+        ['C' => [1 => '8:00-16:00']],
+        ['C' => 'Dr. Abdullah Al-Taha'],
+    );
     $token = preview($file)->viewData('page')['props']['preview']['token'];
 
     $this->post(route('admin.schedule-imports.store'), ['token' => $token]);
@@ -259,7 +289,7 @@ test('the doctor name printed in the workbook is irrelevant', function () {
 });
 
 test('a file that is not the schedule template is rejected before any preview', function () {
-    mappedDoctor('C');
+    mappedDoctor('Dr. Rabab Salem');
 
     $spreadsheet = new Spreadsheet;
     $spreadsheet->getActiveSheet()->setCellValue('A1', 'Invoice');
@@ -271,27 +301,57 @@ test('a file that is not the schedule template is rejected before any preview', 
 });
 
 test('a day number that the month does not have is reported', function () {
-    mappedDoctor('C');
+    mappedDoctor('Dr. Hanan Saeed');
 
-    $preview = preview(workbook(['C' => [1 => '8:00-16:00']], days: 31), month: '2026-02')
+    $preview = preview(
+        workbook(
+            ['C' => [1 => '8:00-16:00']],
+            ['C' => 'Dr. Hanan Saeed'],
+            days: 31,
+        ),
+        month: '2026-02',
+    )
         ->viewData('page')['props']['preview'];
 
     expect($preview['warnings'])->not->toBeEmpty()
         ->and($preview['summary']['days'])->toBe(28);
 });
 
-test('the column mapping page saves and rejects duplicate columns', function () {
+test('sheet titles with specialty suffixes still match doctor upload names', function () {
+    $doctor = mappedDoctor('Dr. Sameh Barayan');
+
+    $preview = preview(workbook(
+        ['C' => [1 => '8:00-16:00'], 'D' => [1 => 'OFF']],
+        [
+            'C' => 'Dr. Sameh Barayan - Vascular & Bariatric ) PT',
+            'D' => 'Dr. Unmapped Consultant',
+        ],
+    ))->viewData('page')['props']['preview'];
+
+    $row = collect($preview['rows'])->firstWhere('doctor_id', $doctor->id);
+
+    expect($row)->not->toBeNull()
+        ->and($row['change'])->toBe('new')
+        ->and($preview['warnings'])->toContain(
+            "Workbook doctor 'Dr. Unmapped Consultant' is not mapped to a doctor and was skipped.",
+        )
+        ->and($preview['warnings'])->not->toContain(
+            "Workbook doctor 'General Surgery - July 2026' is not mapped to a doctor and was skipped.",
+        );
+});
+
+test('the upload-name mapping page saves and rejects duplicate names', function () {
     $first = Doctor::factory()->create(['is_active' => true]);
     $second = Doctor::factory()->create(['is_active' => true]);
 
     $this->put(route('admin.schedule-columns.update'), [
-        'columns' => [$first->id => 'c', $second->id => 'BZ'],
+        'upload_names' => [$first->id => 'Dr. Ehab', $second->id => 'Dr. Muhannad'],
     ])->assertRedirect();
 
-    expect($first->scheduleColumn->refresh()->column)->toBe('C')
-        ->and($second->scheduleColumn->column)->toBe('BZ');
+    expect($first->scheduleColumn->refresh()->upload_name)->toBe('Dr. Ehab')
+        ->and($second->scheduleColumn->upload_name)->toBe('Dr. Muhannad');
 
     $this->put(route('admin.schedule-columns.update'), [
-        'columns' => [$first->id => 'C', $second->id => 'C'],
-    ])->assertSessionHasErrors('columns');
+        'upload_names' => [$first->id => 'Dr. Ehab', $second->id => 'Dr. Ehab'],
+    ])->assertSessionHasErrors('upload_names');
 });

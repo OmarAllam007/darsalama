@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * A doctor's fixed column in the hospital's monthly OPD workbook.
  */
-#[Fillable(['doctor_id', 'column'])]
+#[Fillable(['doctor_id', 'column', 'upload_name'])]
 class DoctorScheduleColumn extends Model
 {
     /**
