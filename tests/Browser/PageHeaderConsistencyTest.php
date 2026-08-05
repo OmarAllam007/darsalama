@@ -1,6 +1,6 @@
 <?php
 
-it('uses the shared cinematic header across doctors services and contact', function () {
+it('renders the public page headers and the services department tour', function () {
     $doctors = visit('/doctors')->resize(1440, 900);
 
     $doctors->assertSee('Our Expert Medical Team')
@@ -12,10 +12,13 @@ it('uses the shared cinematic header across doctors services and contact', funct
 
     $services = visit('/services')->resize(1440, 900);
 
-    $services->assertSee('Our Medical Services')
-        ->assertScript("document.querySelector('.page-banner')?.getBoundingClientRect().height >= 600", true)
+    $services->assertSee('Take the tour.')
+        ->assertSee('Obstetrics & Gynecology')
+        ->assertScript("document.querySelector('.department-tour__panels')?.getBoundingClientRect().height >= 700", true)
+        ->click('.department-tab--dental')
+        ->assertScript("document.querySelector('.department-panel--dental')?.classList.contains('is-active')", true)
         ->assertNoJavaScriptErrors()
-        ->screenshotElement('.page-banner', filename: 'header-services-desktop');
+        ->screenshotElement('.services-tour', filename: 'services-tour-desktop');
 
     $contact = visit('/contact')->resize(1440, 900);
 
@@ -38,10 +41,16 @@ it('keeps the shared page headers responsive in arabic', function () {
         ->screenshotElement('.page-banner', filename: 'header-doctors-mobile-ar');
 
     $page->navigate('/services')
-        ->assertSee('خدماتنا الطبية')
+        ->assertSee('خُذ جولة،')
+        ->assertSee('النساء والولادة')
+        // On phones every department starts collapsed; tapping one fills the stack.
+        ->assertScript("document.querySelectorAll('.department-panel.is-active').length", 0)
+        ->click('[data-dept="obgyn"]')
+        ->wait(0.6)
+        ->assertScript("document.querySelector('.department-panel.is-active')?.getBoundingClientRect().height >= 400", true)
         ->assertScript('document.documentElement.scrollWidth <= document.documentElement.clientWidth', true)
         ->assertNoJavaScriptErrors()
-        ->screenshotElement('.page-banner', filename: 'header-services-mobile-ar');
+        ->screenshotElement('.services-tour', filename: 'services-tour-mobile-ar');
 
     $page->navigate('/contact')
         ->assertSee('تواصل معنا')

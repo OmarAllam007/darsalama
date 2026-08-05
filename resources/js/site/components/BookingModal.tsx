@@ -29,7 +29,10 @@ export default function BookingModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[92vh] overflow-y-auto border-none bg-transparent p-0 shadow-none sm:max-w-xl [&>button:last-child]:hidden">
+            <DialogContent
+                overlayClassName="z-[10030]"
+                className="z-[10031] max-h-[92vh] overflow-y-auto border-none bg-transparent p-0 shadow-none sm:max-w-xl [&>button:last-child]:hidden"
+            >
                 {doctor && (
                     <div
                         className="dsm bk-modal"

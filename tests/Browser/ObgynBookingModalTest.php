@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\DoctorScheduleStatus;
 use App\Models\Department;
 use App\Models\Doctor;
+use Illuminate\Support\Carbon;
 
 it('books from the obgyn page in a modal instead of navigating away', function () {
     $department = Department::factory()->create(['slug' => 'gynecology', 'name' => 'Gynecology']);
@@ -12,11 +14,12 @@ it('books from the obgyn page in a modal instead of navigating away', function (
         'is_active' => true,
     ]);
 
-    $doctor->availabilities()->create([
-        'weekday' => 0,
-        'start_time' => '09:00',
-        'end_time' => '12:00',
-        'slot_minutes' => 30,
+    $doctor->schedules()->create([
+        'date' => Carbon::today(config('booking.timezone'))->addDay()->toDateString(),
+        'status' => DoctorScheduleStatus::Work,
+        'windows' => [
+            ['start' => '09:00', 'end' => '12:00', 'bookable' => true],
+        ],
     ]);
 
     $page = visit('/obgyn');
@@ -25,6 +28,6 @@ it('books from the obgyn page in a modal instead of navigating away', function (
         ->click('.doc-cta .book')
         ->wait(1)
         ->assertUrlIs(url('/obgyn'))
-        ->assertSee('Choose a date')
+        ->assertPresent('.bk-day')
         ->assertSee('Dr. Sarah Ahmed');
 });

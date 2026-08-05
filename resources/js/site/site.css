@@ -4661,6 +4661,8 @@ button {
     position: absolute;
     top: 12px;
     inset-inline-end: 14px;
+    display: grid;
+    place-items: center;
     border: none;
     background: #f1f5f9;
     width: 34px;
@@ -4671,6 +4673,9 @@ button {
     color: #334155;
     line-height: 1;
     z-index: 2;
+}
+.bk-close svg {
+    display: block;
 }
 .bk-head {
     padding: 22px 24px 14px;
@@ -4796,6 +4801,24 @@ button {
     text-decoration: none;
     opacity: 0.55;
     background: #f1f5f9;
+}
+.bk-step-back {
+    border: 1px solid #c7d2e5;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: #15265c;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+.bk-selected-slot {
+    margin: 6px 0 14px;
+    color: #1f3676;
+    font-size: 15px;
+    font-weight: 800;
 }
 .bk-callback {
     margin-top: 18px;

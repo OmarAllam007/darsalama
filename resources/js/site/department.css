@@ -1,0 +1,491 @@
+.department-page {
+    --dept-navy: #15265c;
+    --dept-gold: #b8923a;
+    --dept-ink: #1c2438;
+    --dept-slate: #5a6479;
+    --dept-paper: #f8f6f0;
+    --dept-line: #e7e3d6;
+    --dept-color: #8fa8e0;
+    --dept-hot: #b3c4ec;
+    --dept-deep: #22356e;
+    --dept-on-color: #0a1229;
+    min-height: 100vh;
+    overflow-x: clip;
+    background: var(--dept-paper);
+    color: var(--dept-ink);
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.department-page--pediatrics {
+    --dept-color: #8fa8e0;
+    --dept-hot: #b3c4ec;
+    --dept-deep: #22356e;
+    --dept-on-color: #0a1229;
+}
+
+.department-page--dental {
+    --dept-color: #e9c56a;
+    --dept-hot: #f6dc96;
+    --dept-deep: #c79a3c;
+    --dept-on-color: #241a02;
+}
+
+.department-page--psychiatry {
+    --dept-color: #7fc4b0;
+    --dept-hot: #a4dbcb;
+    --dept-deep: #1f6b58;
+    --dept-on-color: #04211a;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+
+.department-hero {
+    position: relative;
+    padding: 58px 28px 46px;
+    background: linear-gradient(165deg, #14161f, #1b1e2a);
+    color: #f7f4ec;
+    text-align: center;
+}
+
+.department-hero::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--dept-color), transparent);
+    content: '';
+}
+
+.department-page[dir='rtl'] .department-hero::before {
+    background: linear-gradient(270deg, var(--dept-color), transparent);
+}
+
+.department-hero__inner {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.department-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 8px 20px;
+    border: 1px solid color-mix(in srgb, var(--dept-color) 45%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dept-color) 14%, transparent);
+    color: var(--dept-hot);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.department-page[dir='rtl'] .department-hero__eyebrow {
+    letter-spacing: 0;
+}
+
+.department-hero__eyebrow span.pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.department-hero h1 {
+    margin: 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.department-page[dir='rtl'] .department-hero h1 {
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    font-weight: 800;
+}
+
+.department-hero h1 small {
+    display: block;
+    margin-top: 10px;
+    color: var(--dept-color);
+    font-size: 0.5em;
+    font-weight: 600;
+}
+
+.department-hero p {
+    max-width: 640px;
+    margin: 16px auto 0;
+    color: #d9d5c8;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.department-hero__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 22px;
+    padding: 8px 14px;
+    border: 1px solid rgb(255 255 255 / 22%);
+    border-radius: 9px;
+    background: transparent;
+    color: #f7f4ec;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
+}
+
+.department-hero__back:hover {
+    border-color: var(--dept-color);
+    background: color-mix(in srgb, var(--dept-color) 18%, transparent);
+    color: #fff;
+}
+
+.department-page[dir='rtl'] .department-hero__back svg {
+    transform: scaleX(-1);
+}
+
+.department-hero__back svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ── Roster ───────────────────────────────────────────────────────────── */
+
+.department-roster {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 28px 84px;
+}
+
+.department-roster__head {
+    margin-bottom: 34px;
+    text-align: center;
+}
+
+.department-roster__head h2 {
+    margin: 0;
+    color: var(--dept-navy);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(28px, 3.4vw, 40px);
+    font-weight: 700;
+}
+
+.department-page[dir='rtl'] .department-roster__head h2 {
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    font-weight: 800;
+}
+
+.department-roster__head p {
+    max-width: 620px;
+    margin: 12px auto 0;
+    color: var(--dept-slate);
+    font-size: 15.5px;
+    line-height: 1.7;
+}
+
+.department-roster__grid {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+}
+
+.doctor-card {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    border: 1px solid var(--dept-line);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 12px 32px -20px rgb(21 38 92 / 30%);
+    transition:
+        transform 0.25s,
+        box-shadow 0.25s;
+}
+
+.doctor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px -22px rgb(21 38 92 / 40%);
+}
+
+.doctor-card__portrait {
+    position: relative;
+    display: grid;
+    height: 260px;
+    place-items: center;
+    background: linear-gradient(165deg, #eceadf, #dedbcd);
+}
+
+.doctor-card__portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+}
+
+.doctor-card__portrait .placeholder {
+    color: var(--dept-deep);
+    opacity: 0.35;
+}
+
+.doctor-card__portrait .placeholder svg {
+    width: 54px;
+    height: 54px;
+}
+
+.doctor-card__flag {
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 12px;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 30%);
+    line-height: 0;
+}
+
+.doctor-card__flag img {
+    width: 30px;
+    height: 20px;
+    object-fit: cover;
+}
+
+.doctor-card__plate {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--dept-line);
+    background: linear-gradient(
+        165deg,
+        color-mix(in srgb, var(--dept-color) 16%, #fff),
+        #fff
+    );
+}
+
+.doctor-card__plate .ar-name {
+    color: var(--dept-navy);
+    font-family: 'Cairo', 'Tajawal', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.doctor-card__plate .en-name {
+    margin-top: 2px;
+    color: var(--dept-ink);
+    font-size: 15.5px;
+    font-weight: 700;
+}
+
+.doctor-card__plate .role {
+    margin-top: 8px;
+    color: var(--dept-deep);
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.doctor-card__plate .role span {
+    display: block;
+    color: var(--dept-slate);
+    font-weight: 600;
+}
+
+.doctor-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 16px 20px 20px;
+}
+
+.doctor-card__body h4 {
+    margin: 0 0 8px;
+    color: var(--dept-gold);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.department-page[dir='rtl'] .doctor-card__body h4 {
+    letter-spacing: 0;
+}
+
+.doctor-card__body h4:not(:first-child) {
+    margin-top: 16px;
+}
+
+.doctor-card__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.doctor-card__list li {
+    position: relative;
+    margin-bottom: 6px;
+    padding-inline-start: 18px;
+    color: var(--dept-slate);
+    font-size: 13.5px;
+    line-height: 1.55;
+}
+
+.doctor-card__list li::before {
+    position: absolute;
+    top: 7px;
+    inset-inline-start: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dept-color);
+    content: '';
+}
+
+.doctor-card__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.doctor-card__chips span {
+    padding: 5px 11px;
+    border: 1px solid color-mix(in srgb, var(--dept-color) 40%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dept-color) 12%, transparent);
+    color: var(--dept-deep);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.doctor-card__cta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 18px;
+}
+
+.doctor-card__cta button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--dept-hot), var(--dept-color));
+    box-shadow: 0 12px 28px -14px
+        color-mix(in srgb, var(--dept-color) 70%, transparent);
+    color: var(--dept-on-color);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        transform 0.2s,
+        filter 0.2s;
+}
+
+.department-page[dir='rtl'] .doctor-card__cta button {
+    letter-spacing: 0;
+}
+
+.doctor-card__cta button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
+.doctor-card__cta svg {
+    width: 15px;
+    height: 15px;
+}
+
+.doctor-card__cta a {
+    color: var(--dept-slate);
+    font-size: 12.5px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.doctor-card__cta a:hover {
+    color: var(--dept-navy);
+    text-decoration: underline;
+}
+
+.doctor-card__availability {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    color: var(--dept-slate);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.doctor-card__availability .pip {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #9aa2b1;
+}
+
+.doctor-card__availability.is-live .pip {
+    background: #2f9e6f;
+}
+
+.doctor-card__availability.is-live {
+    color: #2f7a5b;
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+
+.department-empty {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 46px 28px;
+    border: 1px dashed var(--dept-line);
+    border-radius: 18px;
+    background: #fff;
+    color: var(--dept-slate);
+    text-align: center;
+}
+
+.department-empty svg {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 12px;
+    color: var(--dept-gold);
+}
+
+.department-empty p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+@media (max-width: 760px) {
+    .department-hero {
+        padding: 40px 18px 34px;
+    }
+
+    .department-roster {
+        padding: 40px 18px 64px;
+    }
+
+    .department-roster__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .doctor-card,
+    .doctor-card__cta button {
+        transition: none;
+    }
+}

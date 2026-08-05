@@ -38,7 +38,44 @@ function addDaysIso(iso: string, days: number): string {
     return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
 }
 
-const DAYS_SHOWN = 7;
+function minutesFromTime(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+
+    return hours * 60 + minutes;
+}
+
+function timeFromMinutes(totalMinutes: number): string {
+    const minutesInDay = 24 * 60;
+    const normalized =
+        ((totalMinutes % minutesInDay) + minutesInDay) % minutesInDay;
+    const hours = Math.floor(normalized / 60);
+    const minutes = normalized % 60;
+
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+function slotRange(start: string, durationMinutes: number): string {
+    const startMinutes = minutesFromTime(start);
+    const end = timeFromMinutes(startMinutes + durationMinutes);
+
+    return `${start}\u2013${end}`;
+}
+
+function inferSlotMinutes(slots: string[]): number {
+    if (slots.length < 2) {
+        return 15;
+    }
+
+    const deltas = slots
+        .map(minutesFromTime)
+        .slice(1)
+        .map((current, index) => current - minutesFromTime(slots[index]))
+        .filter((delta) => delta > 0);
+
+    return deltas.length > 0 ? Math.min(...deltas) : 15;
+}
+
+const DAYS_WINDOW = 31;
 
 export default function BookingForm({
     doctorId,
@@ -76,22 +113,14 @@ export default function BookingForm({
     }
 
     return (
-        <BookableBookingForm
-            doctorId={doctorId}
-            doctorName={doctorName}
-            departmentName={departmentName}
-        />
+        <BookableBookingForm doctorId={doctorId} />
     );
 }
 
 function BookableBookingForm({
     doctorId,
-    doctorName,
-    departmentName,
 }: {
     doctorId: number;
-    doctorName: string;
-    departmentName: string;
 }) {
     const { t, lang } = useLanguage();
     const locale = lang === 'ar' ? 'ar' : lang === 'ur' ? 'ur' : 'en';
@@ -99,32 +128,23 @@ function BookableBookingForm({
     const todayIso = clinic.dateIso;
     const tomorrowIso = useMemo(() => addDaysIso(todayIso, 1), [todayIso]);
     const nextDayClosed = clinic.hour >= NEXT_DAY_CUTOFF_HOUR;
-    // The strip always starts on today; the arrows page it a week at a time.
-    const [weekOffset, setWeekOffset] = useState(0);
-    const weekDates = useMemo(
+    const dateWindow = useMemo(
         () =>
-            Array.from({ length: DAYS_SHOWN }, (_, i) =>
-                addDaysIso(todayIso, weekOffset * DAYS_SHOWN + i),
+            Array.from({ length: DAYS_WINDOW }, (_, i) =>
+                addDaysIso(todayIso, i),
             ),
-        [todayIso, weekOffset],
+        [todayIso],
     );
+    const [step, setStep] = useState<'date' | 'time' | 'info'>('date');
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
-
-    // Reset the chosen time whenever the date changes, without a setState-in-effect.
-    const [dateForSelectedTime, setDateForSelectedTime] =
-        useState(selectedDate);
-
-    if (dateForSelectedTime !== selectedDate) {
-        setDateForSelectedTime(selectedDate);
-        setSelectedTime(null);
-    }
+    const [slotMinutes, setSlotMinutes] = useState(15);
 
     // Bookable dates, driven by the doctor's schedule (falls back to the weekly
     // template until the month's data has loaded). A week can span two months.
     const monthKeys = useMemo(
-        () => [...new Set(weekDates.map((iso) => iso.slice(0, 7)))],
-        [weekDates],
+        () => [...new Set(dateWindow.map((iso) => iso.slice(0, 7)))],
+        [dateWindow],
     );
     const [daysByMonth, setDaysByMonth] = useState<Record<string, string[]>>(
         {},
@@ -167,104 +187,122 @@ function BookableBookingForm({
     const isOpen = (iso: string): boolean =>
         daysByMonth[iso.slice(0, 7)]?.includes(iso) ?? false;
 
-    const dayLabel = (iso: string): string => {
+    const dayLabel = (iso: string, showDay = true): string => {
         const [year, month, day] = iso.split('-').map(Number);
         const date = new Date(year, month - 1, day);
 
         return date.toLocaleDateString(locale, {
-            month: 'long',
-            weekday: 'long',
+            month: 'short',
+            ...(showDay ? { weekday: 'short' as const } : {}),
         });
     };
 
+    const visibleDates = useMemo(
+        () =>
+            dateWindow.filter((iso) => {
+                if (iso === todayIso) {
+                    return true;
+                }
+
+                return isOpen(iso);
+            }),
+        [dateWindow, todayIso, daysByMonth],
+    );
+
+    const openDate = (iso: string) => {
+        setSelectedDate(iso);
+        setSelectedTime(null);
+        setStep('time');
+    };
+
+    const selectTime = (time: string) => {
+        setSelectedTime(time);
+        setStep('info');
+    };
+
+    const selectedDateLabel = selectedDate ? dayLabel(selectedDate, false) : '';
+
     return (
         <div>
-            <div>
-                <div className="bk-week-head">
-                    <button
-                        type="button"
-                        className="bk-back"
-                        disabled={weekOffset === 0}
-                        onClick={() => setWeekOffset(weekOffset - 1)}
-                    >
-                        {lang === 'ar' ? '→' : '←'}
-                    </button>
-                    <p className="bk-section-label" style={{ margin: 0 }}>
-                        {t('booking.chooseDate')}
-                    </p>
-                    <button
-                        type="button"
-                        className="bk-back"
-                        onClick={() => setWeekOffset(weekOffset + 1)}
-                    >
-                        {lang === 'ar' ? '←' : '→'}
-                    </button>
+            {step === 'date' && (
+                <div>
+                    <p className="bk-section-label">{t('booking.selectDate')}</p>
+                    <div className="bk-grid bk-days">
+                        {visibleDates.map((iso) => {
+                            const isToday = iso === todayIso;
+                            // Public bookings start tomorrow: today is shown but not bookable.
+                            const disabled =
+                                iso <= todayIso ||
+                                (nextDayClosed && iso === tomorrowIso);
+
+                            return (
+                                <button
+                                    key={iso}
+                                    type="button"
+                                    disabled={disabled}
+                                    onClick={() => openDate(iso)}
+                                    className={[
+                                        'bk-chip',
+                                        'bk-day',
+                                        isToday ? 'is-today' : null,
+                                        selectedDate === iso ? 'is-selected' : null,
+                                    ]
+                                        .filter(Boolean)
+                                        .join(' ')}
+                                >
+                                    <span className="n">{Number(iso.slice(8))}</span>
+                                    <span className="d">
+                                        {isToday
+                                            ? `${t('booking.today')} · ${t('booking.viewOnly')}`
+                                            : dayLabel(iso)}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
-
-                <div className="bk-grid bk-days">
-                    {weekDates.map((iso) => {
-                        const isToday = iso === todayIso;
-                        // Public bookings start tomorrow: today is shown but not bookable.
-                        const disabled =
-                            iso <= todayIso ||
-                            !isOpen(iso) ||
-                            (nextDayClosed && iso === tomorrowIso);
-
-                        return (
-                            <button
-                                key={iso}
-                                type="button"
-                                disabled={disabled}
-                                onClick={() => setSelectedDate(iso)}
-                                className={[
-                                    'bk-chip',
-                                    'bk-day',
-                                    isToday ? 'is-today' : null,
-                                    selectedDate === iso ? 'is-selected' : null,
-                                ]
-                                    .filter(Boolean)
-                                    .join(' ')}
-                            >
-                                <span className="n">
-                                    {Number(iso.slice(8))}
-                                </span>
-                                <span className="d">
-                                    {isToday
-                                        ? `${t('booking.today')} · ${t('booking.viewOnly')}`
-                                        : dayLabel(iso)}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {!selectedDate && (
-                <CallbackBar
-                    doctorId={doctorId}
-                    doctorName={doctorName}
-                    departmentName={departmentName}
-                />
             )}
 
-            {selectedDate && (
+            {step === 'time' && selectedDate && (
                 <div style={{ marginTop: 20 }}>
+                    <button
+                        type="button"
+                        className="bk-step-back"
+                        onClick={() => setStep('date')}
+                    >
+                        {lang === 'ar' ? '‹ ' : '‹ '}
+                        {t('booking.backToDates')}
+                    </button>
                     <p className="bk-section-label">
-                        {t('booking.availableTimes')}
+                        {t('booking.selectTime')} ({slotMinutes} min) —{' '}
+                        {selectedDateLabel}
                     </p>
                     <TimeSlots
                         key={selectedDate}
                         doctorId={doctorId}
                         date={selectedDate}
                         selectedTime={selectedTime}
-                        onSelect={setSelectedTime}
+                        onSelect={selectTime}
+                        onSlotMinutes={setSlotMinutes}
                     />
                 </div>
             )}
 
-            {selectedDate && selectedTime && (
+            {step === 'info' && selectedDate && selectedTime && (
                 <Form
                     {...BookingController.store.form(doctorId)}
+                    transform={(data) => {
+                        const fullName = String(data.full_name ?? '').trim();
+                        const parts = fullName.split(/\s+/).filter(Boolean);
+                        const firstName = parts.shift() ?? fullName;
+                        const lastName = parts.join(' ') || '-';
+
+                        return {
+                            ...data,
+                            first_name: firstName,
+                            last_name: lastName,
+                        };
+                    }}
                     resetOnSuccess={false}
                     style={{
                         marginTop: 20,
@@ -274,6 +312,20 @@ function BookableBookingForm({
                 >
                     {({ processing, errors }) => (
                         <>
+                            <button
+                                type="button"
+                                className="bk-step-back"
+                                onClick={() => setStep('time')}
+                            >
+                                {lang === 'ar' ? '‹ ' : '‹ '}
+                                {t('booking.backToTimes')}
+                            </button>
+
+                            <p className="bk-selected-slot">
+                                {selectedDateLabel} ·{' '}
+                                {slotRange(selectedTime, slotMinutes)}
+                            </p>
+
                             <p
                                 className="bk-section-label"
                                 style={{ marginTop: 0 }}
@@ -293,50 +345,48 @@ function BookableBookingForm({
                                 value={selectedTime}
                                 readOnly
                             />
+                            <input
+                                type="hidden"
+                                name="first_name"
+                                value=""
+                                readOnly
+                            />
+                            <input
+                                type="hidden"
+                                name="last_name"
+                                value=""
+                                readOnly
+                            />
                             <InputError message={errors.time} />
 
                             <div className="bk-field">
-                                <label htmlFor="first_name">
-                                    {t('booking.firstName')}
+                                <label htmlFor="full_name">
+                                    {t('booking.fullName')}
                                 </label>
                                 <input
-                                    id="first_name"
-                                    name="first_name"
+                                    id="full_name"
+                                    name="full_name"
                                     required
                                     autoFocus
                                 />
                                 <InputError message={errors.first_name} />
-                            </div>
-                            <div className="bk-field">
-                                <label htmlFor="last_name">
-                                    {t('booking.lastName')}
-                                </label>
-                                <input
-                                    id="last_name"
-                                    name="last_name"
-                                    required
-                                />
                                 <InputError message={errors.last_name} />
                             </div>
                             <div className="bk-field">
-                                <label htmlFor="email">
-                                    {t('booking.email')}
-                                </label>
-                                <input id="email" name="email" type="email" />
-                                <InputError message={errors.email} />
-                            </div>
-                            <div className="bk-field">
-                                <label htmlFor="phone">
-                                    {t('booking.phone')}
+                                <label htmlFor="appointment-phone">
+                                    {t('booking.callbackPhone')}
                                 </label>
                                 <div className="bk-phone-wrap">
                                     <span className="bk-cc">+966</span>
                                     <input
-                                        id="phone"
+                                        id="appointment-phone"
                                         name="phone"
-                                        placeholder="5XXXXXXXX"
+                                        {...saudiPhoneInputProps}
                                     />
                                 </div>
+                                <p className="bk-callback-help">
+                                    {t('booking.callbackPhoneHint')}
+                                </p>
                                 <InputError message={errors.phone} />
                             </div>
 
@@ -345,7 +395,7 @@ function BookableBookingForm({
                                 className="bk-confirm"
                                 disabled={processing}
                             >
-                                {t('booking.confirm')}
+                                {t('booking.appointmentRequest')}
                             </button>
                         </>
                     )}
@@ -524,14 +574,17 @@ function TimeSlots({
     date,
     selectedTime,
     onSelect,
+    onSlotMinutes,
 }: {
     doctorId: number;
     date: string;
     selectedTime: string | null;
     onSelect: (time: string) => void;
+    onSlotMinutes: (minutes: number) => void;
 }) {
     const { t } = useLanguage();
     const [slots, setSlots] = useState<string[] | null>(null);
+    const [slotMinutes, setSlotMinutes] = useState(15);
 
     useEffect(() => {
         let cancelled = false;
@@ -542,14 +595,18 @@ function TimeSlots({
             .then((response) => response.json())
             .then((data) => {
                 if (!cancelled) {
-                    setSlots(data.slots);
+                    const availableSlots: string[] = data.slots ?? [];
+                    const inferredMinutes = inferSlotMinutes(availableSlots);
+                    setSlotMinutes(inferredMinutes);
+                    onSlotMinutes(inferredMinutes);
+                    setSlots(availableSlots);
                 }
             });
 
         return () => {
             cancelled = true;
         };
-    }, [doctorId, date]);
+    }, [doctorId, date, onSlotMinutes]);
 
     if (slots === null) {
         return <p className="bk-hint">{t('booking.loading')}</p>;
@@ -572,7 +629,7 @@ function TimeSlots({
                             : 'bk-chip'
                     }
                 >
-                    {time}
+                    {slotRange(time, slotMinutes)}
                 </button>
             ))}
         </div>

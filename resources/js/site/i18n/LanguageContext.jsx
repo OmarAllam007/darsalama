@@ -34,6 +34,17 @@ export function LanguageProvider({ children }) {
     localStorage.setItem('lang', lang)
   }, [lang])
 
+  // The services tour frames department pages and pushes its language down to them.
+  useEffect(() => {
+    const onMessage = (event) => {
+      const next = event.data?.lang
+      if (VALID.includes(next)) setLang(next)
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [])
+
   const value = useMemo(() => {
     const isRtl = RTL_LANGS.includes(lang)
     // Resolve against the active language, falling back to English so partially

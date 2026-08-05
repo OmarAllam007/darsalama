@@ -4,7 +4,7 @@ use App\Enums\DoctorScheduleStatus;
 use App\Models\Doctor;
 use Illuminate\Support\Carbon;
 
-it('shows a week from today, keeps today view-only, and offers a callback', function () {
+it('shows day -> time -> information booking flow for online doctors', function () {
     $doctor = Doctor::factory()->create();
 
     foreach (range(1, 7) as $offset) {
@@ -20,35 +20,33 @@ it('shows a week from today, keeps today view-only, and offers a callback', func
     $page = visit("/book/{$doctor->id}");
 
     $page->assertNoJavaScriptErrors()
-        ->assertSee('Choose a date')
-        ->assertSee('Today · View only')
-        ->assertSee('Want us to call you back? Tap here');
+        ->assertSee('Select a date')
+        ->assertSee('Today · View only');
 
-    expect($page->script('document.querySelectorAll(".bk-day").length'))->toBe(7)
+    expect($page->script('document.querySelectorAll(".bk-day").length'))->toBe(8)
         ->and($page->script('document.querySelector(".bk-day.is-today").disabled'))->toBeTrue()
         ->and($page->script('document.querySelector(".bk-day").textContent'))
         ->toContain((string) Carbon::now(config('booking.timezone'))->day);
 
-    // Picking a bookable day swaps the callback bar for the time slots.
+    // Pick a date -> choose time -> enter info.
     $page->click('.bk-day:not([disabled]) >> nth=0')
         ->wait(1)
-        ->assertSee('Available times')
-        ->assertDontSee('Want us to call you back? Tap here');
+        ->assertSee('Select a time')
+        ->assertSee('Back to dates')
+        ->click('.bk-grid .bk-chip >> nth=0')
+        ->wait(1)
+        ->assertSee('Back to times')
+        ->assertSee('Your information')
+        ->assertSee('Appointment Request');
 });
 
-it('shows the complete callback form in the booking flow', function () {
+it('keeps callback form for non-online doctors', function () {
     $doctor = Doctor::factory()->create();
-    $doctor->schedules()->create([
-        'date' => Carbon::today(config('booking.timezone'))->addDays(2)->toDateString(),
-        'status' => DoctorScheduleStatus::Work,
-        'windows' => [
-            ['start' => '09:00', 'end' => '12:00', 'bookable' => true],
-        ],
-    ]);
 
     $page = visit("/book/{$doctor->id}");
 
     $page->assertNoJavaScriptErrors()
+        ->assertDontSee('Select a date')
         ->click('.bk-callback-bar')
         ->assertSee($doctor->name)
         ->assertSee($doctor->department->name)
@@ -73,7 +71,7 @@ it('shows the phone message when a doctor has no future online booking', functio
         )
         ->assertSee('Want us to call you back? Tap here.')
         ->assertPresent('a[href="tel:920023552"]')
-        ->assertDontSee('Choose a date')
+        ->assertDontSee('Select a date')
         ->click('.bk-callback-bar')
         ->assertSee('Full name (first & last)')
         ->assertPresent('select[name="preferred_contact"]')

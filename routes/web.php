@@ -6,6 +6,7 @@ use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\PublicDepartmentController;
+use App\Http\Controllers\PublicDepartmentTourController;
 use App\Http\Controllers\PublicDoctorController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +30,11 @@ Route::inertia('services', 'site/services', [
             .'paediatrics, general surgery, internal medicine, cardiology, orthopaedics, dental and more.',
     ],
 ])->middleware('site-page:services')->name('services');
+Route::get('departments/tour/{tour}', [PublicDepartmentTourController::class, 'show'])
+    ->middleware('site-page:services')
+    ->name('departments.tour');
 Route::get('obgyn', [PublicDepartmentController::class, 'obgyn'])->middleware('site-page:obgyn')->name('obgyn');
+Route::get('departments/{department:slug}', [PublicDepartmentController::class, 'show'])->middleware('site-page:services')->name('departments.show');
 Route::post('departments/{department:slug}/callback-requests', [CallbackRequestController::class, 'storeForDepartment'])->name('departments.callback-requests.store');
 Route::inertia('contact', 'site/contact', [
     'googleReviewUrl' => config('services.google.review_url'),
